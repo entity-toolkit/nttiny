@@ -4,6 +4,7 @@
 build/
 bin/
 *.tmp
+*.a
 
 *.ipynb
 __pycache__
