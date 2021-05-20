@@ -3,6 +3,8 @@
 
 #include "defs.h"
 
+#include <string>
+
 class Shader {
 private:
   unsigned int id;
@@ -10,7 +12,7 @@ private:
   bool compiled = false;
   bool loaded = false;
   const char* fname;
-  const char* code;
+  std::string code;
 public:
   const unsigned int& ind = id;
   Shader(const char* f_);

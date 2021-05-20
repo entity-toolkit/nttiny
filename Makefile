@@ -24,6 +24,8 @@ SHADER_DIR := shaders
 OS := $(shell uname -s | tr A-Z a-z)
 ifeq (${OS}, darwin)
 	FRAMEWORKS := Cocoa OpenGL IOKit
+else ifeq (${OS}, linux)
+	LIBRARIES := $(LIBRARIES) GL X11 pthread Xrandr Xi dl 
 else
 	$(error Unrecognized operating system. Unable to set frameworks.)
 endif
@@ -130,7 +132,7 @@ $(foreach sh, $(__SHADERS), $(eval $(call copyShaders, $(subst ${__SHADER_DIR}, 
 # main executable
 ${__TARGET} : $(OBJS_CXX) $(OBJS_CC)
 	@echo [L]inking $(subst ${ROOT_DIR},,$@) \<: $(subst ${ROOT_DIR},,$^)
-	$(HIDE)${LINK} $(LDFLAGS) $(OBJS_CXX) $(OBJS_CC) -o $@
+	$(HIDE)${LINK} $(OBJS_CXX) $(OBJS_CC) -o $@ $(LDFLAGS) 
 
 # generate compilation rules for all `.o` files
 define generateRules

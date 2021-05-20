@@ -8,7 +8,6 @@
 
 #include <vector>
 
-
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
   UNUSED(window); // to avoid the "unused variable" warning 
   glViewport(0, 0, width, height);

@@ -43,7 +43,7 @@ void Shader::loadFromFile() {
     _throwError("cannot read shader | shader file empty");
     return;
   }
-  this->code = source_str.c_str();
+  this->code = source_str;
   this->loaded = true;
   _printDebug("path=" << (this->fname) << " (type=" << (this->type) << ")\n'''\n" << this->code << "'''");
   _log("shader loaded");
@@ -65,7 +65,8 @@ void Shader::compile() {
   int successQ;
   char infoLog[512];
   this->id = glCreateShader(this->type);
-  glShaderSource(this->id, 1, &(this->code), NULL);
+  const GLchar *source = (const GLchar *)(this->code).c_str();
+  glShaderSource(this->id, 1, &(source), NULL);
   // compile shader
   glCompileShader(this->id);
   glGetShaderiv(this->id, GL_COMPILE_STATUS, &successQ);

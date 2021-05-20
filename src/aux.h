@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string_view>
 #include <string>
+#include <cstring>
 #include <sstream>
 #include <fstream>
 
@@ -19,7 +20,7 @@ std::string readFile(const char *path) {
     stream << file.rdbuf();
     file.close();
     code = stream.str();
-  } catch(std::ifstream::failure e) {
+  } catch(std::ifstream::failure const &e) {
     _throwError("cannot read file `" << path << "`");
     return ""; 
   }

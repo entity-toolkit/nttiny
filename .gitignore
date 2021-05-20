@@ -4,7 +4,11 @@
 build/
 bin/
 *.tmp
-*.a
+lib/*.a
+
+src/glEngine/glad.c
+include/KHR/
+include/glad/
 
 *.ipynb
 __pycache__
