@@ -113,8 +113,9 @@ help:
 	@echo "usage: \`make all [OPTIONS]\`"
 	@echo 
 	@echo "options:"
-	@echo "   DEBUG={y|n}      : enable/disable debug mode [default: y]"
-	@echo "   VERBOSE={y|n}    : enable/disable verbose compilation mode [default: n]"
+	@echo "   DEBUG={y|n}             : enable/disable debug mode [default: y]"
+	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation mode [default: n]"
+	@echo "   COMPILER={gcc|clang}    : choose the compiler [default: gcc]"
 	@echo
 	@echo "cleanup: \`make clean\`"
 
