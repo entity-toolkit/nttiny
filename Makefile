@@ -41,9 +41,13 @@ __TARGET := ${__BIN_DIR}/${TARGET}
 __SHADERS:= $(shell find ${__SHADER_DIR} -name *.vert -or -name *.frag) 
 # # # # # Settings # # # # # # # # # # # # 
 # 
-VERBOSE ?= n
-DEBUG ?= y
-COMPILER ?= gcc
+_DEFAULT_VERBOSE := n
+_DEFAULT_DEBUG := y
+_DEFAULT_COMPILER := gcc
+
+VERBOSE ?= ${_DEFAULT_VERBOSE}
+DEBUG ?= ${_DEFAULT_DEBUG}
+COMPILER ?= ${_DEFAULT_COMPILER}
 
 DEFINITIONS := 
 
@@ -113,9 +117,9 @@ help:
 	@echo "usage: \`make all [OPTIONS]\`"
 	@echo 
 	@echo "options:"
-	@echo "   DEBUG={y|n}             : enable/disable debug mode [default: y]"
-	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation mode [default: n]"
-	@echo "   COMPILER={gcc|clang}    : choose the compiler [default: gcc]"
+	@echo "   DEBUG={y|n}             : enable/disable debug mode [default: ${_DEFAULT_DEBUG}]"
+	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation mode [default: ${_DEFAULT_VERBOSE}]"
+	@echo "   COMPILER={gcc|clang}    : choose the compiler [default: ${_DEFAULT_COMPILER}]"
 	@echo
 	@echo "cleanup: \`make clean\`"
 
