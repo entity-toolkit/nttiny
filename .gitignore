@@ -1,0 +1,13 @@
+.DS_Store
+
+*.o
+build/
+bin/
+*.tmp
+
+*.ipynb
+__pycache__
+
+*.cson
+
+*.swp
