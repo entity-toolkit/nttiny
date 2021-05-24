@@ -3,6 +3,8 @@
 
 #include "defs.h"
 
+#include <plog/Log.h>
+
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -20,7 +22,7 @@ auto readFile(const char *path) -> std::string {
     file.close();
     code = stream.str();
   } catch (std::ifstream::failure const &e) {
-    _throwError("cannot read file `" << path << "`");
+    PLOGE << "cannot read file `" << path << "`";
     return "";
   }
   return code;

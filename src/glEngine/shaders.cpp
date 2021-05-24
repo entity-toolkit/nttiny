@@ -2,6 +2,8 @@
 #include "shaders.h"
 #include "aux.h"
 
+#include <plog/Log.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -11,18 +13,18 @@ Shader::Shader(const char *f_) { fname = f_; }
 
 Shader::~Shader() {
   if (!GLFW_INITIALIZED) {
-    _throwError("`glfw` not initialized");
+    PLOGE << "`glfw` not initialized";
     return;
   }
   if (this->compiled) {
     glDeleteShader(this->id);
   }
-  _log("shader deleted");
+  PLOGV << "shader deleted";
 }
 
 void Shader::loadFromFile() {
   if (this->loaded) {
-    _printWarning("shader already loaded -> ignoring the call");
+    PLOGW << "shader already loaded -> ignoring the call";
     return;
   }
   // automatically determine the shader type
@@ -32,36 +34,35 @@ void Shader::loadFromFile() {
   } else if (type_str == ".vert") {
     this->type = GL_VERTEX_SHADER;
   } else {
-    _throwError("unkown shader");
+    PLOGE << "unkown shader";
     return;
   }
   // parse shader from file
   std::string source_str = readFile(this->fname);
   if (source_str.empty()) {
-    _throwError("cannot read shader | shader file empty");
+    PLOGE << "cannot read shader | shader file empty";
     return;
   }
   this->code = source_str;
   this->loaded = true;
-  _printDebug("path=" << (this->fname) << " (type=" << (this->type)
-                      << ")\n'''\n"
-                      << this->code << "'''");
-  _log("shader loaded");
+  PLOGD << "path=" << (this->fname) << " (type=" << (this->type) << ")\n'''\n"
+        << this->code << "'''";
+  PLOGV << "shader loaded";
 }
 
 void Shader::compile() {
   if (this->compiled) {
-    _printWarning("shader already compiled -> ignoring call");
+    PLOGW << "shader already compiled -> ignoring call";
     return;
   }
   if (!(this->loaded)) {
-    _printWarning("shader not loaded explicitly -> loading implicitly");
+    PLOGW << "shader not loaded explicitly -> loading implicitly";
     this->loadFromFile();
     if (!(this->loaded))
       return;
   }
   if (!GLFW_INITIALIZED) {
-    _throwError("`glfw` not initialized");
+    PLOGE << "`glfw` not initialized";
   }
   int success;
   char info_log[512];
@@ -73,9 +74,9 @@ void Shader::compile() {
   glGetShaderiv(this->id, GL_COMPILE_STATUS, &success);
   if (!success) {
     glGetShaderInfoLog(this->id, 512, nullptr, info_log);
-    _throwError("cannot compile shader\n" << info_log);
+    PLOGE << "cannot compile shader\n" << info_log;
     return;
   }
   this->compiled = true;
-  _log("shader compiled");
+  PLOGV << "shader compiled";
 }

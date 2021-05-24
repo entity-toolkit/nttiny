@@ -3,6 +3,8 @@
 #include "program.h"
 #include "shaders.h"
 
+#include <plog/Log.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -15,13 +17,13 @@ static void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
 
 void Window::initialize() {
   if (!GLFW_INITIALIZED) {
-    _throwError("`glfw` not initialized");
+    PLOGE << "`glfw` not initialized";
     return;
   }
   // TODO: get variables for dimensions and window title
   this->window = glfwCreateWindow(800, 600, "testogl", nullptr, nullptr);
   if (this->window == nullptr) {
-    _throwError("unable to create a window");
+    PLOGE << "unable to create a window";
     this->finalize();
     return;
   }
@@ -29,15 +31,15 @@ void Window::initialize() {
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    _throwError("unable to load `glad`");
+    PLOGE << "unable to load `glad`";
     return;
   }
-  _log("window initialized");
+  PLOGV << "window initialized";
 }
 
 void Window::createProgram(const std::vector<const char *> &shaders) {
   if (!GLFW_INITIALIZED) {
-    _throwError("`glfw` not initialized");
+    PLOGE << "`glfw` not initialized";
     return;
   }
   Program program;
@@ -56,11 +58,11 @@ void Window::render(void (*lambda)(GLFWwindow *window,
 
 void Window::finalize() {
   if (!GLFW_INITIALIZED) {
-    _throwError("`glfw` not initialized");
+    PLOGE << "`glfw` not initialized";
     return;
   }
   for (auto &p : (this->programs)) {
     glDeleteProgram(p);
-    _log("program " << p << "  deleted");
+    PLOGV << "program " << p << "  deleted";
   }
 }

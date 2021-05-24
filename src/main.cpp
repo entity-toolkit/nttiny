@@ -3,6 +3,11 @@
 #include "shaders.h"
 #include "window.h"
 
+#include <plog/Log.h>
+#include <plog/Init.h>
+#include <plog/Formatters/TxtFormatter.h>
+#include <plog/Appenders/ColorConsoleAppender.h>
+
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
@@ -13,8 +18,19 @@ bool GLFW_INITIALIZED{false};
 static void processInput(GLFWwindow *window);
 
 auto main() -> int {
+  static plog::ColorConsoleAppender<plog::TxtFormatter> console_appender;
+  plog::Severity max_severity;
+#ifdef VERBOSE
+  max_severity = plog::verbose;
+#elif DEBUG
+  max_severity = plog::debug;
+#else
+  max_severity = plog::warning;
+#endif
+  plog::init(max_severity, &console_appender);
+
   if (!glfwInit()) {
-    _throwError("unable to initialize `glfw`");
+    PLOGE << "unable to initialize `glfw`";
     return -1;
   } else {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -34,7 +50,7 @@ auto main() -> int {
     nttiny.createProgram({"shader.vert", "red.frag"});
     auto myloop = [](GLFWwindow *window, std::vector<unsigned int> programs) {
       if (!GLFW_INITIALIZED) {
-        _throwError("`glfw` not initialized");
+        PLOGE << "`glfw` not initialized";
         return;
       }
       float first_triangle[] = {-0.9f, -0.5f, -0.0f, -0.5f, -0.45f, 0.5f};
@@ -66,7 +82,7 @@ auto main() -> int {
 
       // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-      _log("render loop started");
+      PLOGV << "render loop started";
 
       while (!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -92,7 +108,7 @@ auto main() -> int {
   }
 
   if (!GLFW_INITIALIZED) {
-    _throwError("`glfw` not initialized or terminated prematurely");
+    PLOGE << "`glfw` not initialized or terminated prematurely";
   }
   glfwTerminate();
   GLFW_INITIALIZED = false;

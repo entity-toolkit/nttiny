@@ -2,6 +2,8 @@
 #include "program.h"
 #include "shaders.h"
 
+#include <plog/Log.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -9,12 +11,12 @@
 
 void Program::create() {
   if (!GLFW_INITIALIZED) {
-    _throwError("`glfw` not initialized");
+    PLOGE << "`glfw` not initialized";
     return;
   }
   this->id = glCreateProgram();
   this->created = true;
-  _log("program " << this->id << " created");
+  PLOGV << "program " << this->id << " created";
 }
 
 void Program::attachShader(const char *shader) {
@@ -23,26 +25,26 @@ void Program::attachShader(const char *shader) {
 }
 void Program::attachShader(Shader *shader) {
   if (!GLFW_INITIALIZED) {
-    _throwError("`glfw` not initialized");
+    PLOGE << "`glfw` not initialized";
     return;
   }
   if (!shader->isCompiled) {
-    _printWarning("shader not explicitly compiled -> compiling implicitly");
+    PLOGW << "shader not explicitly compiled -> compiling implicitly";
     shader->compile();
     if (!shader->isCompiled)
       return;
   }
   glAttachShader(this->id, shader->ind);
-  _log("shader attached");
+  PLOGV << "shader attached";
 }
 
 void Program::link() {
   if (!GLFW_INITIALIZED) {
-    _throwError("`glfw` not initialized");
+    PLOGE << "`glfw` not initialized";
     return;
   }
   if (!(this->created)) {
-    _printWarning("shader not explicitly created -> creating implicitly");
+    PLOGW << "shader not explicitly created -> creating implicitly";
     this->create();
   }
   glLinkProgram(this->id);
@@ -51,9 +53,9 @@ void Program::link() {
   glGetProgramiv(this->id, GL_LINK_STATUS, &success);
   if (!success) {
     glGetProgramInfoLog(this->id, 512, nullptr, info_log);
-    _throwError("cannot link program\n" << info_log);
+    PLOGE << "cannot link program\n" << info_log;
     return;
   }
   this->linked = true;
-  _log("program " << this->id << " linked");
+  PLOGV << "program " << this->id << " linked";
 }

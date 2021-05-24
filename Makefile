@@ -53,6 +53,7 @@ DEFINITIONS :=
 
 ifeq ($(strip ${VERBOSE}), y)
 	HIDE = 
+	PREPFLAGS = -DVERBOSE
 else
 	HIDE = @
 endif
@@ -74,10 +75,10 @@ CXXSTANDARD := -std=c++17
 CXX := ${CXX} ${CXXSTANDARD}
 ifeq ($(strip ${DEBUG}), y)
 	CONFFLAGS := -O0 -g
-	PREPFLAGS := -DDEBUG
+	PREPFLAGS := $(PREPFLAGS) -DDEBUG
 else
 	CONFFLAGS := -O3 -Ofast
-	PREPFLAGS := -DNDEBUG
+	PREPFLAGS := $(PREPFLAGS) -DNDEBUG
 endif
 
 # warning flags
@@ -118,7 +119,7 @@ help:
 	@echo 
 	@echo "options:"
 	@echo "   DEBUG={y|n}             : enable/disable debug mode [default: ${_DEFAULT_DEBUG}]"
-	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation mode [default: ${_DEFAULT_VERBOSE}]"
+	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation/run mode [default: ${_DEFAULT_VERBOSE}]"
 	@echo "   COMPILER={gcc|clang}    : choose the compiler [default: ${_DEFAULT_COMPILER}]"
 	@echo
 	@echo "cleanup: \`make clean\`"
@@ -172,7 +173,8 @@ SOURCES := $(filter-out $(IGNORE), $(SOURCES))
 
 clang-tidy-naming:
 	@for src in $(SOURCES) ; do \
-		clang-tidy -checks='-*,readability-identifier-naming' \
+		echo "checking namings in $$src:" ;\
+		clang-tidy -quiet -checks='-*,readability-identifier-naming' \
 		    -config="{CheckOptions: [ \
 		    { key: readability-identifier-naming.NamespaceCase, value: lower_case },\
 		    { key: readability-identifier-naming.ClassCase, value: CamelCase  },\
@@ -209,13 +211,14 @@ clang-format-fix:
 	done
 	@echo "clang-format-fix -- done"
 
+
 clang-tidy:
 	@for src in $(SOURCES) ; do \
 		echo "tidying $$src:" ; \
-		clang-tidy -checks="-*,\
+		clang-tidy -quiet -checks="-*,\
 			clang-diagnostic-*,clang-analyzer-*,modernize-*,-modernize-avoid-c-arrays*,\
 			readability-*,performance-*,openmp-*,mpi-*" \
-			-header-filter="src/.*" \
+			-header-filter="${SRC_DIR}/.*" \
 			"$$src" -- -I include/ -I src/ -I src/glEngine/; \
 	done
 	@echo "clang-tidy -- done"
@@ -223,7 +226,7 @@ clang-tidy:
 clang-tidy-bugprone:
 	@for src in $(SOURCES) ; do \
 		echo "tidying $$src:" ; \
-		clang-tidy -checks="-*,bugprone-*",\
+		clang-tidy -quiet -checks="-*,bugprone-*",\
 			-header-filter="src/.*" \
 			"$$src" -- -I include/ -I src/ -I src/glEngine/; \
 	done
