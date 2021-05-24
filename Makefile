@@ -126,8 +126,8 @@ help:
 	@echo "use \`make [CLANG_COMMAND]\` to check the code matches with best practices & consistent stylistics"
 	@echo 
 	@echo "   make clang-tidy-naming  : test if the naming of variables/functionts/etc is consistent"
-	@echo "   make clang-format-check : test if the code formatting is consistent"
-	@echo "   make clang-format-fix   : same as `clang-format-check` except now fix the issues"
+	@echo "   make clang-format       : test if the code formatting is consistent"
+	@echo "   make clang-format-fix   : same as \`clang-format\` except now fix the issues"
 	@echo "   make clang-tidy         : check if the code contains any bad practices or other deprecated features"
 	@echo "   make clang-tidy-bugprone: check if the code contains any bug-prone features"
 
@@ -183,7 +183,7 @@ clang-tidy-naming:
 	done
 	@echo "clang-tidy-naming -- done"
 
-clang-format-check:
+clang-format:
 	@for src in $(SOURCES) ; do \
 		var=`clang-format $$src | diff $$src - | wc -l` ; \
 		if [ $$var -ne 0 ] ; then \
