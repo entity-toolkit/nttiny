@@ -130,6 +130,7 @@ help:
 	@echo "   make clang-format-fix   : same as \`clang-format\` except now fix the issues"
 	@echo "   make clang-tidy         : check if the code contains any bad practices or other deprecated features"
 	@echo "   make clang-tidy-bugprone: check if the code contains any bug-prone features"
+	@echo 
 
 # linking the main app
 all : ${__TARGET} $(SHADER_COPIES)
@@ -227,4 +228,3 @@ clang-tidy-bugprone:
 			"$$src" -- -I include/ -I src/ -I src/glEngine/; \
 	done
 	@echo "clang-tidy-bugprone -- done"
-
