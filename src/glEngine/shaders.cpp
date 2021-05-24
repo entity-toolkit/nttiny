@@ -63,17 +63,17 @@ void Shader::compile() {
   if (!GLFW_INITIALIZED) {
     _throwError("`glfw` not initialized");
   }
-  int successQ;
-  char infoLog[512];
+  int success;
+  char info_log[512];
   this->id = glCreateShader(this->type);
-  const GLchar *source = (const GLchar *)(this->code).c_str();
-  glShaderSource(this->id, 1, &(source), NULL);
+  const auto *source = static_cast<const GLchar *>((this->code).c_str());
+  glShaderSource(this->id, 1, &(source), nullptr);
   // compile shader
   glCompileShader(this->id);
-  glGetShaderiv(this->id, GL_COMPILE_STATUS, &successQ);
-  if (!successQ) {
-    glGetShaderInfoLog(this->id, 512, NULL, infoLog);
-    _throwError("cannot compile shader\n" << infoLog);
+  glGetShaderiv(this->id, GL_COMPILE_STATUS, &success);
+  if (!success) {
+    glGetShaderInfoLog(this->id, 512, nullptr, info_log);
+    _throwError("cannot compile shader\n" << info_log);
     return;
   }
   this->compiled = true;

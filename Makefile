@@ -211,10 +211,10 @@ clang-format-fix:
 
 clang-tidy:
 	@for src in $(SOURCES) ; do \
-		echo "Running tidy on $$src..." ; \
+		echo "tidying $$src:" ; \
 		clang-tidy -checks="-*,\
-			clang-diagnostic-*,clang-analyzer-*,modernize-*,\
-			readability-*,performance-*,openmp-*,mpi-*",\
+			clang-diagnostic-*,clang-analyzer-*,modernize-*,-modernize-avoid-c-arrays*,\
+			readability-*,performance-*,openmp-*,mpi-*" \
 			-header-filter="src/.*" \
 			"$$src" -- -I include/ -I src/ -I src/glEngine/; \
 	done
@@ -222,7 +222,7 @@ clang-tidy:
 
 clang-tidy-bugprone:
 	@for src in $(SOURCES) ; do \
-		echo "Running tidy on $$src..." ; \
+		echo "tidying $$src:" ; \
 		clang-tidy -checks="-*,bugprone-*",\
 			-header-filter="src/.*" \
 			"$$src" -- -I include/ -I src/ -I src/glEngine/; \

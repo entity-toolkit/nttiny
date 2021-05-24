@@ -6,7 +6,7 @@ git clone --recursive https://github.com/haykh/nttiny.git
 
 ## Setup
 
-The following setup ensures that all the libraries are compiled with the proper system-specific parameters. These steps need to be done just once on each system.
+The following setup ensures that all the libraries are compiled with the proper system-specific parameters. These steps need to be done just once on each system. In case you already have the `glfw` library install on your system -- change the `LIBRARIES` variable in `Makefile` from `glfw3` to `glfw` and skip steps 1-2.
 
 1. First we will need to compile a static `glfw` library for your system: 
 

@@ -8,9 +8,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <string_view>
 
-std::string readFile(const char *path) {
+auto readFile(const char *path) -> std::string {
   std::string code;
   std::ifstream file;
   file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -27,9 +26,9 @@ std::string readFile(const char *path) {
   return code;
 }
 
-std::string getFileExtension(const char *file_name) {
+auto getFileExtension(const char *file_name) -> std::string {
   int ext = '.';
-  const char *extension = NULL;
+  const char *extension = nullptr;
   extension = strrchr(file_name, ext);
   return static_cast<std::string>(extension);
 }

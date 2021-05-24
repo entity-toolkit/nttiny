@@ -15,7 +15,8 @@ private:
 public:
   Window() = default; 
   void initialize();
-  void createProgram(std::vector<const char*> shaders);
+  void createProgram(const std::vector<const char *>& shaders);
+  //void createProgram(std::vector<const char*> shaders);
   void render(void (*lambda)(GLFWwindow* window, std::vector<unsigned int> programs));
   void finalize();
   ~Window() = default;

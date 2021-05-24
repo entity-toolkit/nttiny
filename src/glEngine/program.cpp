@@ -5,6 +5,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <array>
+
 void Program::create() {
   if (!GLFW_INITIALIZED) {
     _throwError("`glfw` not initialized");
@@ -16,7 +18,8 @@ void Program::create() {
 }
 
 void Program::attachShader(const char *shader) {
-  this->attachShader(new Shader(shader));
+  Shader sh(shader);
+  this->attachShader(&sh);
 }
 void Program::attachShader(Shader *shader) {
   if (!GLFW_INITIALIZED) {
@@ -43,12 +46,12 @@ void Program::link() {
     this->create();
   }
   glLinkProgram(this->id);
-  int successQ;
-  char infoLog[512];
-  glGetProgramiv(this->id, GL_LINK_STATUS, &successQ);
-  if (!successQ) {
-    glGetProgramInfoLog(this->id, 512, NULL, infoLog);
-    _throwError("cannot link program\n" << infoLog);
+  int success;
+  char info_log[512];
+  glGetProgramiv(this->id, GL_LINK_STATUS, &success);
+  if (!success) {
+    glGetProgramInfoLog(this->id, 512, nullptr, info_log);
+    _throwError("cannot link program\n" << info_log);
     return;
   }
   this->linked = true;
