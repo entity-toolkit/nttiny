@@ -122,6 +122,14 @@ help:
 	@echo "   COMPILER={gcc|clang}    : choose the compiler [default: ${_DEFAULT_COMPILER}]"
 	@echo
 	@echo "cleanup: \`make clean\`"
+	@echo
+	@echo "use \`make [CLANG_COMMAND]\` to check the code matches with best practices & consistent stylistics"
+	@echo 
+	@echo "   make clang-tidy-naming  : test if the naming of variables/functionts/etc is consistent"
+	@echo "   make clang-format-check : test if the code formatting is consistent"
+	@echo "   make clang-format-fix   : same as `clang-format-check` except now fix the issues"
+	@echo "   make clang-tidy         : check if the code contains any bad practices or other deprecated features"
+	@echo "   make clang-tidy-bugprone: check if the code contains any bug-prone features"
 
 # linking the main app
 all : ${__TARGET} $(SHADER_COPIES)
@@ -153,13 +161,70 @@ $(foreach obj, $(OBJS_CC), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_
 clean:
 	rm -rf ${BUILD_DIR} ${BIN_DIR}
 
-
-SOURCES := $(SRCS_CC) $(SRCS_CXX)
-
-style:
-	@for src in $(SOURCES) ; do \
-		echo "Formatting $$src..." ;\
-		clang-format -i "$$src" ; \
-	done
-
 -include $(DEPS_CXX) $(DEPS_CC)
+
+.PHONY: clang-format-fix, clang-format-check, clang-tidy, clang-tidy-bugprone
+
+SOURCES := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX))
+IGNORE := ${SRC_DIR}/glEngine/glad.cpp
+SOURCES := $(filter-out $(IGNORE), $(SOURCES))
+
+clang-tidy-naming:
+	@for src in $(SOURCES) ; do \
+		clang-tidy -checks='-*,readability-identifier-naming' \
+		    -config="{CheckOptions: [ \
+		    { key: readability-identifier-naming.NamespaceCase, value: lower_case },\
+		    { key: readability-identifier-naming.ClassCase, value: CamelCase  },\
+		    { key: readability-identifier-naming.StructCase, value: CamelCase  },\
+		    { key: readability-identifier-naming.FunctionCase, value: camelBack },\
+		    { key: readability-identifier-naming.VariableCase, value: lower_case },\
+		    { key: readability-identifier-naming.GlobalConstantCase, value: UPPER_CASE }\
+		    ]}" "$$src" -- -I ${SRC_DIR} -I ${SRC_DIR}/glEngine -I ${INC_DIR};\
+	done
+	@echo "clang-tidy-naming -- done"
+
+clang-format-check:
+	@for src in $(SOURCES) ; do \
+		var=`clang-format $$src | diff $$src - | wc -l` ; \
+		if [ $$var -ne 0 ] ; then \
+			diff=`clang-format $$src | diff $$src -` ; \
+			echo "$$src:" ; \
+			echo "$$diff" ; \
+			echo ; \
+		fi ; \
+	done
+	@echo "clang-format-check -- done"
+
+clang-format-fix:
+	@for src in $(SOURCES) ; do \
+		var=`clang-format $$src | diff $$src - | wc -l` ; \
+		if [ $$var -ne 0 ] ; then \
+			echo "formatting $$src:" ;\
+			diff=`clang-format $$src | diff $$src -` ; \
+			clang-format -i "$$src" ; \
+			echo "$$diff" ; \
+			echo ; \
+		fi ; \
+	done
+	@echo "clang-format-fix -- done"
+
+clang-tidy:
+	@for src in $(SOURCES) ; do \
+		echo "Running tidy on $$src..." ; \
+		clang-tidy -checks="-*,\
+			clang-diagnostic-*,clang-analyzer-*,modernize-*,\
+			readability-*,performance-*,openmp-*,mpi-*",\
+			-header-filter="src/.*" \
+			"$$src" -- -I include/ -I src/ -I src/glEngine/; \
+	done
+	@echo "clang-tidy -- done"
+
+clang-tidy-bugprone:
+	@for src in $(SOURCES) ; do \
+		echo "Running tidy on $$src..." ; \
+		clang-tidy -checks="-*,bugprone-*",\
+			-header-filter="src/.*" \
+			"$$src" -- -I include/ -I src/ -I src/glEngine/; \
+	done
+	@echo "clang-tidy-bugprone -- done"
+
