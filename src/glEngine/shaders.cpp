@@ -1,15 +1,13 @@
 #include "defs.h"
-#include "aux.h"
 #include "shaders.h"
+#include "aux.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <string>
 
-Shader::Shader(const char* f_) {
-  fname = f_;
-}
+Shader::Shader(const char *f_) { fname = f_; }
 
 Shader::~Shader() {
   if (!GLFW_INITIALIZED) {
@@ -45,19 +43,22 @@ void Shader::loadFromFile() {
   }
   this->code = source_str;
   this->loaded = true;
-  _printDebug("path=" << (this->fname) << " (type=" << (this->type) << ")\n'''\n" << this->code << "'''");
+  _printDebug("path=" << (this->fname) << " (type=" << (this->type)
+                      << ")\n'''\n"
+                      << this->code << "'''");
   _log("shader loaded");
 }
 
 void Shader::compile() {
   if (this->compiled) {
-    _printWarning("shader already compiled -> ignoring call"); 
+    _printWarning("shader already compiled -> ignoring call");
     return;
   }
   if (!(this->loaded)) {
-    _printWarning("shader not loaded explicitly -> loading implicitly"); 
+    _printWarning("shader not loaded explicitly -> loading implicitly");
     this->loadFromFile();
-    if (!(this->loaded)) return;
+    if (!(this->loaded))
+      return;
   }
   if (!GLFW_INITIALIZED) {
     _throwError("`glfw` not initialized");
@@ -78,4 +79,3 @@ void Shader::compile() {
   this->compiled = true;
   _log("shader compiled");
 }
-

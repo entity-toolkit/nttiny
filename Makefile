@@ -153,4 +153,13 @@ $(foreach obj, $(OBJS_CC), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_
 clean:
 	rm -rf ${BUILD_DIR} ${BIN_DIR}
 
+
+SOURCES := $(SRCS_CC) $(SRCS_CXX)
+
+style:
+	@for src in $(SOURCES) ; do \
+		echo "Formatting $$src..." ;\
+		clang-format -i "$$src" ; \
+	done
+
 -include $(DEPS_CXX) $(DEPS_CC)
