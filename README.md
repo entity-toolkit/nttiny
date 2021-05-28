@@ -1,7 +1,7 @@
 # nttiny
 
 ```shell
-git clone --recursive https://github.com/haykh/nttiny.git
+git clone --recursive git@github.com:haykh/nttiny.git
 ```
 
 ## Setup
