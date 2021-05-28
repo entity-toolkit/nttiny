@@ -14,10 +14,8 @@ SRC_DIR := src
 
 # external header-only libraries
 INC_DIR := include 
-# for source codes of external libraries (either static or dynamic)
-EXT_DIR := extern
-# for static libraries
-LIB_DIR := lib 
+# for external libraries
+LIB_DIR := lib
 
 SHADER_DIR := shaders
 
@@ -36,6 +34,7 @@ endif
 __BUILD_DIR := ${ROOT_DIR}${BUILD_DIR}
 __BIN_DIR := ${ROOT_DIR}${BIN_DIR}
 __SRC_DIR := ${ROOT_DIR}${SRC_DIR}
+__LIB_DIR := ${ROOT_DIR}${LIB_DIR}
 __SHADER_DIR := ${ROOT_DIR}${SHADER_DIR}
 __TARGET := ${__BIN_DIR}/${TARGET}
 __SHADERS:= $(shell find ${__SHADER_DIR} -name *.vert -or -name *.frag) 
@@ -100,7 +99,11 @@ SRCS_CC := $(shell find ${__SRC_DIR} -name *.c)
 OBJS_CC := $(subst ${__SRC_DIR},${__BUILD_DIR},$(SRCS_CC:%=%.o))
 DEPS_CC := $(OBJS_CC:.o=.d)
 
-INC_DIRS := $(shell find ${__SRC_DIR} -type d) ${EXT_DIR} ${INC_DIR} ${LIB_DIRS}
+SLIBS_CXX := $(shell find ${__LIB_DIR} -name *.cpp) 
+OLIBS_CXX := $(subst ${__LIB_DIR},${__BUILD_DIR},$(SLIBS_CXX:%=%.o))
+DLIBS_CXX := $(OLIBS_CXX:.o=.d)
+
+INC_DIRS := $(shell find ${__SRC_DIR} -type d) $(shell find ${__LIB_DIR} -type d) ${INC_DIR} ${LIB_DIR}
 INCFLAGS := $(addprefix -I,${INC_DIRS})
 
 LDFLAGS := $(LDFALGS) $(addprefix -L, $(LIB_DIR)) $(addprefix -l, $(LIBRARIES)) $(addprefix -framework , $(FRAMEWORKS))
@@ -144,10 +147,12 @@ $(1): $(2)
 endef
 $(foreach sh, $(__SHADERS), $(eval $(call copyShaders, $(subst ${__SHADER_DIR}, ${__BIN_DIR}, ${sh}), ${sh})))
 
+ALL_OBJECTS := $(OLIBS_CXX) $(OBJS_CXX) $(OBJS_CC)
+
 # main executable
-${__TARGET} : $(OBJS_CXX) $(OBJS_CC)
+${__TARGET} : $(ALL_OBJECTS)
 	@echo [L]inking $(subst ${ROOT_DIR},,$@) \<: $(subst ${ROOT_DIR},,$^)
-	$(HIDE)${LINK} $(OBJS_CXX) $(OBJS_CC) -o $@ $(LDFLAGS) 
+	$(HIDE)${LINK} $(ALL_OBJECTS) -o $@ $(LDFLAGS) 
 
 # generate compilation rules for all `.o` files
 define generateRules
@@ -159,17 +164,19 @@ $(1): $(2)
 endef
 $(foreach obj, $(OBJS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${SRC_DIR},$(subst .o,,$(obj))), ${CXX})))
 $(foreach obj, $(OBJS_CC), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${SRC_DIR},$(subst .o,,$(obj))), ${CC})))
+$(foreach obj, $(OLIBS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${LIB_DIR},$(subst .o,,$(obj))), ${CXX})))
 
 clean:
 	rm -rf ${BUILD_DIR} ${BIN_DIR}
 
--include $(DEPS_CXX) $(DEPS_CC)
+-include $(DEPS_CXX) $(DEPS_CC) $(DLIBS_CXX)
 
 .PHONY: clang-format-fix, clang-format-check, clang-tidy, clang-tidy-bugprone
 
 SOURCES := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX))
-IGNORE := ${SRC_DIR}/glEngine/glad.cpp
-SOURCES := $(filter-out $(IGNORE), $(SOURCES))
+
+print :
+	@echo $(INCFLAGS)
 
 clang-tidy-naming:
 	@for src in $(SOURCES) ; do \
@@ -182,7 +189,7 @@ clang-tidy-naming:
 		    { key: readability-identifier-naming.FunctionCase, value: camelBack },\
 		    { key: readability-identifier-naming.VariableCase, value: lower_case },\
 		    { key: readability-identifier-naming.GlobalConstantCase, value: UPPER_CASE }\
-		    ]}" "$$src" -- -I ${SRC_DIR} -I ${SRC_DIR}/glEngine -I ${INC_DIR};\
+		    ]}" "$$src" -- $(INCFLAGS);\
 	done
 	@echo "clang-tidy-naming -- done"
 
@@ -219,7 +226,7 @@ clang-tidy:
 			clang-diagnostic-*,clang-analyzer-*,modernize-*,-modernize-avoid-c-arrays*,\
 			readability-*,performance-*,openmp-*,mpi-*" \
 			-header-filter="${SRC_DIR}/.*" \
-			"$$src" -- -I include/ -I src/ -I src/glEngine/; \
+			"$$src" -- $(INCFLAGS); \
 	done
 	@echo "clang-tidy -- done"
 
@@ -228,6 +235,6 @@ clang-tidy-bugprone:
 		echo "tidying $$src:" ; \
 		clang-tidy -quiet -checks="-*,bugprone-*",\
 			-header-filter="src/.*" \
-			"$$src" -- -I include/ -I src/ -I src/glEngine/; \
+			"$$src" -- $(INCFLAGS); \
 	done
 	@echo "clang-tidy-bugprone -- done"

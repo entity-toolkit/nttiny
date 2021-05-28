@@ -33,7 +33,7 @@ mv extern/glfw/build/src/libglfw3.a lib
 
 4. Download the generated `glad.zip` archive, and unzip it (`unzip glad.zip`). If you do this from the source code directory (`<NTTINY_PATH>`) the headers will be properly placed into `include/glad` and `include/KHR` directories (otherwise, do that manually). 
 
-5. Move the `glad.c` file to a more appropriate place (and change `.c` to `.cpp`): `mv glad.c src/glEngine/glad.cpp`.
+5. Move the `glad.c` file to a more appropriate place (and change `.c` to `.cpp`): `mv glad.c lib/glad.cpp`.
 
 ## Compilation
 

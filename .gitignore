@@ -6,11 +6,6 @@ bin/
 *.tmp
 lib/*.a
 
-src/glEngine/glad.cpp
-src/glEngine/glad.c
-include/KHR/
-include/glad/
-
 *.ipynb
 __pycache__
 
