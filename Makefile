@@ -142,7 +142,7 @@ help:
 	@echo "   make clang-format-fix   : same as \`clang-format\` except now fix the issues"
 	@echo "   make clang-tidy         : check if the code contains any bad practices or other deprecated features"
 	@echo "   make clang-tidy-bugprone: check if the code contains any bug-prone features"
-	@echo "   make clang-all          : run `clang-tidy-naming`, `clang-format` and `clang-tidy`"
+	@echo "   make clang-all          : run \`clang-tidy-naming\`, \`clang-format\` and \`clang-tidy\`"
 	@echo 
 
 # linking the main app

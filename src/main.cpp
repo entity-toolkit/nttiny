@@ -133,7 +133,7 @@ auto main() -> int {
         // < imgui
 
         // setting global uniforms
-        float u_time = glfwGetTime();
+        float u_time = static_cast<float>(glfwGetTime());
         glUniform1f(glGetUniformLocation(programs[0], "u_time"), u_time);
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
