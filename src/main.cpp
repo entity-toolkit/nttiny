@@ -176,24 +176,3 @@ static void processInput(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, true);
   }
 }
-// float vertices[] = {
-//// positions        // colors
-// 0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
-//-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-// 0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f  // top
-//};
-// unsigned int vbo, vao;
-// glGenBuffers(1, &vbo);
-// glGenVertexArrays(1, &vao);
-
-// glBindVertexArray(vao);
-// glBindBuffer(GL_ARRAY_BUFFER, vbo);
-// glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-// glVertexAttribPointer(
-// 0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
-//(const void *)nullptr); // Vertex attributes stay the same
-// glEnableVertexAttribArray(0);
-// glVertexAttribPointer(
-// 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
-//(const void *)(3 * sizeof(float))); // Vertex attributes stay the same
-// glEnableVertexAttribArray(1);

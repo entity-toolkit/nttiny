@@ -142,6 +142,7 @@ help:
 	@echo "   make clang-format-fix   : same as \`clang-format\` except now fix the issues"
 	@echo "   make clang-tidy         : check if the code contains any bad practices or other deprecated features"
 	@echo "   make clang-tidy-bugprone: check if the code contains any bug-prone features"
+	@echo "   make clang-all          : run `clang-tidy-naming`, `clang-format` and `clang-tidy`"
 	@echo 
 
 # linking the main app
@@ -179,12 +180,11 @@ clean:
 
 -include $(DEPS_CXX) $(DEPS_CC) $(DLIBS_CXX)
 
-.PHONY: clang-format-fix, clang-format-check, clang-tidy, clang-tidy-bugprone
+.PHONY: clang-all, clang-format-fix, clang-format, clang-tidy, clang-tidy-bugprone
 
 SOURCES := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX))
 
-print :
-	@echo $(INCFLAGS)
+clang-all : clang-tidy-naming clang-format clang-tidy
 
 clang-tidy-naming:
 	@for src in $(SOURCES) ; do \
@@ -211,7 +211,7 @@ clang-format:
 			echo ; \
 		fi ; \
 	done
-	@echo "clang-format-check -- done"
+	@echo "clang-format -- done"
 
 clang-format-fix:
 	@for src in $(SOURCES) ; do \

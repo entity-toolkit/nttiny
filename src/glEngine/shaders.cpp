@@ -46,7 +46,8 @@ void Shader::loadFromFile() {
   }
   this->code = source_str;
   this->loaded = true;
-  PLOGV << fmt::format("path={} (type={})\n```\n{}\n```\n", this->fname, this->type, this->code);
+  PLOGV << fmt::format("path={} (type={})\n```\n{}\n```\n", this->fname,
+                       this->type, this->code);
   PLOGV << "shader loaded";
 }
 
