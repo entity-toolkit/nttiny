@@ -49,7 +49,7 @@ __SHADERS:= $(shell find ${__SHADER_DIR} -name *.vert -or -name *.frag)
 # # # # # Settings # # # # # # # # # # # # 
 # 
 _DEFAULT_VERBOSE := n
-_DEFAULT_DEBUG := y
+_DEFAULT_DEBUG := n
 _DEFAULT_COMPILER := gcc
 
 VERBOSE ?= ${_DEFAULT_VERBOSE}

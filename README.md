@@ -85,8 +85,7 @@ cp -r $NTTINY_PATH/extern/plog/include/plog $NTTINY_PATH/include
 unset NTTINY_PATH
 ```
 
-
-## Setup
+### `glad`
 
 1. Obtain `glad` headers and `glad.c` from [this online server](https://glad.dav1d.de/), for your specific version of OpenGL (use "Profile: Core" and mark the "Generate a loader" tick). 
 
