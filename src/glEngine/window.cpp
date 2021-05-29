@@ -3,6 +3,7 @@
 #include "program.h"
 #include "shaders.h"
 
+#include <fmt/core.h>
 #include <plog/Log.h>
 
 #include <glad/glad.h>
@@ -63,6 +64,6 @@ void Window::finalize() {
   }
   for (auto &p : (this->programs)) {
     glDeleteProgram(p);
-    PLOGV << "program " << p << "  deleted";
+    PLOGV << fmt::format("program {} deleted", p);
   }
 }

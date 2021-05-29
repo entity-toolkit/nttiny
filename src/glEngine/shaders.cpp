@@ -2,6 +2,7 @@
 #include "shaders.h"
 #include "aux.h"
 
+#include <fmt/core.h>
 #include <plog/Log.h>
 
 #include <glad/glad.h>
@@ -45,8 +46,7 @@ void Shader::loadFromFile() {
   }
   this->code = source_str;
   this->loaded = true;
-  PLOGD << "path=" << (this->fname) << " (type=" << (this->type) << ")\n'''\n"
-        << this->code << "'''";
+  PLOGV << fmt::format("path={} (type={})\n```\n{}\n```\n", this->fname, this->type, this->code);
   PLOGV << "shader loaded";
 }
 
@@ -74,7 +74,7 @@ void Shader::compile() {
   glGetShaderiv(this->id, GL_COMPILE_STATUS, &success);
   if (!success) {
     glGetShaderInfoLog(this->id, 512, nullptr, info_log);
-    PLOGE << "cannot compile shader\n" << info_log;
+    PLOGE << fmt::format("cannot compile shader\n{}", info_log);
     return;
   }
   this->compiled = true;

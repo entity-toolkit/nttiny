@@ -2,6 +2,7 @@
 #include "program.h"
 #include "shaders.h"
 
+#include <fmt/core.h>
 #include <plog/Log.h>
 
 #include <glad/glad.h>
@@ -16,7 +17,7 @@ void Program::create() {
   }
   this->id = glCreateProgram();
   this->created = true;
-  PLOGV << "program " << this->id << " created";
+  PLOGV << fmt::format("program {} created", this->id);
 }
 
 void Program::attachShader(const char *shader) {
@@ -57,5 +58,5 @@ void Program::link() {
     return;
   }
   this->linked = true;
-  PLOGV << "program " << this->id << " linked";
+  PLOGV << fmt::format("program {} linked", this->id);
 }

@@ -35,8 +35,6 @@ auto main() -> int {
   max_severity = plog::warning;
 #endif
   plog::init(max_severity, &console_appender);
-  //fmt::print("Hello, world!\n");
-  //return 0;
 
   if (!glfwInit()) {
     PLOGE << "unable to initialize `glfw`";
