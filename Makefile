@@ -1,3 +1,11 @@
+# Dependencies
+#
+# 1. glfw
+# 2. glad
+# 3. plog
+# 4. fmt
+# 5. imgui
+# 
 # # # # # Directories # # # # # # # # # # 
 #
 ROOT_DIR := $(realpath ${CURDIR})/
@@ -8,14 +16,14 @@ BIN_DIR := bin
 
 TARGET := main
 # static libraries 
-LIBRARIES := glfw3
+LIBRARIES := glfw3 fmt
 
 SRC_DIR := src
 
-# external header-only libraries
-INC_DIR := include 
 # for external libraries
 LIB_DIR := lib
+# external header-only libraries
+INC_DIR := include $(shell find ${LIB_DIR}/imgui/ -type d)
 
 SHADER_DIR := shaders
 
@@ -103,7 +111,7 @@ SLIBS_CXX := $(shell find ${__LIB_DIR} -name *.cpp)
 OLIBS_CXX := $(subst ${__LIB_DIR},${__BUILD_DIR},$(SLIBS_CXX:%=%.o))
 DLIBS_CXX := $(OLIBS_CXX:.o=.d)
 
-INC_DIRS := $(shell find ${__SRC_DIR} -type d) $(shell find ${__LIB_DIR} -type d) ${INC_DIR} ${LIB_DIR}
+INC_DIRS := $(shell find ${__SRC_DIR} -type d) ${INC_DIR} ${LIB_DIR}
 INCFLAGS := $(addprefix -I,${INC_DIRS})
 
 LDFLAGS := $(LDFALGS) $(addprefix -L, $(LIB_DIR)) $(addprefix -l, $(LIBRARIES)) $(addprefix -framework , $(FRAMEWORKS))

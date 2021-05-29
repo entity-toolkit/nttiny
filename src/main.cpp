@@ -3,6 +3,8 @@
 #include "shaders.h"
 #include "window.h"
 
+#include <fmt/core.h>
+
 #include <plog/Log.h>
 #include <plog/Init.h>
 #include <plog/Formatters/TxtFormatter.h>
@@ -15,6 +17,7 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
+#include <iostream>
 #include <vector>
 
 bool GLFW_INITIALIZED{false};
@@ -32,6 +35,8 @@ auto main() -> int {
   max_severity = plog::warning;
 #endif
   plog::init(max_severity, &console_appender);
+  //fmt::print("Hello, world!\n");
+  //return 0;
 
   if (!glfwInit()) {
     PLOGE << "unable to initialize `glfw`";
