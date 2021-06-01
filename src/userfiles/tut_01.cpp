@@ -24,7 +24,7 @@ static void processInput(GLFWwindow *window) {
 
 void Gradient::preloop() {
   this->screen.initialize();
-  this->screen.createProgram({"shader.vert", "shader.frag"});
+  this->screen.createProgram({"tut_01.vert", "tut_01.frag"});
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();

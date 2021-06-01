@@ -8,6 +8,7 @@
 class Texture : private Renderer {
 private:
   unsigned int vbo, vao, ebo;
+  unsigned int texture;
   ImVec4 clear_color;
 public:
   void preloop() override; 

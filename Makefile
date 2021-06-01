@@ -25,8 +25,6 @@ LIB_DIR := lib
 # external header-only libraries
 INC_DIR := include $(shell find ${LIB_DIR}/imgui/ -type d)
 
-SHADER_DIR := shaders
-
 OS := $(shell uname -s | tr A-Z a-z)
 ifeq (${OS}, darwin)
 	FRAMEWORKS := Cocoa OpenGL IOKit
@@ -46,7 +44,7 @@ __LIB_DIR := ${ROOT_DIR}${LIB_DIR}
 __LIBBUILD_DIR := ${ROOT_DIR}${LIB_DIR}/${BUILD_DIR}
 __SHADER_DIR := ${ROOT_DIR}${SHADER_DIR}
 __TARGET := ${__BIN_DIR}/${TARGET}
-__SHADERS:= $(shell find ${__SHADER_DIR} -name *.vert -or -name *.frag) 
+__SHADERS:= $(shell find ${__SRC_DIR} -name *.vert -or -name *.frag) 
 # # # # # Settings # # # # # # # # # # # # 
 # 
 _DEFAULT_VERBOSE := n
@@ -117,7 +115,7 @@ INCFLAGS := $(addprefix -I,${INC_DIRS})
 
 LDFLAGS := $(LDFALGS) $(addprefix -L, $(LIB_DIR)) $(addprefix -l, $(LIBRARIES)) $(addprefix -framework , $(FRAMEWORKS))
 
-SHADER_COPIES = $(subst ${__SHADER_DIR}, ${__BIN_DIR}, $(__SHADERS))
+SHADER_COPIES := $(addprefix ${__BIN_DIR}/, $(notdir $(__SHADERS)))
 # # # # # Targets # # # # # # # # # # # # # # 
 # 
 .PHONY: all help default clean 
@@ -149,13 +147,16 @@ help:
 # linking the main app
 all : ${__TARGET} $(SHADER_COPIES)
 
+print :
+	@echo $(SHADER_COPIES)
+	
 # copy all the shader files to bin dir
 define copyShaders
 $(1): $(2)
 	@echo [C]opying $(subst ${ROOT_DIR},,$(2))
 	$(HIDE)cp -f $(2) $(1)
 endef
-$(foreach sh, $(__SHADERS), $(eval $(call copyShaders, $(subst ${__SHADER_DIR}, ${__BIN_DIR}, ${sh}), ${sh})))
+$(foreach sh, $(__SHADERS), $(eval $(call copyShaders, ${__BIN_DIR}/$(notdir ${sh}), ${sh})))
 
 ALL_OBJECTS := $(OLIBS_CXX) $(OBJS_CXX) $(OBJS_CC)
 

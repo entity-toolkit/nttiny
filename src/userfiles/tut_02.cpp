@@ -11,6 +11,7 @@
 #include <glad/glad.h>
 
 #include <vector>
+#include <cmath>
 
 static void processInput(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -20,12 +21,39 @@ static void processInput(GLFWwindow *window) {
 
 void Texture::preloop() {
   this->screen.initialize();
-  this->screen.createProgram({"shader.vert", "shader.frag"});
+  this->screen.createProgram({"tut_02.vert", "tut_02.frag"});
 
+  glGenTextures(1, &(this->texture));
+  glBindTexture(GL_TEXTURE_2D, this->texture);
+  // set the texture wrapping/filtering options (on the currently bound texture object)
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  int width = 100, height = 100;
+  float nx, ny;
+  auto data = new unsigned char[width * height];
+  int cnt = 0;
+  for (int j {0}; j < height; ++j) {
+    ny = static_cast<float>(j) / height;
+    for (int i {0}; i < width; ++i) {
+      nx = static_cast<float>(i) / width;
+      data[cnt] = 255 * (std::sin(3.0 * M_PI * nx + 14.0 * M_PI * ny) + 1.0) * 0.5;
+      ++cnt;
+    }
+  }
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  // square screen
   float vertices[] = {
-      -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0,
+     1.0,  1.0, 1.0, 1.0,
+     1.0, -1.0, 1.0, 0.0,
+    -1.0, -1.0, 0.0, 0.0,
+    -1.0,  1.0, 0.0, 1.0
   };
-  unsigned int indices[] = {0, 1, 2, 2, 3, 0};
+  unsigned int indices[] = {0, 1, 3, 1, 2, 3};
 
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vbo);
@@ -39,12 +67,17 @@ void Texture::preloop() {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
                GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float),
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
                         (void *)nullptr);
   glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
+                        (void *)(2 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
 }
+
 void Texture::loop() {
   glUseProgram(this->screen.programs[0]);
   PLOGV << "render loop started";
@@ -67,8 +100,11 @@ void Texture::loop() {
                 static_cast<float>(2.0 * xpos / width),
                 static_cast<float>(1.0 - 2.0 * ypos / height));
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+    
+    glBindTexture(GL_TEXTURE_2D, this->texture);
+
     glBindVertexArray(this->vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
@@ -79,6 +115,7 @@ void Texture::loop() {
     glfwPollEvents();
   }
 }
+
 void Texture::postloop() {
   glDeleteVertexArrays(1, &(this->vao));
   glDeleteBuffers(1, &(this->vbo));

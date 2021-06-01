@@ -1,1 +1,1 @@
-make all DEBUG=n; cd bin; ./main
+make all DEBUG=y VERBOSE=y; cd bin; ./main
