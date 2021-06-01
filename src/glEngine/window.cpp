@@ -1,4 +1,5 @@
 #include "defs.h"
+#include "renderer.h"
 #include "window.h"
 #include "program.h"
 #include "shaders.h"
@@ -50,11 +51,6 @@ void Window::createProgram(const std::vector<const char *> &shaders) {
   }
   program.link();
   (this->programs).push_back(program.ind);
-}
-
-void Window::render(void (*lambda)(GLFWwindow *window,
-                                   std::vector<unsigned int> programs)) {
-  lambda(this->window, this->programs);
 }
 
 void Window::finalize() {

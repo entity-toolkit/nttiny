@@ -43,6 +43,7 @@ __BUILD_DIR := ${ROOT_DIR}${BUILD_DIR}
 __BIN_DIR := ${ROOT_DIR}${BIN_DIR}
 __SRC_DIR := ${ROOT_DIR}${SRC_DIR}
 __LIB_DIR := ${ROOT_DIR}${LIB_DIR}
+__LIBBUILD_DIR := ${ROOT_DIR}${LIB_DIR}/${BUILD_DIR}
 __SHADER_DIR := ${ROOT_DIR}${SHADER_DIR}
 __TARGET := ${__BIN_DIR}/${TARGET}
 __SHADERS:= $(shell find ${__SHADER_DIR} -name *.vert -or -name *.frag) 
@@ -108,7 +109,7 @@ OBJS_CC := $(subst ${__SRC_DIR},${__BUILD_DIR},$(SRCS_CC:%=%.o))
 DEPS_CC := $(OBJS_CC:.o=.d)
 
 SLIBS_CXX := $(shell find ${__LIB_DIR} -name *.cpp) 
-OLIBS_CXX := $(subst ${__LIB_DIR},${__BUILD_DIR},$(SLIBS_CXX:%=%.o))
+OLIBS_CXX := $(subst ${__LIB_DIR},${__LIBBUILD_DIR},$(SLIBS_CXX:%=%.o))
 DLIBS_CXX := $(OLIBS_CXX:.o=.d)
 
 INC_DIRS := $(shell find ${__SRC_DIR} -type d) ${INC_DIR} ${LIB_DIR}
@@ -133,7 +134,7 @@ help:
 	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation/run mode [default: ${_DEFAULT_VERBOSE}]"
 	@echo "   COMPILER={gcc|clang}    : choose the compiler [default: ${_DEFAULT_COMPILER}]"
 	@echo
-	@echo "cleanup: \`make clean\`"
+	@echo "cleanup: \`make clean\` or \`make cleanlib\`"
 	@echo
 	@echo "use \`make [CLANG_COMMAND]\` to check the code matches with best practices & consistent stylistics"
 	@echo 
@@ -173,10 +174,13 @@ $(1): $(2)
 endef
 $(foreach obj, $(OBJS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${SRC_DIR},$(subst .o,,$(obj))), ${CXX})))
 $(foreach obj, $(OBJS_CC), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${SRC_DIR},$(subst .o,,$(obj))), ${CC})))
-$(foreach obj, $(OLIBS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${LIB_DIR},$(subst .o,,$(obj))), ${CXX})))
+$(foreach obj, $(OLIBS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${__LIBBUILD_DIR},${__LIB_DIR},$(subst .o,,$(obj))), ${CXX})))
 
 clean:
 	rm -rf ${BUILD_DIR} ${BIN_DIR}
+
+cleanlib:
+	rm -rf ${LIB_DIR}/${BUILD_DIR}
 
 -include $(DEPS_CXX) $(DEPS_CC) $(DLIBS_CXX)
 
