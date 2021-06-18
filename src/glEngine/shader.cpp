@@ -30,7 +30,7 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath,
     vertex_code = vsh_stream.str();
     fragment_code = fsh_stream.str();
   } catch (std::ifstream::failure e) {
-    PLOGE << "Couldn't read shader file.";
+    PLOGE << fmt::format("Cannot read shader: {}, {}.", vertexPath, fragmentPath);
   }
   const char *vsh_code = vertex_code.c_str();
   const char *fsh_code = fragment_code.c_str();
@@ -67,7 +67,7 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath,
       gsh_file.close();
       geometry_code = gsh_stream.str();
     } catch (std::ifstream::failure e) {
-      PLOGE << "Couldn't read geometry shader file.";
+      PLOGE << "Cannot read geometry shader.";
     }
     const char *gsh_code = geometry_code.c_str();
 
@@ -123,13 +123,14 @@ void Shader::checkCompileErrors(GLuint shader, const std::string &type) {
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
       glGetShaderInfoLog(shader, 1024, nullptr, info_log);
-      PLOGE << "Couldn't compile " << type << " shader:\n" << info_log;
+      PLOGE << fmt::format("Cannot compile {} shader.\nError log:\n{}", type, info_log);
     }
   } else {
     glGetProgramiv(shader, GL_LINK_STATUS, &success);
     if (!success) {
       glGetProgramInfoLog(shader, 1024, nullptr, info_log);
       PLOGE << "Program linking error: \n" << info_log;
+      PLOGE << fmt::format("Program linking error.\nError log:\n{}", info_log);
     }
   }
 }

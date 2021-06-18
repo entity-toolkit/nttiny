@@ -31,7 +31,6 @@ auto main() -> int {
   Shader m_shader = Shader("shader.vert", "shader.frag");
 
   m_shader.setBg();
-
   m_shader.use();
 
   while (!m_window.windowShouldClose()) {
