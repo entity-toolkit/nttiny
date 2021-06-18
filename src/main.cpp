@@ -26,9 +26,9 @@ auto main() -> int {
 #endif
   plog::init(max_severity, &console_appender);
 
-  Window m_window = Window(400, 400, "Simulation", 0, false);
-  Shader m_shader = Shader("shader.vert", "shader.frag");
-  Sprite m_sprite = Sprite(0);
+  Window m_window{Window(400, 400, "Simulation", 0, false)};
+  Shader m_shader{Shader("shader.vert", "shader.frag")};
+  Sprite m_sprite{Sprite(0)};
 
   while (!m_window.windowShouldClose()) {
     m_window.use();

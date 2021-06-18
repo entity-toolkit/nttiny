@@ -33,8 +33,8 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath,
     PLOGE << fmt::format("Cannot read shader: {}, {}.", vertexPath,
                          fragmentPath);
   }
-  const char *vsh_code = vertex_code.c_str();
-  const char *fsh_code = fragment_code.c_str();
+  const char *vsh_code{vertex_code.c_str()};
+  const char *fsh_code{fragment_code.c_str()};
 
   // Compile shaders
   unsigned int vertex, fragment;
@@ -70,7 +70,7 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath,
     } catch (std::ifstream::failure e) {
       PLOGE << "Cannot read geometry shader.";
     }
-    const char *gsh_code = geometry_code.c_str();
+    const char *gsh_code{geometry_code.c_str()};
 
     unsigned int geometry = glCreateShader(GL_GEOMETRY_SHADER);
     glShaderSource(geometry, 1, &gsh_code, nullptr);

@@ -15,11 +15,6 @@ public:
 	void use();
 	void unuse();
 	auto windowShouldClose() const -> int { return glfwWindowShouldClose(m_win); }
-	auto getWidth() const -> int { return m_winWidth; }
-	auto getHeight() const -> int { return m_winHeight; }
-	auto getCursorX() const -> float { return m_xPos; }
-	auto getCursorY() const -> float { return m_yPos; }
-	auto getDeltaTime() const -> float { return m_deltaTime; }
   void setStandardUniforms(const Shader &shader);
 private:
 	void processInput();
