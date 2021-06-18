@@ -1,6 +1,8 @@
 #include "defs.h"
+
 #include "window.h"
 #include "shader.h"
+#include "sprite.h"
 
 #include <fmt/core.h>
 
@@ -11,9 +13,6 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
-#include <iostream>
-#include <vector>
 
 auto main() -> int {
   static plog::ColorConsoleAppender<plog::TxtFormatter> console_appender;
@@ -29,14 +28,18 @@ auto main() -> int {
 
   Window m_window = Window(400, 400, "Simulation", 0, false);
   Shader m_shader = Shader("shader.vert", "shader.frag");
-
-  m_shader.setBg();
-  m_shader.use();
+  Sprite m_sprite = Sprite(0);
 
   while (!m_window.windowShouldClose()) {
     m_window.use();
+
     m_window.setStandardUniforms(m_shader);
-    m_shader.useBg();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    m_shader.use();
+    m_sprite.draw();
     m_window.unuse();
   }
   return 0;

@@ -18,6 +18,6 @@ void main(){
   vec3 color;
   st -= 0.5;
   st *= 2.0;
-  color = yuv2rgb * vec3(0.5 + sin(u_time), st.x, st.y);
+  color = yuv2rgb * vec3(0.5 + sin(u_time), st.x - u_mouse.x / 10.0, st.y + u_mouse.y / 10.0);
   FragColor = vec4(color,1.0);
 }

@@ -18,8 +18,6 @@ public:
 	Shader(GLuint id = 0) : id(id) {}
 	Shader(const GLchar* vertexPath, const GLchar* fragmentPath, const GLchar* geometryPath = nullptr);
 	void use();
-  void setBg();
-  void useBg();
 
 	void setBool(const std::string& name, bool value) const {
 		glUniform1i(glGetUniformLocation(id, name.c_str()), (int)value);
@@ -75,9 +73,6 @@ public:
 
 protected:
 	void checkCompileErrors(GLuint shader, const std::string& type);
-
-private:
-	unsigned int m_vao, m_vbo, m_ebo;
 };
 
 #endif
