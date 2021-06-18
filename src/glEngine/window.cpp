@@ -1,8 +1,6 @@
 #include "defs.h"
-#include "renderer.h"
 #include "window.h"
-#include "program.h"
-#include "shaders.h"
+#include "shader.h"
 
 #include <fmt/core.h>
 #include <plog/Log.h>
@@ -10,56 +8,74 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <vector>
+Window::Window(int width, int height, const std::string &name, int swapInterval,
+               bool isFullscreen)
+    : m_winWidth(width), m_winHeight(height) {
+  glfwInit();
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-static void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
-  UNUSED(window); // to avoid the "unused variable" warning
-  glViewport(0, 0, width, height);
-}
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+#ifdef __APPLE__
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
-void Window::initialize() {
-  if (!GLFW_INITIALIZED) {
-    PLOGE << "`glfw` not initialized";
-    return;
+  m_win = glfwCreateWindow(width, height, name.c_str(),
+                           isFullscreen ? glfwGetPrimaryMonitor() : nullptr,
+                           nullptr);
+  if (m_win == nullptr) {
+    PLOGE << "Failed to open window.";
   }
-  // TODO: get variables for dimensions and window title
-  this->window = glfwCreateWindow(800, 600, "testogl", nullptr, nullptr);
-  if (this->window == nullptr) {
-    PLOGE << "unable to create a window";
-    this->finalize();
-    return;
-  }
-  glfwMakeContextCurrent(window);
-  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
+  glfwMakeContextCurrent(m_win);
+
+  glfwSwapInterval(swapInterval);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    PLOGE << "unable to load `glad`";
-    return;
+    PLOGE << "Failed to load GLAD.";
   }
-  PLOGV << "window initialized";
 }
 
-void Window::createProgram(const std::vector<const char *> &shaders) {
-  if (!GLFW_INITIALIZED) {
-    PLOGE << "`glfw` not initialized";
-    return;
-  }
-  Program program;
-  program.create();
-  for (auto &shader : shaders) {
-    program.attachShader(shader);
-  }
-  program.link();
-  (this->programs).push_back(program.ind);
+Window::~Window() { glfwTerminate(); }
+
+void Window::use() {
+  processInput();
 }
 
-void Window::finalize() {
-  if (!GLFW_INITIALIZED) {
-    PLOGE << "`glfw` not initialized";
-    return;
-  }
-  for (auto &p : (this->programs)) {
-    glDeleteProgram(p);
-    PLOGV << fmt::format("program {} deleted", p);
-  }
+void Window::unuse() {
+  glfwSwapBuffers(m_win);
+  glfwPollEvents();
+}
+
+void Window::processInput() {
+  if (glfwGetKey(m_win, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    glfwSetWindowShouldClose(m_win, true);
+  if (glfwGetKey(m_win, GLFW_KEY_F1) == GLFW_PRESS)
+    glfwSetInputMode(m_win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  if (glfwGetKey(m_win, GLFW_KEY_F2) == GLFW_PRESS)
+    glfwSetInputMode(m_win, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+  if (glfwGetKey(m_win, GLFW_KEY_F3) == GLFW_PRESS)
+    glfwSetInputMode(m_win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void Window::setStandardUniforms(const Shader &shader) {
+  auto curr_frame = (float)glfwGetTime();
+  m_deltaTime = curr_frame - m_prevFrame;
+  m_prevFrame = curr_frame;
+  glfwGetFramebufferSize(m_win, &m_winWidth, &m_winHeight);
+
+  double cur_x, cur_y;
+  glfwGetCursorPos(m_win, &cur_x, &cur_y);
+  m_xPos = static_cast<float>(2.0 * cur_x / m_winWidth);
+  m_yPos = static_cast<float>(1.0 - 2.0 * cur_y / m_winHeight);
+
+  shader.setFloat("u_dtime", m_deltaTime);
+  auto u_time = static_cast<float>(glfwGetTime());
+  shader.setFloat("u_time", u_time);
+  shader.setVec2("u_resolution", static_cast<float>(m_winWidth),
+                 static_cast<float>(m_winHeight));
+  auto u_curx = m_xPos;
+  auto u_cury = m_yPos;
+  shader.setVec2("u_mouse", u_curx, u_cury);
 }

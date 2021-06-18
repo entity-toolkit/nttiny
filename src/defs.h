@@ -3,6 +3,4 @@
 
 #define UNUSED(x) (void)(x)
 
-extern bool GLFW_INITIALIZED;
-
 #endif

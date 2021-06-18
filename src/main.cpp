@@ -1,5 +1,6 @@
 #include "defs.h"
-#include "tut_02.h"
+#include "window.h"
+#include "shader.h"
 
 #include <fmt/core.h>
 
@@ -8,13 +9,11 @@
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 
-#include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include <iostream>
 #include <vector>
-
-bool GLFW_INITIALIZED{false};
 
 auto main() -> int {
   static plog::ColorConsoleAppender<plog::TxtFormatter> console_appender;
@@ -28,30 +27,18 @@ auto main() -> int {
 #endif
   plog::init(max_severity, &console_appender);
 
-  if (!glfwInit()) {
-    PLOGE << "unable to initialize `glfw`";
-    return -1;
-  } else {
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-    GLFW_INITIALIZED = true;
-  }
+  Window m_window = Window(400, 400, "Simulation", 0, false);
+  Shader m_shader = Shader("shader.vert", "shader.frag");
 
-  {
-    Texture myprogram;
-    myprogram.preloop();
-    myprogram.loop();
-    myprogram.postloop();
-  }
+  m_shader.setBg();
 
-  if (!GLFW_INITIALIZED) {
-    PLOGE << "`glfw` not initialized or terminated prematurely";
+  m_shader.use();
+
+  while (!m_window.windowShouldClose()) {
+    m_window.use();
+    m_window.setStandardUniforms(m_shader);
+    m_shader.useBg();
+    m_window.unuse();
   }
-  glfwTerminate();
-  GLFW_INITIALIZED = false;
   return 0;
 }

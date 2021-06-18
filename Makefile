@@ -42,7 +42,6 @@ __BIN_DIR := ${ROOT_DIR}${BIN_DIR}
 __SRC_DIR := ${ROOT_DIR}${SRC_DIR}
 __LIB_DIR := ${ROOT_DIR}${LIB_DIR}
 __LIBBUILD_DIR := ${ROOT_DIR}${LIB_DIR}/${BUILD_DIR}
-__SHADER_DIR := ${ROOT_DIR}${SHADER_DIR}
 __TARGET := ${__BIN_DIR}/${TARGET}
 __SHADERS:= $(shell find ${__SRC_DIR} -name *.vert -or -name *.frag) 
 # # # # # Settings # # # # # # # # # # # # 
