@@ -30,7 +30,8 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath,
     vertex_code = vsh_stream.str();
     fragment_code = fsh_stream.str();
   } catch (std::ifstream::failure e) {
-    PLOGE << fmt::format("Cannot read shader: {}, {}.", vertexPath, fragmentPath);
+    PLOGE << fmt::format("Cannot read shader: {}, {}.", vertexPath,
+                         fragmentPath);
   }
   const char *vsh_code = vertex_code.c_str();
   const char *fsh_code = fragment_code.c_str();
@@ -123,7 +124,8 @@ void Shader::checkCompileErrors(GLuint shader, const std::string &type) {
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
       glGetShaderInfoLog(shader, 1024, nullptr, info_log);
-      PLOGE << fmt::format("Cannot compile {} shader.\nError log:\n{}", type, info_log);
+      PLOGE << fmt::format("Cannot compile {} shader.\nError log:\n{}", type,
+                           info_log);
     }
   } else {
     glGetProgramiv(shader, GL_LINK_STATUS, &success);

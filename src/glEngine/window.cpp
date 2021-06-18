@@ -39,9 +39,7 @@ Window::Window(int width, int height, const std::string &name, int swapInterval,
 
 Window::~Window() { glfwTerminate(); }
 
-void Window::use() {
-  processInput();
-}
+void Window::use() { processInput(); }
 
 void Window::unuse() {
   glfwSwapBuffers(m_win);
