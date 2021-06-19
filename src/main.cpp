@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "sprite.h"
 #include "texture.h"
+#include "menu.h"
 
 #include <fmt/core.h>
 
@@ -40,8 +41,12 @@ auto main() -> int {
       Texture(m_fakesim.get_sx(), m_fakesim.get_sy(), m_fakesim.get_data1())};
   Sprite m_sprite{Sprite(m_texture.id)};
 
+  Menu m_menu{Menu(m_window.get_window())};
+
   while (!m_window.windowShouldClose()) {
     m_window.use();
+
+    m_menu.use();
 
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_fakesim.get_sx(),
                     m_fakesim.get_sy(), GL_RED, GL_FLOAT,
@@ -54,6 +59,8 @@ auto main() -> int {
 
     m_shader.use();
     m_sprite.draw();
+    m_menu.draw();
+
     m_window.unuse();
 
     m_fakesim.updateData();
