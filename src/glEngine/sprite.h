@@ -14,7 +14,7 @@ public:
   ~Sprite();
   void draw();
 private:
-	GLuint m_vao, m_vbo, m_ebo;
+	GLuint m_vao, m_vbo;
   GLuint m_texture_id;
 };
 

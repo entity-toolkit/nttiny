@@ -236,7 +236,7 @@ clang-tidy:
 		echo "tidying $$src:" ; \
 		clang-tidy -quiet -checks="-*,\
 			clang-diagnostic-*,clang-analyzer-*,modernize-*,-modernize-avoid-c-arrays*,\
-			readability-*,performance-*,openmp-*,mpi-*" \
+			readability-*,performance-*,openmp-*,mpi-*,-performance-no-int-to-ptr" \
 			-header-filter="${SRC_DIR}/.*" \
 			"$$src" -- $(INCFLAGS); \
 	done
