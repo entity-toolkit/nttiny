@@ -41,7 +41,7 @@ void Menu::use(void (*setup)(Menu *self)) {
 void Menu::use() {
   auto default_setup = [](Menu *self) {
     ImGui::Begin("Nttiny");
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
     ImGui::Text("Timestep: %d", self->m_sim->get_timestep());
     // Choose field component to display
     ImGui::Combo("Field", &(self->m_field_selected), self->m_fields,

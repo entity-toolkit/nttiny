@@ -1,6 +1,7 @@
 #include "defs.h"
 #include "window.h"
 #include "shader.h"
+#include "sim.h"
 
 #include <fmt/core.h>
 #include <plog/Log.h>
@@ -39,22 +40,60 @@ Window::Window(int width, int height, const std::string &name, int swapInterval,
 
 Window::~Window() { glfwTerminate(); }
 
-void Window::use() { processInput(); }
+void Window::use(Simulation *sim) { processInput(sim); }
 
 void Window::unuse() {
   glfwSwapBuffers(m_win);
   glfwPollEvents();
 }
 
-void Window::processInput() {
-  if (glfwGetKey(m_win, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+void Window::processInput(Simulation *sim) {
+  if (glfwGetKey(m_win, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(m_win, true);
-  if (glfwGetKey(m_win, GLFW_KEY_F1) == GLFW_PRESS)
+  }
+  if (glfwGetKey(m_win, GLFW_KEY_F1) == GLFW_PRESS) {
     glfwSetInputMode(m_win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  if (glfwGetKey(m_win, GLFW_KEY_F2) == GLFW_PRESS)
+  }
+  if (glfwGetKey(m_win, GLFW_KEY_F2) == GLFW_PRESS) {
     glfwSetInputMode(m_win, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-  if (glfwGetKey(m_win, GLFW_KEY_F3) == GLFW_PRESS)
+  }
+  if (glfwGetKey(m_win, GLFW_KEY_F3) == GLFW_PRESS) {
     glfwSetInputMode(m_win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  }
+
+  static bool pressing_spacebar = false;
+  if (glfwGetKey(m_win, GLFW_KEY_SPACE) == GLFW_PRESS) {
+    pressing_spacebar = true;
+  }
+  if (glfwGetKey(m_win, GLFW_KEY_SPACE) == GLFW_RELEASE &&
+      (pressing_spacebar)) {
+    pressing_spacebar = false;
+    sim->playToggle();
+  }
+
+  if (glfwGetKey(m_win, GLFW_KEY_LEFT) == GLFW_PRESS) {
+    sim->stepFwd();
+  }
+  if (glfwGetKey(m_win, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+    sim->stepBwd();
+  }
+
+  static bool pressing_left = false;
+  if (glfwGetKey(m_win, GLFW_KEY_COMMA) == GLFW_PRESS) {
+    pressing_left = true;
+  }
+  if (glfwGetKey(m_win, GLFW_KEY_COMMA) == GLFW_RELEASE && (pressing_left)) {
+    pressing_left = false;
+    sim->stepBwd();
+  }
+  static bool pressing_right = false;
+  if (glfwGetKey(m_win, GLFW_KEY_PERIOD) == GLFW_PRESS) {
+    pressing_right = true;
+  }
+  if (glfwGetKey(m_win, GLFW_KEY_PERIOD) == GLFW_RELEASE && (pressing_right)) {
+    pressing_right = false;
+    sim->stepFwd();
+  }
 }
 
 void Window::setStandardUniforms(const Shader &shader) {

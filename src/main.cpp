@@ -70,7 +70,7 @@ auto main() -> int {
 
   double timer = glfwGetTime();
   while (!m_window.windowShouldClose()) {
-    m_window.use();
+    m_window.use(&m_fakesim);
 
     m_menu.use();
     m_window.setStandardUniforms(m_shader);
