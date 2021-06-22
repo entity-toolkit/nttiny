@@ -25,6 +25,7 @@ Window::Window(int width, int height, const std::string &name, int swapInterval,
   m_win = glfwCreateWindow(width, height, name.c_str(),
                            isFullscreen ? glfwGetPrimaryMonitor() : nullptr,
                            nullptr);
+  glfwSetWindowAspectRatio(m_win, width, height);
   if (m_win == nullptr) {
     PLOGE << "Failed to open window.";
   }
@@ -72,10 +73,10 @@ void Window::processInput(Simulation *sim) {
   }
 
   if (glfwGetKey(m_win, GLFW_KEY_LEFT) == GLFW_PRESS) {
-    sim->stepFwd();
+    sim->stepBwd();
   }
   if (glfwGetKey(m_win, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-    sim->stepBwd();
+    sim->stepFwd();
   }
 
   static bool pressing_left = false;

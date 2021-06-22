@@ -15,8 +15,8 @@ public:
 	~Window();
 	void use(Simulation *sim);
 	void unuse();
-	auto windowShouldClose() const -> int { return glfwWindowShouldClose(m_win); }
-	auto get_window() const -> GLFWwindow* { return m_win; }
+	[[nodiscard]] auto windowShouldClose() const -> int { return glfwWindowShouldClose(m_win); }
+	[[nodiscard]] auto get_window() const -> GLFWwindow* { return m_win; }
   void setStandardUniforms(const Shader &shader);
 private:
 	void processInput(Simulation *sim);

@@ -1,15 +1,14 @@
 #include "defs.h"
 #include "sprite.h"
+#include "texture.h"
 #include "sim.h"
-#include "menu.h"
 
 #include <glm/glm.hpp>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-Sprite::Sprite(GLuint texture_id, GLuint colormap_id)
-    : m_texture_id(texture_id), m_colormap_id(colormap_id) {
+Sprite::Sprite() {
   glGenBuffers(1, &m_vbo);
   glGenVertexArrays(1, &m_vao);
 
@@ -43,24 +42,26 @@ Sprite::~Sprite() {
   glDeleteBuffers(1, &m_vbo);
 }
 
-void Sprite::draw(Simulation *sim, Menu *menu) {
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, m_texture_id);
-  switch (menu->field_selected()) {
-  case 0:
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, sim->get_sx(), sim->get_sy(),
-                    GL_RED, GL_FLOAT, sim->get_data1());
-    break;
-  case 1:
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, sim->get_sx(), sim->get_sy(),
-                    GL_RED, GL_FLOAT, sim->get_data2());
-    break;
-  default:
-    break;
+void Sprite::draw(Simulation *sim, Texture *texture, Colormap *colormap) {
+  if (sim->updated) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture->id);
+    switch (sim->field_selected) {
+    case 0:
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, sim->get_sx(), sim->get_sy(),
+                      GL_RED, GL_FLOAT, sim->get_data1());
+      break;
+    case 1:
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, sim->get_sx(), sim->get_sy(),
+                      GL_RED, GL_FLOAT, sim->get_data2());
+      break;
+    default:
+      break;
+    }
+    sim->updated = false;
   }
-
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_1D, m_colormap_id);
+  glBindTexture(GL_TEXTURE_1D, colormap->id);
 
   glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
   glDrawArrays(GL_TRIANGLES, 0, 6);

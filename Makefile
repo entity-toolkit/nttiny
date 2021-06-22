@@ -5,8 +5,8 @@
 # 3. plog
 # 4. fmt
 # 5. imgui
-# 
-# # # # # Directories # # # # # # # # # # 
+#
+# # # # # Directories # # # # # # # # # #
 #
 ROOT_DIR := $(realpath ${CURDIR})/
 # directory for the building
@@ -15,7 +15,7 @@ BUILD_DIR := build
 BIN_DIR := bin
 
 TARGET := main
-# static libraries 
+# static libraries
 LIBRARIES := glfw3 fmt
 
 SRC_DIR := src
@@ -29,7 +29,7 @@ OS := $(shell uname -s | tr A-Z a-z)
 ifeq (${OS}, darwin)
 	FRAMEWORKS := Cocoa OpenGL IOKit
 else ifeq (${OS}, linux)
-	LIBRARIES := $(LIBRARIES) GL X11 pthread Xrandr Xi dl 
+	LIBRARIES := $(LIBRARIES) GL X11 pthread Xrandr Xi dl
 else
 	$(error Unrecognized operating system. Unable to set frameworks.)
 endif
@@ -43,9 +43,10 @@ __SRC_DIR := ${ROOT_DIR}${SRC_DIR}
 __LIB_DIR := ${ROOT_DIR}${LIB_DIR}
 __LIBBUILD_DIR := ${ROOT_DIR}${LIB_DIR}/${BUILD_DIR}
 __TARGET := ${__BIN_DIR}/${TARGET}
-__SHADERS:= $(shell find ${__SRC_DIR} -name *.vert -or -name *.frag) 
-# # # # # Settings # # # # # # # # # # # # 
-# 
+__SHADERS:= $(shell find ${__SRC_DIR} -name *.vert -or -name *.frag)
+__COLORMAPS:= $(shell find ${__SRC_DIR} -name *.cmap.csv)
+# # # # # Settings # # # # # # # # # # # #
+#
 _DEFAULT_VERBOSE := n
 _DEFAULT_DEBUG := n
 _DEFAULT_COMPILER := gcc
@@ -54,10 +55,10 @@ VERBOSE ?= ${_DEFAULT_VERBOSE}
 DEBUG ?= ${_DEFAULT_DEBUG}
 COMPILER ?= ${_DEFAULT_COMPILER}
 
-DEFINITIONS := 
+DEFINITIONS :=
 
 ifeq ($(strip ${VERBOSE}), y)
-	HIDE = 
+	HIDE =
 	PREPFLAGS = -DVERBOSE
 else
 	HIDE = @
@@ -66,8 +67,8 @@ endif
 # 3-rd party library configurations
 # ...
 
-# # # # # Compiler and flags # # # # # # #  
-# 
+# # # # # Compiler and flags # # # # # # #
+#
 ifeq ($(strip ${COMPILER}), gcc)
 	CC := gcc
 	CXX := g++
@@ -90,14 +91,14 @@ endif
 WARNFLAGS := -Wall -Wextra -pedantic
 
 # custom preprocessor flags
-# ... 
+# ...
 
-CPPFLAGS := $(WARNFLAGS) $(PREPFLAGS) 
+CPPFLAGS := $(WARNFLAGS) $(PREPFLAGS)
 CXXFLAGS := $(CXXFLAGS) $(CONFFLAGS)
 
-# # # # # File collection # # # # # # # # # # # 
-# 
-SRCS_CXX := $(shell find ${__SRC_DIR} -name *.cpp) 
+# # # # # File collection # # # # # # # # # # #
+#
+SRCS_CXX := $(shell find ${__SRC_DIR} -name *.cpp)
 OBJS_CXX := $(subst ${__SRC_DIR},${__BUILD_DIR},$(SRCS_CXX:%=%.o))
 DEPS_CXX := $(OBJS_CXX:.o=.d)
 
@@ -105,7 +106,7 @@ SRCS_CC := $(shell find ${__SRC_DIR} -name *.c)
 OBJS_CC := $(subst ${__SRC_DIR},${__BUILD_DIR},$(SRCS_CC:%=%.o))
 DEPS_CC := $(OBJS_CC:.o=.d)
 
-SLIBS_CXX := $(shell find ${__LIB_DIR} -name *.cpp) 
+SLIBS_CXX := $(shell find ${__LIB_DIR} -name *.cpp)
 OLIBS_CXX := $(subst ${__LIB_DIR},${__LIBBUILD_DIR},$(SLIBS_CXX:%=%.o))
 DLIBS_CXX := $(OLIBS_CXX:.o=.d)
 
@@ -114,18 +115,19 @@ INCFLAGS := $(addprefix -I,${INC_DIRS})
 
 LDFLAGS := $(LDFALGS) $(addprefix -L, $(LIB_DIR)) $(addprefix -l, $(LIBRARIES)) $(addprefix -framework , $(FRAMEWORKS))
 
-SHADER_COPIES := $(addprefix ${__BIN_DIR}/, $(notdir $(__SHADERS)))
-# # # # # Targets # # # # # # # # # # # # # # 
-# 
-.PHONY: all help default clean 
+ASSETS := $(__SHADERS) $(__COLORMAPS)
+ASSET_COPIES := $(addprefix ${__BIN_DIR}/, $(notdir $(ASSETS)))
+# # # # # Targets # # # # # # # # # # # # # #
+#
+.PHONY: all help default clean
 
 default : help
 
 help:
 	@echo "OS identified as \`${OS}\`"
-	@echo 
+	@echo
 	@echo "usage: \`make all [OPTIONS]\`"
-	@echo 
+	@echo
 	@echo "options:"
 	@echo "   DEBUG={y|n}             : enable/disable debug mode [default: ${_DEFAULT_DEBUG}]"
 	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation/run mode [default: ${_DEFAULT_VERBOSE}]"
@@ -134,35 +136,32 @@ help:
 	@echo "cleanup: \`make clean\` or \`make cleanlib\`"
 	@echo
 	@echo "use \`make [CLANG_COMMAND]\` to check the code matches with best practices & consistent stylistics"
-	@echo 
+	@echo
 	@echo "   make clang-tidy-naming  : test if the naming of variables/functionts/etc is consistent"
 	@echo "   make clang-format       : test if the code formatting is consistent"
 	@echo "   make clang-format-fix   : same as \`clang-format\` except now fix the issues"
 	@echo "   make clang-tidy         : check if the code contains any bad practices or other deprecated features"
 	@echo "   make clang-tidy-bugprone: check if the code contains any bug-prone features"
 	@echo "   make clang-all          : run \`clang-tidy-naming\`, \`clang-format\` and \`clang-tidy\`"
-	@echo 
+	@echo
 
 # linking the main app
-all : ${__TARGET} $(SHADER_COPIES)
+all : ${__TARGET} $(ASSET_COPIES)
 
-print :
-	@echo $(SHADER_COPIES)
-	
-# copy all the shader files to bin dir
-define copyShaders
+# copy all the asset files to bin dir
+define copyAssets
 $(1): $(2)
 	@echo [C]opying $(subst ${ROOT_DIR},,$(2))
 	$(HIDE)cp -f $(2) $(1)
 endef
-$(foreach sh, $(__SHADERS), $(eval $(call copyShaders, ${__BIN_DIR}/$(notdir ${sh}), ${sh})))
+$(foreach ast, $(ASSETS), $(eval $(call copyAssets, ${__BIN_DIR}/$(notdir ${ast}), ${ast})))
 
 ALL_OBJECTS := $(OLIBS_CXX) $(OBJS_CXX) $(OBJS_CC)
 
 # main executable
 ${__TARGET} : $(ALL_OBJECTS)
 	@echo [L]inking $(subst ${ROOT_DIR},,$@) \<: $(subst ${ROOT_DIR},,$^)
-	$(HIDE)${LINK} $(ALL_OBJECTS) -o $@ $(LDFLAGS) 
+	$(HIDE)${LINK} $(ALL_OBJECTS) -o $@ $(LDFLAGS)
 
 # generate compilation rules for all `.o` files
 define generateRules
@@ -201,7 +200,7 @@ clang-tidy-naming:
 		    { key: readability-identifier-naming.FunctionCase, value: camelBack },\
 		    { key: readability-identifier-naming.VariableCase, value: lower_case },\
 		    { key: readability-identifier-naming.GlobalConstantCase, value: UPPER_CASE }\
-		    ]}" "$$src" -- $(INCFLAGS);\
+		    ]}" "$$src" -extra-arg=${CXXSTANDARD} -- $(INCFLAGS);\
 	done
 	@echo "clang-tidy-naming -- done"
 
@@ -230,7 +229,6 @@ clang-format-fix:
 	done
 	@echo "clang-format-fix -- done"
 
-
 clang-tidy:
 	@for src in $(SOURCES) ; do \
 		echo "tidying $$src:" ; \
@@ -238,7 +236,7 @@ clang-tidy:
 			clang-diagnostic-*,clang-analyzer-*,modernize-*,-modernize-avoid-c-arrays*,\
 			readability-*,performance-*,openmp-*,mpi-*,-performance-no-int-to-ptr" \
 			-header-filter="${SRC_DIR}/.*" \
-			"$$src" -- $(INCFLAGS); \
+			"$$src" -extra-arg=${CXXSTANDARD} -- $(INCFLAGS); \
 	done
 	@echo "clang-tidy -- done"
 
@@ -247,6 +245,6 @@ clang-tidy-bugprone:
 		echo "tidying $$src:" ; \
 		clang-tidy -quiet -checks="-*,bugprone-*",\
 			-header-filter="src/.*" \
-			"$$src" -- $(INCFLAGS); \
+			"$$src" -extra-arg=${CXXSTANDARD} -- $(INCFLAGS); \
 	done
 	@echo "clang-tidy-bugprone -- done"

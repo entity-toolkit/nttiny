@@ -5,13 +5,8 @@
 
 Simulation::Simulation(int sx, int sy, int steps_per_second)
     : m_sx(sx), m_sy(sy), m_steps_per_second(steps_per_second) {
-  m_data1 = new float[sx * sy];
-  m_data2 = new float[sx * sy];
-}
-
-Simulation::~Simulation() {
-  delete[] m_data1;
-  delete[] m_data2;
+  field_selected = 0;
+  updated = false;
 }
 
 void Simulation::setData() {
@@ -26,9 +21,23 @@ void Simulation::setData() {
       m_data2[j * m_sx + i] = (f_i / f_sx) * (f_j / f_sy);
     }
   }
+  updated = true;
 }
 
-void Simulation::stepFwd() {
+FakeSimulation::FakeSimulation(int sx, int sy, int steps_per_second)
+    : Simulation{sx, sy, steps_per_second} {
+  m_data1 = new float[sx * sy];
+  m_data2 = new float[sx * sy];
+  fields[0] = "data1";
+  fields[1] = "data2";
+}
+
+FakeSimulation::~FakeSimulation() {
+  delete[] m_data1;
+  delete[] m_data2;
+}
+
+void FakeSimulation::stepFwd() {
   ++m_timestep;
   for (int j{0}; j < m_sy; ++j) {
     for (int i{0}; i < m_sx; ++i) {
@@ -36,8 +45,9 @@ void Simulation::stepFwd() {
       m_data2[j * m_sx + i] = m_data2[j * m_sx + i] + 0.001f;
     }
   }
+  updated = true;
 }
-void Simulation::stepBwd() {
+void FakeSimulation::stepBwd() {
   --m_timestep;
   for (int j{0}; j < m_sy; ++j) {
     for (int i{0}; i < m_sx; ++i) {
@@ -45,4 +55,5 @@ void Simulation::stepBwd() {
       m_data2[j * m_sx + i] = m_data2[j * m_sx + i] - 0.001f;
     }
   }
+  updated = true;
 }

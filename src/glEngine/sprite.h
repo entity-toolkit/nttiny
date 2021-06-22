@@ -2,7 +2,7 @@
 #define GLENGINE_SPRITE_H
 
 #include "defs.h"
-#include "menu.h"
+#include "texture.h"
 #include "sim.h"
 
 #include <glm/glm.hpp>
@@ -12,13 +12,11 @@
 
 class Sprite {
 public:
-  Sprite(GLuint texture_id, GLuint colormap_id);
+  Sprite();
   ~Sprite();
-  void draw(Simulation *sim, Menu *menu);
+  void draw(Simulation *sim, Texture *texture, Colormap *colormap);
 private:
 	GLuint m_vao, m_vbo;
-  GLuint m_texture_id;
-  GLuint m_colormap_id;
 };
 
 #endif
