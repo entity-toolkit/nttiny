@@ -3,7 +3,8 @@
 
 #include <plog/Log.h>
 
-Simulation::Simulation(int sx, int sy) : m_sx(sx), m_sy(sy) {
+Simulation::Simulation(int sx, int sy, int steps_per_second)
+    : m_sx(sx), m_sy(sy), m_steps_per_second(steps_per_second) {
   m_data1 = new float[sx * sy];
   m_data2 = new float[sx * sy];
 }
@@ -14,6 +15,7 @@ Simulation::~Simulation() {
 }
 
 void Simulation::setData() {
+  m_timestep = 0;
   float f_sx{static_cast<float>(m_sx)};
   float f_sy{static_cast<float>(m_sy)};
   for (int j{0}; j < m_sy; ++j) {
@@ -26,11 +28,21 @@ void Simulation::setData() {
   }
 }
 
-void Simulation::updateData() {
+void Simulation::stepFwd() {
+  ++m_timestep;
   for (int j{0}; j < m_sy; ++j) {
     for (int i{0}; i < m_sx; ++i) {
-      m_data1[j * m_sx + i] = m_data1[j * m_sx + i] + 0.00001f;
-      m_data2[j * m_sx + i] = m_data2[j * m_sx + i] + 0.00001f;
+      m_data1[j * m_sx + i] = m_data1[j * m_sx + i] + 0.001f;
+      m_data2[j * m_sx + i] = m_data2[j * m_sx + i] + 0.001f;
+    }
+  }
+}
+void Simulation::stepBwd() {
+  --m_timestep;
+  for (int j{0}; j < m_sy; ++j) {
+    for (int i{0}; i < m_sx; ++i) {
+      m_data1[j * m_sx + i] = m_data1[j * m_sx + i] - 0.001f;
+      m_data2[j * m_sx + i] = m_data2[j * m_sx + i] - 0.001f;
     }
   }
 }

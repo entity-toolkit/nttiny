@@ -11,4 +11,11 @@ public:
 	~Texture() = default;
 };
 
+class Colormap {
+public:
+  GLuint id = 0;
+	Colormap(int n, float* data);
+	~Colormap() = default;
+};
+
 #endif

@@ -1,5 +1,5 @@
 #include "defs.h"
-
+#include "sim.h"
 #include "menu.h"
 
 #include <imgui.h>
@@ -9,7 +9,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-Menu::Menu(GLFWwindow *window) {
+#include <string>
+
+Menu::Menu(GLFWwindow *window, Simulation *sim) : m_sim(sim) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
@@ -17,8 +19,9 @@ Menu::Menu(GLFWwindow *window) {
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init("#version 150");
-  //  bool show_demo_window = true;
-  // ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+  m_fields[0] = "data1";
+  m_fields[1] = "data2";
+  m_field_selected = 0;
 }
 
 Menu::~Menu() {
@@ -27,32 +30,59 @@ Menu::~Menu() {
   ImGui::DestroyContext();
 }
 
-void Menu::use() {
+void Menu::use(void (*setup)(Menu *self)) {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
-  //  if (show_demo_window)
-  //   ImGui::ShowDemoWindow(&show_demo_window);
-  {
-    static float f = 0.0f;
-    static int counter = 0;
-
-    ImGui::Begin("Hello, world!");
-    ImGui::Text("This is some useful text.");
-    // ImGui::Checkbox("Demo Window", &show_demo_window);
-
-    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-    // ImGui::ColorEdit3("clear color", (float *)&clear_color);
-
-    if (ImGui::Button("Button"))
-      counter++;
-    ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::End();
-  }
+  (*setup)(this);
   ImGui::Render();
 }
 
-void Menu::draw() { ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); }
+void Menu::use() {
+  auto default_setup = [](Menu *self) {
+    ImGui::Begin("Nttiny");
+    ImGui::ShowDemoWindow();
+    ImGui::Text("Timestep: %d", self->m_sim->get_timestep());
+    // Choose field component to display
+    ImGui::Combo("Field", &(self->m_field_selected), self->m_fields,
+                 IM_ARRAYSIZE(self->m_fields));
+    // Left step
+    ImGui::PushButtonRepeat(true);
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
+      self->m_sim->stepBwd();
+      if (!self->m_sim->is_paused()) {
+        self->m_sim->playToggle();
+      }
+    }
+    ImGui::PopButtonRepeat();
+    ImGui::SameLine();
+    // Toggle play/pause
+    if (ImGui::Button(self->m_sim->is_paused() ? "Play" : "Pause")) {
+      self->m_sim->playToggle();
+    }
+    // Right step
+    ImGui::SameLine();
+    ImGui::PushButtonRepeat(true);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
+      self->m_sim->stepFwd();
+      if (!self->m_sim->is_paused()) {
+        self->m_sim->playToggle();
+      }
+    }
+    ImGui::PopButtonRepeat();
+    // Simulation speed
+    int rate = self->m_sim->get_steps_per_second();
+    ImGui::SliderInt("Timesteps per second", &rate, 0, 50);
+    self->m_sim->set_steps_per_second(rate);
+    // Simulation direction
+    int dir = self->m_sim->is_forward() ? 1 : 0;
+    const char *directions[2] = {"<<", ">>"};
+    const char *direction = directions[dir];
+    ImGui::SliderInt("Simulation direction", &dir, 0, 1, direction);
+    if (self->m_sim->is_forward() != static_cast<bool>(dir == 1)) {
+      self->m_sim->reverse();
+    }
+    ImGui::End();
+  };
+  use(default_setup);
+}

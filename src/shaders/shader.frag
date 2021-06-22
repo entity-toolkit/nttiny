@@ -7,8 +7,10 @@ uniform vec2 u_mouse;
 uniform vec2 u_resolution;
 
 uniform sampler2D field;
+uniform sampler1D colormap;
 
-void main(){
-  float color = texture(field, texCoord).r;
-  FragColor = vec4(vec3(color), 1.0);
+void main() {
+  float value = texture(field, texCoord).r;
+  vec4 color = texture(colormap, value);
+  FragColor = vec4(color.rgb, 1.0);
 }
