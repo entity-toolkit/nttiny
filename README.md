@@ -6,7 +6,11 @@ git clone --recursive git@github.com:haykh/nttiny.git
 
 ## Dependencies
 
-The dependencies need to be set up just once for each system (or each time you update the submodules).
+The dependencies need to be set up just once for each system (or each time you update the submodules). Their source codes are stored in `extern/` directory, while the libraries are stored in either `include/` or `lib/` directories. To update the dependency source codes run the following:
+
+```shell
+git submodule update --remote
+```
 
 ### `glfw`
 
@@ -72,19 +76,6 @@ cp $NTTINY_PATH/extern/imgui/backends/*_opengl3.* $NTTINY_PATH/lib/imgui/backend
 unset NTTINY_PATH
 ```
 
-### `plog`
-
-Header-only.
-
-```shell
-# for convenience define the path to source code as a variable
-export NTTINY_PATH=...
-
-cp -r $NTTINY_PATH/extern/plog/include/plog $NTTINY_PATH/include
-
-unset NTTINY_PATH
-```
-
 ### `glad`
 
 1. Obtain `glad` headers and `glad.c` from [this online server](https://glad.dav1d.de/), for your specific version of OpenGL (use "Profile: Core" and mark the "Generate a loader" tick). 
@@ -95,6 +86,22 @@ unset NTTINY_PATH
 
 3. Move the `glad.c` file to a more appropriate place (and change `.c` to `.cpp`): `mv glad.c lib/glad.cpp`.
 
+### `plog`, `glm`, `rapidcsv`
+
+These are all header-only libraries. So it's only necessary to copy the proper header files.
+
+```shell
+# for convenience define the path to source code as a variable
+export NTTINY_PATH=...
+
+cp -r $NTTINY_PATH/extern/plog/include/plog $NTTINY_PATH/include
+cp -r $NTTINY_PATH/extern/glm/glm $NTTINY_PATH/include
+cp -r $NTTINY_PATH/extern/rapidcsv/src $NTTINY_PATH/include/rapidcsv
+
+unset NTTINY_PATH
+```
+
 ## Compilation
 
 Compile the code with `make all [OPTIONS]` flag. To see the help menu with all the options type `make`.
+

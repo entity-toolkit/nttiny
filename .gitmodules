@@ -13,3 +13,6 @@
 [submodule "extern/glm"]
 	path = extern/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "extern/rapidcsv"]
+	path = extern/rapidcsv
+	url = https://github.com/d99kris/rapidcsv.git
