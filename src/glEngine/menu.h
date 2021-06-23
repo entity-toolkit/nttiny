@@ -2,7 +2,6 @@
 #define GLENGINE_MENU_H
 
 #include "sim.h"
-#include "texture.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -16,16 +15,13 @@
 
 class Menu {
 public:
-  Menu(GLFWwindow *window, Simulation *sim, Colormap *cmap);
+  Menu(GLFWwindow *window, Simulation *sim);
   ~Menu();
-  void use();
-  void use(void (*setup)(Menu *self));
+  // void use();
+  // void use(void (*setup)(Menu *self));
   void draw() { ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); };
 private:
   Simulation* m_sim;
-  Colormap* m_cmap;
-  std::vector<std::string> m_colormaps;
-  std::size_t m_active_colormap;
 };
 
 #endif

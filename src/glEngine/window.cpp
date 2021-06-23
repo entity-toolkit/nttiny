@@ -1,6 +1,5 @@
 #include "defs.h"
 #include "window.h"
-#include "shader.h"
 #include "sim.h"
 
 #include <fmt/core.h>
@@ -95,22 +94,4 @@ void Window::processInput(Simulation *sim) {
     pressing_right = false;
     sim->stepFwd();
   }
-}
-
-void Window::setStandardUniforms(const Shader &shader) {
-  auto curr_frame{static_cast<float>(glfwGetTime())};
-  m_deltaTime = curr_frame - m_prevFrame;
-  m_prevFrame = curr_frame;
-  shader.setFloat("u_dtime", m_deltaTime);
-  shader.setFloat("u_time", curr_frame);
-
-  glfwGetFramebufferSize(m_win, &m_winWidth, &m_winHeight);
-  shader.setVec2("u_resolution", static_cast<float>(m_winWidth),
-                 static_cast<float>(m_winHeight));
-
-  double cur_x, cur_y;
-  glfwGetCursorPos(m_win, &cur_x, &cur_y);
-  m_xPos = static_cast<float>(2.0 * cur_x / m_winWidth);
-  m_yPos = static_cast<float>(1.0 - 2.0 * cur_y / m_winHeight);
-  shader.setVec2("u_mouse", m_xPos, m_yPos);
 }

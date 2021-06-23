@@ -3,10 +3,7 @@
 #include "sim.h"
 
 #include "window.h"
-#include "shader.h"
-#include "sprite.h"
-#include "texture.h"
-#include "menu.h"
+// #include "menu.h"
 
 #include <plog/Log.h>
 #include <plog/Init.h>
@@ -15,6 +12,12 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
+#include <implot.h>
 
 auto main() -> int {
   static plog::ColorConsoleAppender<plog::TxtFormatter> console_appender;
@@ -34,46 +37,69 @@ auto main() -> int {
   m_fakesim.setData();
 
   Window m_window{Window(win_width, win_height, "Nttiny", 0, false)};
-  Shader m_shader{Shader("shader.vert", "shader.frag")};
 
-  Texture m_texture{
-      Texture(m_fakesim.get_sx(), m_fakesim.get_sy(), m_fakesim.get_data1())};
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImPlot::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
+  ImGui::StyleColorsDark();
+  ImGui_ImplGlfw_InitForOpenGL(m_window.get_window(), true);
+  ImGui_ImplOpenGL3_Init("#version 150");
 
-  Colormap m_colormap;
+  double xs1[101], ys1[101], ys2[101], ys3[101];
+  for (int i{0}; i < 101; ++i) {
+    xs1[i] = static_cast<double>(i);
+    ys1[i] = xs1[i] * xs1[i];
+    ys2[i] = xs1[i] * 0.5;
+    ys3[i] = xs1[i] * xs1[i] * xs1[i];
+  }
 
-  Sprite m_sprite{Sprite()};
+  // Menu m_menu{Menu(m_window.get_window(), &m_fakesim, &m_colormap)};
 
-  Menu m_menu{Menu(m_window.get_window(), &m_fakesim, &m_colormap)};
-
-  m_shader.use();
-  m_shader.setInt("field", 0);
-  m_shader.setInt("colormap", 1);
-
-  double timer{glfwGetTime()};
+  // double timer{glfwGetTime()};
   double hard_limit{glfwGetTime()};
   while (!m_window.windowShouldClose()) {
     if (glfwGetTime() >= hard_limit + 1.0 / HARD_LIMIT_FPS) {
       m_window.use(&m_fakesim);
 
-      m_menu.use();
-      m_window.setStandardUniforms(m_shader);
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplGlfw_NewFrame();
+      ImGui::NewFrame();
+
+      // ImGui::Begin("My Window");
+      if (ImPlot::BeginPlot("My Plot")) {
+        // ImPlot::PlotBars("My Bar Plot", bar_data, 11);
+        ImPlot::PlotLine("My Line Plot", xs1, ys1, 101);
+        // ...
+        ImPlot::EndPlot();
+      }
+      // ImGui::End();
+
+      ImGui::Render();
+
+      // m_menu.use();
 
       glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
 
-      m_shader.use();
-      m_sprite.draw(&m_fakesim, &m_texture, &m_colormap);
-      m_menu.draw();
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
       m_window.unuse();
 
-      if (glfwGetTime() >=
-          timer + 1.0 / static_cast<double>(m_fakesim.get_steps_per_second())) {
-        timer = glfwGetTime();
-        m_fakesim.updateData();
-      }
+      m_fakesim.updateData();
       hard_limit = glfwGetTime();
+
+      // if (glfwGetTime() >=
+          // timer + 1.0 / static_cast<double>(m_fakesim.get_steps_per_second())) {
+        // timer = glfwGetTime();
+      // }
     }
   }
+
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImPlot::DestroyContext();
+  ImGui::DestroyContext();
   return 0;
 }

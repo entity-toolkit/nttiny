@@ -1,11 +1,3 @@
-# Dependencies
-#
-# 1. glfw
-# 2. glad
-# 3. plog
-# 4. fmt
-# 5. imgui
-#
 # # # # # Directories # # # # # # # # # #
 #
 ROOT_DIR := $(realpath ${CURDIR})/
@@ -23,7 +15,7 @@ SRC_DIR := src
 # for external libraries
 LIB_DIR := lib
 # external header-only libraries
-INC_DIR := include $(shell find ${LIB_DIR}/imgui/ -type d)
+INC_DIR := include $(shell find ${LIB_DIR}/imgui/ -type d) $(shell find ${LIB_DIR}/implot/ -type d)
 
 OS := $(shell uname -s | tr A-Z a-z)
 ifeq (${OS}, darwin)

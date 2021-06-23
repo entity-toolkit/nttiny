@@ -12,7 +12,7 @@ public:
   int field_selected;
 
   // init
-  void setData();
+  virtual void setData() = 0;
   [[nodiscard]] auto get_sx() const -> int { return m_sx; }
   [[nodiscard]] auto get_sy() const -> int { return m_sy; }
 
@@ -44,6 +44,7 @@ class FakeSimulation : public Simulation {
 public:
   FakeSimulation(int sx, int sy, int steps_per_second);
   ~FakeSimulation();
+  void setData() override;
   void stepFwd() override;
   void stepBwd() override;
 };

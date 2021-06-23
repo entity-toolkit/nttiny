@@ -58,7 +58,7 @@ mv $NTTINY_PATH/extern/fmt/build/libfmt.a $NTTINY_PATH/lib/
 unset NTTINY_PATH
 ```
 
-### `imgui`
+### `imgui`, `implot`
 
 This library is compiled with the rest of the project, so need to just copy the proper files to `lib/imgui/`.
 
@@ -66,12 +66,16 @@ This library is compiled with the rest of the project, so need to just copy the 
 # for convenience define the path to source code as a variable
 export NTTINY_PATH=...
 
-mkdir -p $NTTINY_PATH/lib/imgui/
-cp $NTTINY_PATH/extern/imgui/*.cpp $NTTINY_PATH/lib/imgui
-cp $NTTINY_PATH/extern/imgui/*.h $NTTINY_PATH/lib/imgui/
+mkdir -p $nttiny_path/lib/imgui/
+cp $nttiny_path/extern/imgui/*.cpp $nttiny_path/lib/imgui/
+cp $nttiny_path/extern/imgui/*.h $nttiny_path/lib/imgui/
 mkdir -p $NTTINY_PATH/lib/imgui/backends/
 cp $NTTINY_PATH/extern/imgui/backends/*_glfw.* $NTTINY_PATH/lib/imgui/backends/
 cp $NTTINY_PATH/extern/imgui/backends/*_opengl3.* $NTTINY_PATH/lib/imgui/backends/
+
+mkdir -p $nttiny_path/lib/implot/
+cp $nttiny_path/extern/implot/*.cpp $nttiny_path/lib/implot/
+cp $nttiny_path/extern/implot/*.h $nttiny_path/lib/implot/
 
 unset NTTINY_PATH
 ```
@@ -86,7 +90,7 @@ unset NTTINY_PATH
 
 3. Move the `glad.c` file to a more appropriate place (and change `.c` to `.cpp`): `mv glad.c lib/glad.cpp`.
 
-### `plog`, `glm`, `rapidcsv`
+### `plog`, `rapidcsv`
 
 These are all header-only libraries. So it's only necessary to copy the proper header files.
 
@@ -95,7 +99,6 @@ These are all header-only libraries. So it's only necessary to copy the proper h
 export NTTINY_PATH=...
 
 cp -r $NTTINY_PATH/extern/plog/include/plog $NTTINY_PATH/include
-cp -r $NTTINY_PATH/extern/glm/glm $NTTINY_PATH/include
 cp -r $NTTINY_PATH/extern/rapidcsv/src $NTTINY_PATH/include/rapidcsv
 
 unset NTTINY_PATH
@@ -104,4 +107,3 @@ unset NTTINY_PATH
 ## Compilation
 
 Compile the code with `make all [OPTIONS]` flag. To see the help menu with all the options type `make`.
-
