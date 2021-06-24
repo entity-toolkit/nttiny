@@ -3,6 +3,7 @@
 #include "sim.h"
 
 #include "window.h"
+#include "mpl.h"
 // #include "menu.h"
 
 #include <plog/Log.h>
@@ -19,6 +20,11 @@
 
 #include <implot.h>
 
+// TODO: simulation controller
+// TODO: abstractify to use with `ntt`
+
+// TODO: issue with array being rendered reversed in y
+
 auto main() -> int {
   static plog::ColorConsoleAppender<plog::TxtFormatter> console_appender;
   plog::Severity max_severity;
@@ -31,7 +37,7 @@ auto main() -> int {
 #endif
   plog::init(max_severity, &console_appender);
 
-  int win_width{800}, win_height{480};
+  int win_width{1920}, win_height{1080};
 
   FakeSimulation m_fakesim(100, 60, 20);
   m_fakesim.setData();
@@ -42,6 +48,7 @@ auto main() -> int {
   ImGui::CreateContext();
   ImPlot::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
   (void)io;
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(m_window.get_window(), true);
@@ -55,26 +62,37 @@ auto main() -> int {
     ys3[i] = xs1[i] * xs1[i] * xs1[i];
   }
 
+  float values1[100][150];
+  for (int j{0}; j < 100; ++j) {
+    for (int i{0}; i < 150; ++i) {
+      values1[j][i] = static_cast<float>(i * i - j * j);
+    }
+  }
+
+  float values2[60][40];
+  for (int j{0}; j < 60; ++j) {
+    for (int i{0}; i < 40; ++i) {
+      values2[j][i] = 60 - j;
+    }
+  }
+
+  Pcolor2d plot2d_1(-1e4, 1e4, {0.0f, 0.0f}, {100, 150});
+  Pcolor2d plot2d_2(0.0f, 100.0f, {0.0f, 0.0f}, {60, 40});
   // Menu m_menu{Menu(m_window.get_window(), &m_fakesim, &m_colormap)};
 
   // double timer{glfwGetTime()};
   double hard_limit{glfwGetTime()};
   while (!m_window.windowShouldClose()) {
-    if (glfwGetTime() >= hard_limit + 1.0 / HARD_LIMIT_FPS) {
+    // if (glfwGetTime() >= hard_limit + 1.0 / HARD_LIMIT_FPS) {
       m_window.use(&m_fakesim);
 
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
 
-      // ImGui::Begin("My Window");
-      if (ImPlot::BeginPlot("My Plot")) {
-        // ImPlot::PlotBars("My Bar Plot", bar_data, 11);
-        ImPlot::PlotLine("My Line Plot", xs1, ys1, 101);
-        // ...
-        ImPlot::EndPlot();
-      }
-      // ImGui::End();
+      ImGui::ShowDemoWindow();
+      plot2d_1.draw(values1[0], 100, 150);
+      plot2d_2.draw(values2[0], 60, 40);
 
       ImGui::Render();
 
@@ -87,14 +105,14 @@ auto main() -> int {
 
       m_window.unuse();
 
-      m_fakesim.updateData();
-      hard_limit = glfwGetTime();
+      // m_fakesim.updateData();
+      // hard_limit = glfwGetTime();
 
       // if (glfwGetTime() >=
           // timer + 1.0 / static_cast<double>(m_fakesim.get_steps_per_second())) {
         // timer = glfwGetTime();
       // }
-    }
+    // }
   }
 
   ImGui_ImplOpenGL3_Shutdown();

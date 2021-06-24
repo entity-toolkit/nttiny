@@ -10,7 +10,6 @@
 #include <GLFW/glfw3.h>
 
 #include <string>
-#include <algorithm>
 
 #include <iostream>
 #include <filesystem>

@@ -2,7 +2,6 @@
 #include "window.h"
 #include "sim.h"
 
-#include <fmt/core.h>
 #include <plog/Log.h>
 
 #include <glad/glad.h>
@@ -21,10 +20,10 @@ Window::Window(int width, int height, const std::string &name, int swapInterval,
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-  m_win = glfwCreateWindow(width, height, name.c_str(),
+  m_win = glfwCreateWindow(m_winWidth, m_winHeight, name.c_str(),
                            isFullscreen ? glfwGetPrimaryMonitor() : nullptr,
                            nullptr);
-  glfwSetWindowAspectRatio(m_win, width, height);
+  glfwSetWindowAspectRatio(m_win, m_winWidth, m_winHeight);
   if (m_win == nullptr) {
     PLOGE << "Failed to open window.";
   }
