@@ -5,9 +5,7 @@
 
 #include <implot.h>
 
-#include <algorithm>
-
-static int CNTR = 0;
+#include <string>
 
 class Plot2d {
 protected:
@@ -22,12 +20,25 @@ public:
 
 // TODO: add field selector
 
+class Plot : public Plot2d {
+private:
+  const float m_ratio;
+protected:
+  float m_plot_size{350};
+  std::string m_xlabel, m_ylabel;
+public:
+  Plot(ImVec2 xlims, ImVec2 ylims, float ratio) : Plot2d(xlims, ylims), m_ratio(ratio) {}
+  ~Plot() = default;
+  template<typename T>
+  void draw(T *x_values, T *y_values, int n, const std::string &label=std::string());
+};
+
 class Pcolor2d : public Plot2d {
 private:
-  const int m_sidebar_w{60}, m_cmap_h{225};
+  const float m_sidebar_w{60}, m_cmap_h{225};
 protected:
   bool m_log;
-  int m_plot_size{350};
+  float m_plot_size{350};
   float m_vmin, m_vmax;
   ImPlotColormap m_cmap {ImPlotColormap_Jet};
 public:

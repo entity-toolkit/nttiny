@@ -14,8 +14,7 @@
 #include <iostream>
 #include <filesystem>
 
-Menu::Menu(GLFWwindow *window, Simulation *sim)
-    : m_sim(sim) {
+Menu::Menu(GLFWwindow *window, Simulation *sim) : m_sim(sim) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
@@ -91,7 +90,8 @@ Menu::~Menu() {
 //     {
 //       int rate = self->m_sim->get_steps_per_second();
 //       ImGui::Text("Simulation rate:");
-//       ImGui::SetNextItemWidth(std::max(ImGui::GetContentRegionAvail().x * 0.5f,
+//       ImGui::SetNextItemWidth(std::max(ImGui::GetContentRegionAvail().x *
+//       0.5f,
 //                                        ImGui::GetFontSize() * 6));
 //       ImGui::SliderInt("dt per second", &rate, 0, HARD_LIMIT_FPS);
 //       self->m_sim->set_steps_per_second(rate);
@@ -102,9 +102,11 @@ Menu::~Menu() {
 //       const char *directions[2] = {"<<", ">>"};
 //       const char *direction = directions[dir];
 //       ImGui::Text("Simulation direction:");
-//       ImGui::SetNextItemWidth(std::max(ImGui::GetContentRegionAvail().x * 0.2f,
+//       ImGui::SetNextItemWidth(std::max(ImGui::GetContentRegionAvail().x *
+//       0.2f,
 //                                        ImGui::GetFontSize() * 4));
-//       ImGui::SliderInt(self->m_sim->is_forward() ? "Forward" : "Backward", &dir,
+//       ImGui::SliderInt(self->m_sim->is_forward() ? "Forward" : "Backward",
+//       &dir,
 //                        0, 1, direction);
 //       if (self->m_sim->is_forward() != static_cast<bool>(dir == 1)) {
 //         self->m_sim->reverse();

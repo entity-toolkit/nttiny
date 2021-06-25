@@ -25,6 +25,16 @@
 
 // TODO: issue with array being rendered reversed in y
 
+// USAGE PLANS:
+// Simulation mySimulation(...);
+//
+// main() {
+//   mySimulation.initialize();
+//   // Simulation.loop();
+//   Interactive.loop(&mySimulation);
+//   mySimulation.finalize();
+// }
+
 auto main() -> int {
   static plog::ColorConsoleAppender<plog::TxtFormatter> console_appender;
   plog::Severity max_severity;
@@ -72,46 +82,48 @@ auto main() -> int {
   float values2[60][40];
   for (int j{0}; j < 60; ++j) {
     for (int i{0}; i < 40; ++i) {
-      values2[j][i] = 60 - j;
+      values2[j][i] = static_cast<float>(60 - j);
     }
   }
 
-  Pcolor2d plot2d_1(-1e4, 1e4, {0.0f, 0.0f}, {100, 150});
-  Pcolor2d plot2d_2(0.0f, 100.0f, {0.0f, 0.0f}, {60, 40});
+  Pcolor2d plot2d_1(-1e4, 1e4, {0, 100}, {0, 150});
+  Pcolor2d plot2d_2(0.0f, 100.0f, {0, 60}, {0, 40});
+  Plot plot_1({0, 101}, {0, 100}, 1.5);
   // Menu m_menu{Menu(m_window.get_window(), &m_fakesim, &m_colormap)};
 
   // double timer{glfwGetTime()};
   double hard_limit{glfwGetTime()};
   while (!m_window.windowShouldClose()) {
     // if (glfwGetTime() >= hard_limit + 1.0 / HARD_LIMIT_FPS) {
-      m_window.use(&m_fakesim);
+    m_window.use(&m_fakesim);
 
-      ImGui_ImplOpenGL3_NewFrame();
-      ImGui_ImplGlfw_NewFrame();
-      ImGui::NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 
-      ImGui::ShowDemoWindow();
-      plot2d_1.draw(values1[0], 100, 150);
-      plot2d_2.draw(values2[0], 60, 40);
+    ImGui::ShowDemoWindow();
+    plot2d_1.draw(values1[0], 100, 150);
+    plot2d_2.draw(values2[0], 60, 40);
+    plot_1.draw(xs1, ys1, 101);
 
-      ImGui::Render();
+    ImGui::Render();
 
-      // m_menu.use();
+    // m_menu.use();
 
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-      m_window.unuse();
+    m_window.unuse();
 
-      // m_fakesim.updateData();
-      // hard_limit = glfwGetTime();
+    // m_fakesim.updateData();
+    // hard_limit = glfwGetTime();
 
-      // if (glfwGetTime() >=
-          // timer + 1.0 / static_cast<double>(m_fakesim.get_steps_per_second())) {
-        // timer = glfwGetTime();
-      // }
+    // if (glfwGetTime() >=
+    // timer + 1.0 / static_cast<double>(m_fakesim.get_steps_per_second())) {
+    // timer = glfwGetTime();
+    // }
     // }
   }
 

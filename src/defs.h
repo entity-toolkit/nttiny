@@ -8,7 +8,7 @@
 #define HARD_LIMIT_FPS 120
 
 template<typename T>
-std::pair<T, T> findMinMax(T* array, std::size_t len) {
+auto findMinMax(T* array, std::size_t len) -> std::pair<T, T> {
   T min{array[0]}, max{array[0]};
   for (std::size_t i{0}; i < len; ++i) {
     if (array[i] < min) {
