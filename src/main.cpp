@@ -1,20 +1,67 @@
 #include "defs.h"
-
-#include "sim.h"
-
-#include "window.h"
-#include "shader.h"
-#include "sprite.h"
-#include "texture.h"
-#include "menu.h"
+#include "vis.h"
+#include "api.h"
 
 #include <plog/Log.h>
 #include <plog/Init.h>
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <string>
+
+class FakeSimulation : public SimulationAPI<float> {
+public:
+  float *m_data1, *m_data2;
+  FakeSimulation(int sx, int sy) : SimulationAPI<float>{sx, sy} {
+    this->m_data1 = new float[sx * sy];
+    this->m_data2 = new float[sx * sy];
+  }
+  ~FakeSimulation() {
+    delete[] this->m_data1;
+    delete[] this->m_data2;
+  }
+  void setData() override {
+    this->m_timestep = 0;
+    auto f_sx{static_cast<float>(this->m_sx)};
+    auto f_sy{static_cast<float>(this->m_sy)};
+    for (int j{0}; j < this->m_sy; ++j) {
+      auto f_j{static_cast<float>(j)};
+      for (int i{0}; i < this->m_sx; ++i) {
+        auto f_i{static_cast<float>(i)};
+        this->m_data1[i * this->m_sy + j] =
+            0.5f * (f_i / f_sx) + 0.5f * (f_j / f_sy);
+        this->m_data2[i * this->m_sy + j] = (f_i / f_sx) * (f_j / f_sy);
+      }
+    }
+    try {
+      this->fields.insert({{"data1", this->m_data1}, {"data2", this->m_data2}});
+    } catch (std::exception err) {
+      PLOGE << err.what();
+    }
+  }
+  void stepFwd() override {
+    ++this->m_timestep;
+    for (int j{0}; j < this->m_sy; ++j) {
+      for (int i{0}; i < this->m_sx; ++i) {
+        this->m_data1[i * this->m_sy + j] =
+            this->m_data1[i * this->m_sy + j] + 0.001f;
+        this->m_data2[i * this->m_sy + j] =
+            this->m_data2[i * this->m_sy + j] + 0.001f;
+      }
+    }
+  }
+  void stepBwd() override {
+    --this->m_timestep;
+    for (int j{0}; j < this->m_sy; ++j) {
+      for (int i{0}; i < this->m_sx; ++i) {
+        this->m_data1[i * this->m_sy + j] =
+            this->m_data1[i * this->m_sy + j] - 0.001f;
+        this->m_data2[i * this->m_sy + j] =
+            this->m_data2[i * this->m_sy + j] - 0.001f;
+      }
+    }
+  }
+};
 
 auto main() -> int {
   static plog::ColorConsoleAppender<plog::TxtFormatter> console_appender;
@@ -28,52 +75,12 @@ auto main() -> int {
 #endif
   plog::init(max_severity, &console_appender);
 
-  int win_width{800}, win_height{480};
+  FakeSimulation sim(100, 150);
+  sim.setData();
 
-  FakeSimulation m_fakesim(100, 60, 20);
-  m_fakesim.setData();
-
-  Window m_window{Window(win_width, win_height, "Nttiny", 0, false)};
-  Shader m_shader{Shader("shader.vert", "shader.frag")};
-
-  Texture m_texture{
-      Texture(m_fakesim.get_sx(), m_fakesim.get_sy(), m_fakesim.get_data1())};
-
-  Colormap m_colormap;
-
-  Sprite m_sprite{Sprite()};
-
-  Menu m_menu{Menu(m_window.get_window(), &m_fakesim, &m_colormap)};
-
-  m_shader.use();
-  m_shader.setInt("field", 0);
-  m_shader.setInt("colormap", 1);
-
-  double timer{glfwGetTime()};
-  double hard_limit{glfwGetTime()};
-  while (!m_window.windowShouldClose()) {
-    if (glfwGetTime() >= hard_limit + 1.0 / HARD_LIMIT_FPS) {
-      m_window.use(&m_fakesim);
-
-      m_menu.use();
-      m_window.setStandardUniforms(m_shader);
-
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
-
-      m_shader.use();
-      m_sprite.draw(&m_fakesim, &m_texture, &m_colormap);
-      m_menu.draw();
-
-      m_window.unuse();
-
-      if (glfwGetTime() >=
-          timer + 1.0 / static_cast<double>(m_fakesim.get_steps_per_second())) {
-        timer = glfwGetTime();
-        m_fakesim.updateData();
-      }
-      hard_limit = glfwGetTime();
-    }
-  }
+  Visualization<float> vis;
+  vis.setTPSLimit(30.0f);
+  vis.bindSimulation(&sim);
+  vis.loop();
   return 0;
 }
