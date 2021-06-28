@@ -5,6 +5,7 @@ build/
 bin/
 *.tmp
 lib/*.a
+run.sh
 
 *.ipynb
 __pycache__
