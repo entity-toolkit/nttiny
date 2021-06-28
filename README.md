@@ -1,4 +1,6 @@
-# nttiny
+# `nttiny v0.1`
+
+OpenGL-based interactive plotting library.
 
 ```shell
 git clone --recursive git@github.com:haykh/nttiny.git
@@ -14,7 +16,7 @@ git submodule update --remote
 
 ### `glfw`
 
-In case you already have the `glfw` library install on your system -- change the `LIBRARIES` variable in `Makefile` from `glfw3` to `glfw` and skip this. Otherwise here's an instruction on how to compile it and put as a static library.
+In case you already have the `glfw` library installed on your system -- change the `LIBRARIES` variable in `Makefile` from `glfw3` to `glfw` and skip this. Otherwise here's an instruction on how to compile it and put as a static library.
 
 ```shell
 # for convenience define the path to source code as a variable
