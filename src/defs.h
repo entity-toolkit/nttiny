@@ -5,8 +5,6 @@
 
 #define UNUSED(x) (void)(x)
 
-#define HARD_LIMIT_FPS 120
-
 template<typename T>
 auto findMinMax(T* array, std::size_t len) -> std::pair<T, T> {
   T min{array[0]}, max{array[0]};
