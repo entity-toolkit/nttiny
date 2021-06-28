@@ -77,10 +77,10 @@ auto main() -> int {
 
   FakeSimulation sim(100, 150);
   sim.setData();
-  //
-  // Visualization<float> vis;
-  // vis.setTPSLimit(30.0f);
-  // vis.bindSimulation(&sim);
-  // vis.loop();
+
+  Visualization<float> vis;
+  vis.setTPSLimit(30.0f);
+  vis.bindSimulation(&sim);
+  vis.loop();
   return 0;
 }

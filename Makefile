@@ -15,7 +15,7 @@ SRC_DIR := src
 # for external libraries
 LIB_DIR := lib
 # external header-only libraries
-INC_DIR := include $(shell find ${LIB_DIR}/imgui/ -type d) $(shell find ${LIB_DIR}/implot/ -type d)
+INC_DIR := include $(shell find ${LIB_DIR}/imgui -type d) $(shell find ${LIB_DIR}/implot -type d)
 
 OS := $(shell uname -s | tr A-Z a-z)
 ifeq (${OS}, darwin)
@@ -33,10 +33,9 @@ __BUILD_DIR := ${ROOT_DIR}${BUILD_DIR}
 __BIN_DIR := ${ROOT_DIR}${BIN_DIR}
 __SRC_DIR := ${ROOT_DIR}${SRC_DIR}
 __LIB_DIR := ${ROOT_DIR}${LIB_DIR}
+__INC_DIR := $(addprefix ${ROOT_DIR},$(INC_DIR))
 __LIBBUILD_DIR := ${ROOT_DIR}${LIB_DIR}/${BUILD_DIR}
 __TARGET := ${__BIN_DIR}/${TARGET}
-__SHADERS:= $(shell find ${__SRC_DIR} -name *.vert -or -name *.frag)
-__COLORMAPS:= $(shell find ${__SRC_DIR} -name *.cmap.csv)
 # # # # # Settings # # # # # # # # # # # #
 #
 _DEFAULT_VERBOSE := n
@@ -102,13 +101,10 @@ SLIBS_CXX := $(shell find ${__LIB_DIR} -name *.cpp)
 OLIBS_CXX := $(subst ${__LIB_DIR},${__LIBBUILD_DIR},$(SLIBS_CXX:%=%.o))
 DLIBS_CXX := $(OLIBS_CXX:.o=.d)
 
-INC_DIRS := $(shell find ${__SRC_DIR} -type d) ${INC_DIR} ${LIB_DIR}
+INC_DIRS := $(shell find ${__SRC_DIR} -type d) ${__INC_DIR} ${__LIB_DIR}
 INCFLAGS := $(addprefix -I,${INC_DIRS})
 
-LDFLAGS := $(LDFALGS) $(addprefix -L, $(LIB_DIR)) $(addprefix -l, $(LIBRARIES)) $(addprefix -framework , $(FRAMEWORKS))
-
-ASSETS := $(__SHADERS) $(__COLORMAPS)
-ASSET_COPIES := $(addprefix ${__BIN_DIR}/, $(notdir $(ASSETS)))
+LDFLAGS := $(LDFALGS) $(addprefix -L, $(__LIB_DIR)) $(addprefix -l, $(LIBRARIES)) $(addprefix -framework , $(FRAMEWORKS))
 # # # # # Targets # # # # # # # # # # # # # #
 #
 .PHONY: all help default clean
@@ -127,28 +123,33 @@ help:
 	@echo
 	@echo "cleanup: \`make clean\` or \`make cleanlib\`"
 	@echo
+	@echo "to build a static library:"
+	@echo "   \`make static\`"
+	@echo
+	@echo "---------------"
+	@echo "for developers:"
+	@echo
 	@echo "use \`make [CLANG_COMMAND]\` to check the code matches with best practices & consistent stylistics"
 	@echo
-	@echo "   make clang-tidy-naming  : test if the naming of variables/functionts/etc is consistent"
-	@echo "   make clang-format       : test if the code formatting is consistent"
-	@echo "   make clang-format-fix   : same as \`clang-format\` except now fix the issues"
-	@echo "   make clang-tidy         : check if the code contains any bad practices or other deprecated features"
-	@echo "   make clang-tidy-bugprone: check if the code contains any bug-prone features"
-	@echo "   make clang-all          : run \`clang-tidy-naming\`, \`clang-format\` and \`clang-tidy\`"
+	@echo "list of all \`[CLANG_COMMAND]\`-s:"
+	@echo "   clang-tidy-naming       : test if the naming of variables/functionts/etc is consistent"
+	@echo "   clang-format            : test if the code formatting is consistent"
+	@echo "   clang-format-fix        : same as \`clang-format\` except now fix the issues"
+	@echo "   clang-tidy              : check if the code contains any bad practices or other deprecated features"
+	@echo "   clang-tidy-bugprone     : check if the code contains any bug-prone features"
+	@echo "   clang-all               : run \`clang-tidy-naming\`, \`clang-format\` and \`clang-tidy\`"
 	@echo
 
 # linking the main app
-all : ${__TARGET} $(ASSET_COPIES)
-
-# copy all the asset files to bin dir
-define copyAssets
-$(1): $(2)
-	@echo [C]opying $(subst ${ROOT_DIR},,$(2))
-	$(HIDE)cp -f $(2) $(1)
-endef
-$(foreach ast, $(ASSETS), $(eval $(call copyAssets, ${__BIN_DIR}/$(notdir ${ast}), ${ast})))
+all : ${__TARGET}
 
 ALL_OBJECTS := $(OLIBS_CXX) $(OBJS_CXX) $(OBJS_CC)
+
+static : ${__BIN_DIR}/libnttiny.a
+
+${__BIN_DIR}/libnttiny.a : $(filter-out %/main.cpp.o, $(ALL_OBJECTS))
+	@echo [A]rchiving $(subst ${ROOT_DIR},,$@) \<: $(subst ${ROOT_DIR},,$^)
+	$(HIDE)ar -rcs $@ $^
 
 # main executable
 ${__TARGET} : $(ALL_OBJECTS)
