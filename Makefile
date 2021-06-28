@@ -105,9 +105,10 @@ INC_DIRS := $(shell find ${__SRC_DIR} -type d) ${__INC_DIR} ${__LIB_DIR}
 INCFLAGS := $(addprefix -I,${INC_DIRS})
 
 LDFLAGS := $(LDFALGS) $(addprefix -L, $(__LIB_DIR)) $(addprefix -l, $(LIBRARIES)) $(addprefix -framework , $(FRAMEWORKS))
+NTTINY_LDFLAGS := $(LDFLAGS)
 # # # # # Targets # # # # # # # # # # # # # #
 #
-.PHONY: all help default clean
+.PHONY: all help default clean cleanlib static
 
 default : help
 
@@ -176,7 +177,7 @@ cleanlib:
 
 -include $(DEPS_CXX) $(DEPS_CC) $(DLIBS_CXX)
 
-.PHONY: clang-all, clang-format-fix, clang-format, clang-tidy, clang-tidy-bugprone
+.PHONY: clang-all clang-tidy-naming clang-format-fix clang-format clang-tidy clang-tidy-bugprone
 
 SOURCES := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX))
 

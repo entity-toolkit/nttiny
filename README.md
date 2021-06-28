@@ -4,6 +4,8 @@ OpenGL-based interactive plotting library.
 
 ```shell
 git clone --recursive git@github.com:haykh/nttiny.git
+# or to add as an external library
+git add submodule git@github.com:haykh/nttiny.git extern/nttiny
 ```
 
 ## Dependencies
@@ -11,6 +13,7 @@ git clone --recursive git@github.com:haykh/nttiny.git
 The dependencies need to be set up just once for each system (or each time you update the submodules). Their source codes are stored in `extern/` directory, while the libraries are stored in either `include/` or `lib/` directories. To update the dependency source codes run the following:
 
 ```shell
+# from the `nttiny` root directory
 git submodule update --remote
 ```
 
@@ -84,11 +87,11 @@ unset NTTINY_PATH
 
 ### `glad`
 
-1. Obtain `glad` headers and `glad.c` from [this online server](https://glad.dav1d.de/), for your specific version of OpenGL (use "Profile: Core" and mark the "Generate a loader" tick). 
+1. Obtain `glad` headers and `glad.c` from [this online server](https://glad.dav1d.de/), for your specific version of OpenGL (use "Profile: Core" and mark the "Generate a loader" tick).
 
 > To find out your OpenGL version run `glxinfo | grep "OpenGL version"`.
 
-2. Download the generated `glad.zip` archive, and unzip it (`unzip glad.zip`). If you do this from the source code directory (`<NTTINY_PATH>`) the headers will be properly placed into `include/glad` and `include/KHR` directories (otherwise, do that manually). 
+2. Download the generated `glad.zip` archive, and unzip it (`unzip glad.zip`). If you do this from the source code directory (`<NTTINY_PATH>`) the headers will be properly placed into `include/glad` and `include/KHR` directories (otherwise, do that manually).
 
 3. Move the `glad.c` file to a more appropriate place (and change `.c` to `.cpp`): `mv glad.c lib/glad.cpp`.
 
@@ -108,4 +111,4 @@ unset NTTINY_PATH
 
 ## Compilation
 
-Compile the code with `make all [OPTIONS]` flag. To see the help menu with all the options type `make`.
+Compile the code with `make all [OPTIONS]` flag. To see the help menu with all the options type `make`. To build a static library simply run `make static [OPTIONS]`.
