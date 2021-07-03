@@ -1,4 +1,4 @@
-# `nttiny v0.1`
+# `nttiny v0.2`
 
 OpenGL-based interactive plotting library.
 
@@ -7,6 +7,20 @@ git clone --recursive git@github.com:haykh/nttiny.git
 # or to add as an external library
 git add submodule git@github.com:haykh/nttiny.git extern/nttiny
 ```
+
+## Compilation
+
+Compile the code as a standalone application with the `make all [OPTIONS]` command. To see the help menu with all the options type `make`.
+
+To build a static library simply run `make static [OPTIONS]`.
+
+> Prior to compiling the code either as a static library or as a standalone application please make sure all the dependencies are satisfied (see section below).
+
+## Usage
+
+File `src/main.cpp` contains an example usage of the `nttiny` as a standalone app. In most of the scenarios, however, you would need to build and use `nttiny` as a static library. For that, compile the static library, `libnttiny.a`, and put it in your projects directory with other libraries. See `src/main.cpp` for an example of how to use the library.
+
+> Also make sure to copy the header files from the `include/` directory: `cp -r <NTTINY_PATH>/include/nttiny <YOUR_PROJECT>/lib`.
 
 ## Dependencies
 
@@ -108,7 +122,3 @@ cp -r $NTTINY_PATH/extern/rapidcsv/src $NTTINY_PATH/include/rapidcsv
 
 unset NTTINY_PATH
 ```
-
-## Compilation
-
-Compile the code with `make all [OPTIONS]` flag. To see the help menu with all the options type `make`. To build a static library simply run `make static [OPTIONS]`.

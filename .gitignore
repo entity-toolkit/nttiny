@@ -6,6 +6,7 @@ bin/
 *.tmp
 lib/*.a
 run.sh
+imgui.ini
 
 *.ipynb
 __pycache__

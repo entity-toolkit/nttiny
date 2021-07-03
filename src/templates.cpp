@@ -7,18 +7,18 @@
 #include "plots.h"
 #include "plots.cpp"
 
-template class Visualization<int>;
-template class Visualization<float>;
-template class Visualization<double>;
+template class nttiny::Visualization<int>;
+template class nttiny::Visualization<float>;
+template class nttiny::Visualization<double>;
 
-template class SimulationAPI<int>;
-template class SimulationAPI<float>;
-template class SimulationAPI<double>;
+template class nttiny::SimulationAPI<int>;
+template class nttiny::SimulationAPI<float>;
+template class nttiny::SimulationAPI<double>;
 
-template class Data<int>;
-template class Data<float>;
-template class Data<double>;
+template class nttiny::Data<int>;
+template class nttiny::Data<float>;
+template class nttiny::Data<double>;
 
-template class Pcolor2d<int>;
-template class Pcolor2d<float>;
-template class Pcolor2d<double>;
+template class nttiny::Pcolor2d<int>;
+template class nttiny::Pcolor2d<float>;
+template class nttiny::Pcolor2d<double>;
