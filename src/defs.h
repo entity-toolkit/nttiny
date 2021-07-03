@@ -5,8 +5,8 @@
 
 #define UNUSED(x) (void)(x)
 
-template<typename T>
-auto findMinMax(T* array, std::size_t len) -> std::pair<T, T> {
+template <typename T>
+auto findMinMax(T *array, std::size_t len) -> std::pair<T, T> {
   T min{array[0]}, max{array[0]};
   for (std::size_t i{0}; i < len; ++i) {
     if (array[i] < min) {

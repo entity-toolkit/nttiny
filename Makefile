@@ -180,6 +180,7 @@ cleanlib:
 .PHONY: clang-all clang-tidy-naming clang-format-fix clang-format clang-tidy clang-tidy-bugprone
 
 SOURCES := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX))
+ALLCODE := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX) $(shell find ${__SRC_DIR} -name *.h)) 
 
 clang-all : clang-tidy-naming clang-format clang-tidy
 
@@ -199,7 +200,7 @@ clang-tidy-naming:
 	@echo "clang-tidy-naming -- done"
 
 clang-format:
-	@for src in $(SOURCES) ; do \
+	@for src in $(ALLCODE) ; do \
 		var=`clang-format $$src | diff $$src - | wc -l` ; \
 		if [ $$var -ne 0 ] ; then \
 			diff=`clang-format $$src | diff $$src -` ; \
@@ -211,7 +212,7 @@ clang-format:
 	@echo "clang-format -- done"
 
 clang-format-fix:
-	@for src in $(SOURCES) ; do \
+	@for src in $(ALLCODE) ; do \
 		var=`clang-format $$src | diff $$src - | wc -l` ; \
 		if [ $$var -ne 0 ] ; then \
 			echo "formatting $$src:" ;\

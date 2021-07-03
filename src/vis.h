@@ -16,10 +16,10 @@
 #include <string>
 #include <vector>
 
-template<class T>
-class Visualization {
+template <class T> class Visualization {
 private:
   int m_id{0};
+
 protected:
   SimulationAPI<T> *m_sim;
   std::unique_ptr<Window> m_window;
@@ -28,11 +28,13 @@ protected:
   float m_fps_limit{0.0f};
   float m_tps_limit{0.0f};
   std::vector<std::unique_ptr<Ax<T>>> m_plots;
+
 public:
-  void bindSimulation(SimulationAPI<T> *sim);
-  void bindSimulation();
-  Visualization(int win_width=1280, int win_height=720, bool resizable=true);
+  Visualization(int win_width = 1280, int win_height = 720,
+                bool resizable = true);
   ~Visualization();
+  void bindSimulation();
+  void bindSimulation(SimulationAPI<T> *sim);
   void setFPSLimit(float fps_limit) { m_fps_limit = fps_limit; }
   void setTPSLimit(float tps_limit) { m_tps_limit = tps_limit; }
   void buildController();
