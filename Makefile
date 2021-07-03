@@ -15,7 +15,7 @@ SRC_DIR := src
 # for external libraries
 LIB_DIR := lib
 # external header-only libraries
-INC_DIR := include $(shell find ${LIB_DIR}/imgui -type d) $(shell find ${LIB_DIR}/implot -type d)
+INC_DIR := include include/nttiny $(shell find ${LIB_DIR}/imgui -type d) $(shell find ${LIB_DIR}/implot -type d)
 
 OS := $(shell uname -s | tr A-Z a-z)
 ifeq (${OS}, darwin)
@@ -102,7 +102,7 @@ OLIBS_CXX := $(subst ${__LIB_DIR},${__LIBBUILD_DIR},$(SLIBS_CXX:%=%.o))
 DLIBS_CXX := $(OLIBS_CXX:.o=.d)
 
 INC_DIRS := $(shell find ${__SRC_DIR} -type d) ${__INC_DIR} ${__LIB_DIR}
-INCFLAGS := $(addprefix -I,${INC_DIRS})
+INCFLAGS := $(addprefix -I,$(INC_DIRS))
 
 LDFLAGS := $(LDFALGS) $(addprefix -L, $(__LIB_DIR)) $(addprefix -l, $(LIBRARIES)) $(addprefix -framework , $(FRAMEWORKS))
 NTTINY_LDFLAGS := $(LDFLAGS)
@@ -180,7 +180,7 @@ cleanlib:
 .PHONY: clang-all clang-tidy-naming clang-format-fix clang-format clang-tidy clang-tidy-bugprone
 
 SOURCES := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX))
-ALLCODE := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX) $(shell find ${__SRC_DIR} -name *.h)) 
+ALLCODE := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX) $(shell find ${__SRC_DIR} -name *.h))
 
 clang-all : clang-tidy-naming clang-format clang-tidy
 

@@ -4,6 +4,7 @@
 #include <utility>
 
 #define UNUSED(x) (void)(x)
+#define VISPLOGID (42)
 
 template <typename T>
 auto findMinMax(T *array, std::size_t len) -> std::pair<T, T> {

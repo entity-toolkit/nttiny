@@ -1,21 +1,15 @@
-#include "defs.h"
-#include "vis.h"
-#include "api.h"
+#include "nttiny/vis.h"
+#include "nttiny/api.h"
 
-#include <plog/Log.h>
-#include <plog/Init.h>
-#include <plog/Formatters/TxtFormatter.h>
-#include <plog/Appenders/ColorConsoleAppender.h>
-#include <fmt/core.h>
-
+#include <iostream>
 #include <string>
 
-class FakeSimulation : public SimulationAPI<float> {
+class FakeSimulation : public nttiny::SimulationAPI<float> {
 public:
-  Data<float> ex;
-  Data<float> bx;
+  nttiny::Data<float> ex;
+  nttiny::Data<float> bx;
 
-  FakeSimulation(int sx, int sy) : SimulationAPI<float>{sx, sy} {
+  FakeSimulation(int sx, int sy) : nttiny::SimulationAPI<float>{sx, sy} {
     this->ex.allocate(sx * sy);
     this->bx.allocate(sx * sy);
     this->ex.set_size(0, sx);
@@ -46,7 +40,7 @@ public:
     try {
       this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
     } catch (std::exception err) {
-      PLOGE << err.what();
+      std::cerr << err.what();
     }
   }
   void stepFwd() override {
@@ -74,21 +68,10 @@ public:
 };
 
 auto main() -> int {
-  static plog::ColorConsoleAppender<plog::TxtFormatter> console_appender;
-  plog::Severity max_severity;
-#ifdef VERBOSE
-  max_severity = plog::verbose;
-#elif DEBUG
-  max_severity = plog::debug;
-#else
-  max_severity = plog::warning;
-#endif
-  plog::init(max_severity, &console_appender);
-
   FakeSimulation sim(100, 150);
   sim.setData();
 
-  Visualization<float> vis;
+  nttiny::Visualization<float> vis;
   vis.setTPSLimit(30.0f);
   vis.bindSimulation(&sim);
   vis.loop();
