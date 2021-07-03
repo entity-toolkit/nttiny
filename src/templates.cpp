@@ -15,6 +15,10 @@ template class SimulationAPI<int>;
 template class SimulationAPI<float>;
 template class SimulationAPI<double>;
 
+template class Data<int>;
+template class Data<float>;
+template class Data<double>;
+
 template class Pcolor2d<int>;
 template class Pcolor2d<float>;
 template class Pcolor2d<double>;

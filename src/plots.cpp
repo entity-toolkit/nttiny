@@ -5,6 +5,7 @@
 #include <fmt/core.h>
 #include <implot.h>
 
+#include <cmath>
 #include <string>
 
 template <class T> Ax<T>::Ax(int id) : m_ID(id) {}
@@ -23,12 +24,10 @@ template <class T> void Plot2d<T>::scale() {
 template <class T> void Pcolor2d<T>::draw() {
   float plot_size = this->m_plot_size * this->m_scale;
   float cmap_h = this->m_cmap_h * this->m_scale;
-  float aspect = static_cast<float>(this->m_sim->get_sy()) /
-                 static_cast<float>(this->m_sim->get_sx());
-  // this shall come from simulation
-  float xmin = 0.0f, ymin = 0.0f;
-  auto ymax = static_cast<float>(this->m_sim->get_sy()),
-       xmax = static_cast<float>(this->m_sim->get_sx());
+  // TODO: this shall come from simulation
+  auto x1min = this->m_sim->get_x1min(), x1max = this->m_sim->get_x1max();
+  auto x2min = this->m_sim->get_x2min(), x2max = this->m_sim->get_x2max();
+  auto aspect = (x2max - x2min) / (x1max - x1min);
   ImGui::Begin(fmt::format("Pcolor2d [{}]", this->m_ID).c_str());
   this->scale();
   // Choose field component to display
@@ -47,15 +46,23 @@ template <class T> void Pcolor2d<T>::draw() {
         static_cast<std::string>(field_names[this->m_field_selected]);
   }
   // setup axes
+  int dim = this->m_sim->fields[field_selected]->get_dimension();
+  if (dim != 2) {
+    ImGui::TextColored(ImVec4(1.0f, 0.39f, 0.28f, 1.0f),
+                       "WARNING: Attempting to plot %dD data as a 2D heatmap",
+                       dim);
+  }
   ImPlot::PushColormap(this->m_cmap);
+  // TODO: add log colormap here
   if (ImPlot::BeginPlot("", nullptr, nullptr,
                         ImVec2(plot_size, plot_size * aspect),
                         ImPlotFlags_Equal)) {
     // plot
-    ImPlot::PlotHeatmap("", this->m_sim->fields[field_selected],
-                        this->m_sim->get_sx(), this->m_sim->get_sy(),
-                        this->m_vmin, this->m_vmax, nullptr, {xmin, ymin},
-                        {xmax, ymax});
+    ImPlot::PlotHeatmap("", this->m_sim->fields[field_selected]->get_data(),
+                        this->m_sim->fields[field_selected]->get_size(0),
+                        this->m_sim->fields[field_selected]->get_size(1),
+                        this->m_vmin, this->m_vmax, nullptr, {x1min, x2min},
+                        {x1max, x2max});
     ImPlot::EndPlot();
   }
   // decorations
@@ -80,22 +87,20 @@ template <class T> void Pcolor2d<T>::draw() {
     ImGui::InputFloat("min", &this->m_vmin, 0.0f, 1000.0f, "%.3f");
     ImGui::Checkbox("log", &this->m_log);
     if (ImGui::Button("reset")) {
-      auto minmax = findMinMax(this->m_sim->fields[field_selected],
-                               this->m_sim->get_sx() * this->m_sim->get_sy());
+      auto minmax =
+          findMinMax(this->m_sim->fields[field_selected]->get_data(),
+                     this->m_sim->fields[field_selected]->get_size(0) *
+                         this->m_sim->fields[field_selected]->get_size(1));
       this->m_vmin = minmax.first;
       this->m_vmax = minmax.second;
     }
   }
-  ImPlot::PopColormap();
-  ImGui::PopItemWidth();
   ImGui::EndGroup();
+  ImGui::PopItemWidth();
+  ImPlot::PopColormap();
   ImGui::End();
 }
 
-// template void Pcolor2d::draw<int>(int *values, int sx, int sy);
-// template void Pcolor2d::draw<float>(float *values, int sx, int sy);
-// template void Pcolor2d::draw<double>(double *values, int sx, int sy);
-//
 // template <typename T>
 // void Plot::draw(T *x_values, T *y_values, int n, const std::string &label) {
 //   float plot_size = m_plot_size * m_scale;

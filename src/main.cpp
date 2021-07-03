@@ -6,21 +6,31 @@
 #include <plog/Init.h>
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
+#include <fmt/core.h>
 
 #include <string>
 
 class FakeSimulation : public SimulationAPI<float> {
 public:
-  float *m_data1, *m_data2;
+  Data<float> ex;
+  Data<float> bx;
+
   FakeSimulation(int sx, int sy) : SimulationAPI<float>{sx, sy} {
-    this->m_data1 = new float[sx * sy];
-    this->m_data2 = new float[sx * sy];
+    this->ex.allocate(sx * sy);
+    this->bx.allocate(sx * sy);
+    this->ex.set_size(0, sx);
+    this->ex.set_size(1, sy);
+    this->bx.set_size(0, sx);
+    this->bx.set_size(1, sy);
+    this->ex.set_dimension(2);
+    this->bx.set_dimension(2);
   }
-  ~FakeSimulation() {
-    delete[] this->m_data1;
-    delete[] this->m_data2;
-  }
+  ~FakeSimulation() = default;
   void setData() override {
+    m_x1x2_extent[0] = 0.0f;
+    m_x1x2_extent[1] = 1.0f;
+    m_x1x2_extent[2] = 0.0f;
+    m_x1x2_extent[3] = 1.5f;
     this->m_timestep = 0;
     auto f_sx{static_cast<float>(this->m_sx)};
     auto f_sy{static_cast<float>(this->m_sy)};
@@ -28,13 +38,13 @@ public:
       auto f_j{static_cast<float>(j)};
       for (int i{0}; i < this->m_sx; ++i) {
         auto f_i{static_cast<float>(i)};
-        this->m_data1[i * this->m_sy + j] =
-            0.5f * (f_i / f_sx) + 0.5f * (f_j / f_sy);
-        this->m_data2[i * this->m_sy + j] = (f_i / f_sx) * (f_j / f_sy);
+        this->ex.set(i * this->m_sy + j,
+                     0.5f * (f_i / f_sx) + 0.5f * (f_j / f_sy));
+        this->bx.set(i * this->m_sy + j, (f_i / f_sx) * (f_j / f_sy));
       }
     }
     try {
-      this->fields.insert({{"data1", this->m_data1}, {"data2", this->m_data2}});
+      this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
     } catch (std::exception err) {
       PLOGE << err.what();
     }
@@ -43,10 +53,10 @@ public:
     ++this->m_timestep;
     for (int j{0}; j < this->m_sy; ++j) {
       for (int i{0}; i < this->m_sx; ++i) {
-        this->m_data1[i * this->m_sy + j] =
-            this->m_data1[i * this->m_sy + j] + 0.001f;
-        this->m_data2[i * this->m_sy + j] =
-            this->m_data2[i * this->m_sy + j] + 0.001f;
+        this->ex.set(i * this->m_sy + j,
+                     this->ex.get(i * this->m_sy + j) + 0.001f);
+        this->bx.set(i * this->m_sy + j,
+                     this->bx.get(i * this->m_sy + j) + 0.001f);
       }
     }
   }
@@ -54,10 +64,10 @@ public:
     --this->m_timestep;
     for (int j{0}; j < this->m_sy; ++j) {
       for (int i{0}; i < this->m_sx; ++i) {
-        this->m_data1[i * this->m_sy + j] =
-            this->m_data1[i * this->m_sy + j] - 0.001f;
-        this->m_data2[i * this->m_sy + j] =
-            this->m_data2[i * this->m_sy + j] - 0.001f;
+        this->ex.set(i * this->m_sy + j,
+                     this->ex.get(i * this->m_sy + j) - 0.001f);
+        this->bx.set(i * this->m_sy + j,
+                     this->bx.get(i * this->m_sy + j) - 0.001f);
       }
     }
   }
