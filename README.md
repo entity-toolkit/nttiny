@@ -85,16 +85,16 @@ This library is compiled with the rest of the project, so need to just copy the 
 # for convenience define the path to source code as a variable
 export NTTINY_PATH=...
 
-mkdir -p $nttiny_path/lib/imgui/
-cp $nttiny_path/extern/imgui/*.cpp $nttiny_path/lib/imgui/
-cp $nttiny_path/extern/imgui/*.h $nttiny_path/lib/imgui/
+mkdir -p $NTTINY_PATH/lib/imgui/
+cp $NTTINY_PATH/extern/imgui/*.cpp $NTTINY_PATH/lib/imgui/
+cp $NTTINY_PATH/extern/imgui/*.h $NTTINY_PATH/lib/imgui/
 mkdir -p $NTTINY_PATH/lib/imgui/backends/
 cp $NTTINY_PATH/extern/imgui/backends/*_glfw.* $NTTINY_PATH/lib/imgui/backends/
 cp $NTTINY_PATH/extern/imgui/backends/*_opengl3.* $NTTINY_PATH/lib/imgui/backends/
 
-mkdir -p $nttiny_path/lib/implot/
-cp $nttiny_path/extern/implot/*.cpp $nttiny_path/lib/implot/
-cp $nttiny_path/extern/implot/*.h $nttiny_path/lib/implot/
+mkdir -p $NTTINY_PATH/lib/implot/
+cp $NTTINY_PATH/extern/implot/*.cpp $NTTINY_PATH/lib/implot/
+cp $NTTINY_PATH/extern/implot/*.h $NTTINY_PATH/lib/implot/
 
 unset NTTINY_PATH
 ```
