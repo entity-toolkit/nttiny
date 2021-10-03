@@ -11,22 +11,31 @@
 
 namespace nttiny {
 
-template <class T> Ax<T>::Ax(int id) : m_ID(id) {}
-template <class T> Ax<T>::~Ax() = default;
-template <class T> void Ax<T>::draw() {}
-template <class T> auto Ax<T>::getId() -> int { return -1; }
-template <class T> void Ax<T>::bindSimulation(SimulationAPI<T> *sim) {
+template <class T>
+Ax<T>::Ax(int id) : m_ID(id) {}
+template <class T>
+Ax<T>::~Ax() = default;
+template <class T>
+void Ax<T>::draw() {}
+template <class T>
+auto Ax<T>::getId() -> int {
+  return -1;
+}
+template <class T>
+void Ax<T>::bindSimulation(SimulationAPI<T>* sim) {
   this->m_sim = sim;
 }
 
-template <class T> void Plot2d<T>::scale() {
+template <class T>
+void Plot2d<T>::scale() {
   ImGui::SetNextItemWidth(120);
   if (ImGui::InputFloat("scale", &this->m_scale, 0.01f, 10.0f, "%.3f")) {
     PLOGV_(VISPLOGID) << fmt::format("Scale changed to {}.", this->m_scale);
   }
 }
 
-template <class T> void Pcolor2d<T>::draw() {
+template <class T>
+void Pcolor2d<T>::draw() {
   float plot_size = this->m_plot_size * this->m_scale;
   float cmap_h = this->m_cmap_h * this->m_scale;
   // TODO: this shall come from simulation
@@ -39,36 +48,36 @@ template <class T> void Pcolor2d<T>::draw() {
   std::string field_selected;
   {
     ImGui::Text("Field component to plot:");
-    const char *field_names[2];
+    const char* field_names[2];
     int i{0};
-    for (const auto &fld : this->m_sim->fields) {
+    for (const auto& fld : this->m_sim->fields) {
       field_names[i] = fld.first.c_str();
       ++i;
     }
-    if (ImGui::Combo("", &this->m_field_selected, field_names,
-                     IM_ARRAYSIZE(field_names))) {
+    if (ImGui::Combo("", &this->m_field_selected, field_names, IM_ARRAYSIZE(field_names))) {
       PLOGV_(VISPLOGID) << fmt::format("Pcolor2d field changed to {}.",
                                        field_names[this->m_field_selected]);
     }
-    field_selected =
-        static_cast<std::string>(field_names[this->m_field_selected]);
+    field_selected = static_cast<std::string>(field_names[this->m_field_selected]);
   }
   // setup axes
   int dim = this->m_sim->fields[field_selected]->get_dimension();
   if (dim != 2) {
-    PLOGE_(VISPLOGID) << fmt::format(
-        "Attempting to plot {}D data as a 2D heatmap.", dim);
+    PLOGE_(VISPLOGID) << fmt::format("Attempting to plot {}D data as a 2D heatmap.", dim);
   }
   ImPlot::PushColormap(this->m_cmap);
   // TODO: add log colormap here
-  if (ImPlot::BeginPlot("", nullptr, nullptr,
-                        ImVec2(plot_size, plot_size * aspect),
-                        ImPlotFlags_Equal)) {
+  if (ImPlot::BeginPlot(
+          "", nullptr, nullptr, ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
     // plot
-    ImPlot::PlotHeatmap("", this->m_sim->fields[field_selected]->get_data(),
+    ImPlot::PlotHeatmap("",
+                        this->m_sim->fields[field_selected]->get_data(),
                         this->m_sim->fields[field_selected]->get_size(0),
                         this->m_sim->fields[field_selected]->get_size(1),
-                        this->m_vmin, this->m_vmax, nullptr, {x1min, x2min},
+                        this->m_vmin,
+                        this->m_vmax,
+                        nullptr,
+                        {x1min, x2min},
                         {x1max, x2max});
     ImPlot::EndPlot();
   }
@@ -78,8 +87,8 @@ template <class T> void Pcolor2d<T>::draw() {
   ImGui::PushItemWidth(m_sidebar_w);
   ImGui::BeginGroup();
   {
-    if (ImPlot::ColormapButton(ImPlot::GetColormapName(this->m_cmap),
-                               ImVec2(this->m_sidebar_w, 0), this->m_cmap)) {
+    if (ImPlot::ColormapButton(
+            ImPlot::GetColormapName(this->m_cmap), ImVec2(this->m_sidebar_w, 0), this->m_cmap)) {
       this->m_cmap = (this->m_cmap + 1) % ImPlot::GetColormapCount();
       PLOGV_(VISPLOGID) << fmt::format("Changed colormap to {}.",
                                        ImPlot::GetColormapName(this->m_cmap));
@@ -98,10 +107,9 @@ template <class T> void Pcolor2d<T>::draw() {
     ImGui::Checkbox("log", &this->m_log);
     if (ImGui::Button("reset")) {
       PLOGV_(VISPLOGID) << fmt::format("Reseting vmin & vmax for Pcolor2d.");
-      auto minmax =
-          findMinMax(this->m_sim->fields[field_selected]->get_data(),
-                     this->m_sim->fields[field_selected]->get_size(0) *
-                         this->m_sim->fields[field_selected]->get_size(1));
+      auto minmax = findMinMax(this->m_sim->fields[field_selected]->get_data(),
+                               this->m_sim->fields[field_selected]->get_size(0)
+                                   * this->m_sim->fields[field_selected]->get_size(1));
       this->m_vmin = minmax.first;
       this->m_vmax = minmax.second;
     }

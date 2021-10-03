@@ -32,14 +32,14 @@ public:
       auto f_j{static_cast<float>(j)};
       for (int i{0}; i < this->m_sx; ++i) {
         auto f_i{static_cast<float>(i)};
-        this->ex.set(i * this->m_sy + j,
-                     0.5f * (f_i / f_sx) + 0.5f * (f_j / f_sy));
+        this->ex.set(i * this->m_sy + j, 0.5f * (f_i / f_sx) + 0.5f * (f_j / f_sy));
         this->bx.set(i * this->m_sy + j, (f_i / f_sx) * (f_j / f_sy));
       }
     }
     try {
       this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
-    } catch (std::exception err) {
+    }
+    catch (std::exception err) {
       std::cerr << err.what();
     }
   }
@@ -47,10 +47,8 @@ public:
     ++this->m_timestep;
     for (int j{0}; j < this->m_sy; ++j) {
       for (int i{0}; i < this->m_sx; ++i) {
-        this->ex.set(i * this->m_sy + j,
-                     this->ex.get(i * this->m_sy + j) + 0.001f);
-        this->bx.set(i * this->m_sy + j,
-                     this->bx.get(i * this->m_sy + j) + 0.001f);
+        this->ex.set(i * this->m_sy + j, this->ex.get(i * this->m_sy + j) + 0.001f);
+        this->bx.set(i * this->m_sy + j, this->bx.get(i * this->m_sy + j) + 0.001f);
       }
     }
   }
@@ -58,10 +56,8 @@ public:
     --this->m_timestep;
     for (int j{0}; j < this->m_sy; ++j) {
       for (int i{0}; i < this->m_sx; ++i) {
-        this->ex.set(i * this->m_sy + j,
-                     this->ex.get(i * this->m_sy + j) - 0.001f);
-        this->bx.set(i * this->m_sy + j,
-                     this->bx.get(i * this->m_sy + j) - 0.001f);
+        this->ex.set(i * this->m_sy + j, this->ex.get(i * this->m_sy + j) - 0.001f);
+        this->bx.set(i * this->m_sy + j, this->bx.get(i * this->m_sy + j) - 0.001f);
       }
     }
   }
