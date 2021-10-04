@@ -1,6 +1,7 @@
 # # # # # Directories # # # # # # # # # #
 #
-ROOT_DIR := $(realpath ${CURDIR})/
+ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
 # directory for the building
 BUILD_DIR := build
 # directory for the executable
@@ -15,7 +16,9 @@ SRC_DIR := src
 # for external libraries
 LIB_DIR := lib
 # external header-only libraries
-INC_DIR := include include/nttiny $(shell find ${LIB_DIR}/imgui -type d) $(shell find ${LIB_DIR}/implot -type d)
+IMGUI_INCDIR := $(shell find ${ROOT_DIR}${LIB_DIR}/imgui -type d)
+IMPLOT_INCDIR := $(shell find ${ROOT_DIR}${LIB_DIR}/implot -type d)
+INC_DIR := include include/nttiny $(subst ${ROOT_DIR},,$(IMGUI_INCDIR) $(IMPLOT_INCDIR))
 
 OS := $(shell uname -s | tr A-Z a-z)
 ifeq (${OS}, darwin)
@@ -89,15 +92,15 @@ CXXFLAGS := $(CXXFLAGS) $(CONFFLAGS)
 
 # # # # # File collection # # # # # # # # # # #
 #
-SRCS_CXX := $(shell find ${__SRC_DIR} -name *.cpp)
+SRCS_CXX := $(shell find ${__SRC_DIR} -name \*.cpp)
 OBJS_CXX := $(subst ${__SRC_DIR},${__BUILD_DIR},$(SRCS_CXX:%=%.o))
 DEPS_CXX := $(OBJS_CXX:.o=.d)
 
-SRCS_CC := $(shell find ${__SRC_DIR} -name *.c)
+SRCS_CC := $(shell find ${__SRC_DIR} -name \*.c)
 OBJS_CC := $(subst ${__SRC_DIR},${__BUILD_DIR},$(SRCS_CC:%=%.o))
 DEPS_CC := $(OBJS_CC:.o=.d)
 
-SLIBS_CXX := $(shell find ${__LIB_DIR} -name *.cpp)
+SLIBS_CXX := $(shell find ${__LIB_DIR} -name \*.cpp)
 OLIBS_CXX := $(subst ${__LIB_DIR},${__LIBBUILD_DIR},$(SLIBS_CXX:%=%.o))
 DLIBS_CXX := $(OLIBS_CXX:.o=.d)
 
@@ -108,24 +111,27 @@ LDFLAGS := $(LDFALGS) $(addprefix -L, $(__LIB_DIR)) $(addprefix -l, $(LIBRARIES)
 NTTINY_LDFLAGS := $(LDFLAGS)
 
 # for static library only:
-NTTINY_INCLUDES := $(wildcard include/nttiny/*.h)
-PLOG_INCLUDES := $(shell find include/plog -name *.h)
-IMGUI_INCLUDES := $(wildcard lib/imgui/*.h) $(wildcard lib/imgui/backends/*.h) lib/implot/implot.h
-GLAD_INCLUDES := lib/glad/glad.h
-KHR_INCLUDES := lib/KHR/khrplatform.h
-GLFW_INCLUDES := lib/GLFW/glfw3.h
+NTTINY_INCLUDES := $(wildcard ${ROOT_DIR}/include/nttiny/*.h)
+PLOG_INCLUDES := $(shell find ${ROOT_DIR}/include/plog -name \*.h)
+IMGUI_INCLUDES := $(wildcard ${__LIB_DIR}/imgui/*.h) $(wildcard ${__LIB_DIR}/imgui/backends/*.h) ${__LIB_DIR}/implot/implot.h
+GLAD_INCLUDES := ${__LIB_DIR}/glad/glad.h
+KHR_INCLUDES := ${__LIB_DIR}/KHR/khrplatform.h
+GLFW_INCLUDES := ${__LIB_DIR}/GLFW/glfw3.h
 ALL_INCLUDES_LIBS := $(NTTINY_INCLUDES) $(PLOG_INCLUDES) $(IMGUI_INCLUDES) $(GLAD_INCLUDES) $(KHR_INCLUDES) $(GLFW_INCLUDES)
 
-COMPILED_ST_LIBS := lib/libfmt.a lib/libglfw3.a
+COMPILED_ST_LIBS := ${__LIB_DIR}/libfmt.a ${__LIB_DIR}/libglfw3.a
 ALL_INCLUDES_LIBS := $(ALL_INCLUDES_LIBS) $(COMPILED_ST_LIBS)
 
-STATIC_INCLUDES_LIBS := $(NTTINY_INCLUDES) $(PLOG_INCLUDES)
+STATIC_INCLUDES_LIBS := $(subst ${ROOT_DIR}/,,$(NTTINY_INCLUDES) $(PLOG_INCLUDES))
 STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/imgui/, $(notdir $(IMGUI_INCLUDES)))
 STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/glad/, $(notdir $(GLAD_INCLUDES)))
 STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/KHR/, $(notdir $(KHR_INCLUDES)))
 STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/GLFW/, $(notdir $(GLFW_INCLUDES)))
 
 STATIC_INCLUDES_LIBS := $(addprefix ${__BIN_DIR}/,$(STATIC_INCLUDES_LIBS) $(notdir $(COMPILED_ST_LIBS)))
+
+print:
+	@echo ${STATIC_INCLUDES_LIBS}
 
 JOINED_INCLUDES_LIBS := $(join $(addsuffix :,$(ALL_INCLUDES_LIBS)), $(STATIC_INCLUDES_LIBS))
 GET_ALL  = $(word 1,$(subst :, ,$1))
@@ -195,7 +201,7 @@ ${__TARGET} : $(ALL_OBJECTS)
 define generateRules
 $(1): $(2)
 	@echo [C]ompiling $(subst ${ROOT_DIR},,$(2))
-	@mkdir -p ${BIN_DIR}
+	@mkdir -p ${__BIN_DIR}
 	@mkdir -p $(dir $(1))
 	$(HIDE)$(3) $(INCFLAGS) $(DEFINITIONS) $(CPPFLAGS) $(CXXFLAGS) -c $(2) -o $(1)
 endef
@@ -204,17 +210,17 @@ $(foreach obj, $(OBJS_CC), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_
 $(foreach obj, $(OLIBS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${__LIBBUILD_DIR},${__LIB_DIR},$(subst .o,,$(obj))), ${CXX})))
 
 clean:
-	rm -rf ${BUILD_DIR} ${BIN_DIR}
+	rm -rf ${__BUILD_DIR} ${__BIN_DIR}
 
 cleanlib:
-	rm -rf ${LIB_DIR}/${BUILD_DIR}
+	rm -rf ${__LIB_DIR}/${BUILD_DIR}
 
 -include $(DEPS_CXX) $(DEPS_CC) $(DLIBS_CXX)
 
 .PHONY: clang-all clang-tidy-naming clang-format-fix clang-format clang-tidy clang-tidy-bugprone
 
 SOURCES := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX))
-ALLCODE := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX) $(shell find ${__SRC_DIR} -name *.h))
+ALLCODE := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX) $(shell find ${__SRC_DIR} -name \*.h))
 
 clang-all : clang-tidy-naming clang-format clang-tidy
 
