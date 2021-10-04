@@ -130,33 +130,30 @@ STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/GLFW/, $(not
 
 STATIC_INCLUDES_LIBS := $(addprefix ${__BIN_DIR}/,$(STATIC_INCLUDES_LIBS) $(notdir $(COMPILED_ST_LIBS)))
 
-print:
-	@echo ${STATIC_INCLUDES_LIBS}
-
 JOINED_INCLUDES_LIBS := $(join $(addsuffix :,$(ALL_INCLUDES_LIBS)), $(STATIC_INCLUDES_LIBS))
 GET_ALL  = $(word 1,$(subst :, ,$1))
 GET_STATIC = $(word 2,$(subst :, ,$1))
 
 # # # # # Targets # # # # # # # # # # # # # #
 #
-.PHONY: all help default clean cleanlib static
+.PHONY: nttiny nttiny_help default nttiny_clean nttiny_cleanlib nttiny_static
 
-default : help
+default : nttiny_help
 
-help:
+nttiny_help:
 	@echo "OS identified as \`${OS}\`"
 	@echo
-	@echo "usage: \`make all [OPTIONS]\`"
+	@echo "usage: \`make nttiny [OPTIONS]\`"
 	@echo
 	@echo "options:"
 	@echo "   DEBUG={y|n}             : enable/disable debug mode [default: ${_DEFAULT_DEBUG}]"
 	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation/run mode [default: ${_DEFAULT_VERBOSE}]"
 	@echo "   COMPILER={gcc|clang}    : choose the compiler [default: ${_DEFAULT_COMPILER}]"
 	@echo
-	@echo "cleanup: \`make clean\` or \`make cleanlib\`"
+	@echo "cleanup: \`make nttiny_clean\` or \`make nttiny_cleanlib\`"
 	@echo
 	@echo "to build a static library:"
-	@echo "   \`make static\`"
+	@echo "   \`make nttiny_static\`"
 	@echo
 	@echo "---------------"
 	@echo "for developers:"
@@ -173,11 +170,11 @@ help:
 	@echo
 
 # linking the main app
-all : ${__TARGET}
+nttiny : ${__TARGET}
 
 ALL_OBJECTS := $(OLIBS_CXX) $(OBJS_CXX) $(OBJS_CC)
 
-static : ${__BIN_DIR}/libnttiny.a includes
+nttiny_static : ${__BIN_DIR}/libnttiny.a includes
 
 ${__BIN_DIR}/libnttiny.a : $(filter-out %/main.cpp.o, $(ALL_OBJECTS))
 	@echo [A]rchiving $(subst ${ROOT_DIR},,$@) \<: $(subst ${ROOT_DIR},,$^)
@@ -209,77 +206,16 @@ $(foreach obj, $(OBJS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${BUILD
 $(foreach obj, $(OBJS_CC), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${SRC_DIR},$(subst .o,,$(obj))), ${CC})))
 $(foreach obj, $(OLIBS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${__LIBBUILD_DIR},${__LIB_DIR},$(subst .o,,$(obj))), ${CXX})))
 
-clean:
+nttiny_clean:
 	rm -rf ${__BUILD_DIR} ${__BIN_DIR}
 
-cleanlib:
+nttiny_cleanlib:
 	rm -rf ${__LIB_DIR}/${BUILD_DIR}
 
 -include $(DEPS_CXX) $(DEPS_CC) $(DLIBS_CXX)
 
-.PHONY: clang-all clang-tidy-naming clang-format-fix clang-format clang-tidy clang-tidy-bugprone
+include ${ROOT_DIR}/Makefile.devel
 
-SOURCES := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX))
-ALLCODE := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX) $(shell find ${__SRC_DIR} -name \*.h))
-
-clang-all : clang-tidy-naming clang-format clang-tidy
-
-clang-tidy-naming:
-	@for src in $(SOURCES) ; do \
-		echo "checking namings in $$src:" ;\
-		clang-tidy -quiet -checks='-*,readability-identifier-naming' \
-		    -config="{CheckOptions: [ \
-		    { key: readability-identifier-naming.NamespaceCase, value: lower_case },\
-		    { key: readability-identifier-naming.ClassCase, value: CamelCase  },\
-		    { key: readability-identifier-naming.StructCase, value: CamelCase  },\
-		    { key: readability-identifier-naming.FunctionCase, value: camelBack },\
-		    { key: readability-identifier-naming.VariableCase, value: lower_case },\
-		    { key: readability-identifier-naming.GlobalConstantCase, value: UPPER_CASE }\
-		    ]}" "$$src" -extra-arg=${CXXSTANDARD} -- $(INCFLAGS);\
-	done
-	@echo "clang-tidy-naming -- done"
-
-clang-format:
-	@for src in $(ALLCODE) ; do \
-		var=`clang-format $$src | diff $$src - | wc -l` ; \
-		if [ $$var -ne 0 ] ; then \
-			diff=`clang-format $$src | diff $$src -` ; \
-			echo "$$src:" ; \
-			echo "$$diff" ; \
-			echo ; \
-		fi ; \
-	done
-	@echo "clang-format -- done"
-
-clang-format-fix:
-	@for src in $(ALLCODE) ; do \
-		var=`clang-format $$src | diff $$src - | wc -l` ; \
-		if [ $$var -ne 0 ] ; then \
-			echo "formatting $$src:" ;\
-			diff=`clang-format $$src | diff $$src -` ; \
-			clang-format -i "$$src" ; \
-			echo "$$diff" ; \
-			echo ; \
-		fi ; \
-	done
-	@echo "clang-format-fix -- done"
-
-clang-tidy:
-	@for src in $(SOURCES) ; do \
-		echo "tidying $$src:" ; \
-		clang-tidy -quiet -checks="-*,\
-			clang-diagnostic-*,clang-analyzer-*,modernize-*,-modernize-avoid-c-arrays*,\
-			readability-*,performance-*,openmp-*,mpi-*,-performance-no-int-to-ptr" \
-			-header-filter="${SRC_DIR}/.*" \
-			"$$src" -extra-arg=${CXXSTANDARD} -- $(INCFLAGS); \
-	done
-	@echo "clang-tidy -- done"
-
-clang-tidy-bugprone:
-	@for src in $(SOURCES) ; do \
-		echo "tidying $$src:" ; \
-		clang-tidy -quiet -checks="-*,bugprone-*",\
-			-header-filter="src/.*" \
-			"$$src" -extra-arg=${CXXSTANDARD} -- $(INCFLAGS); \
-	done
-	@echo "clang-tidy-bugprone -- done"
+NTTINY_INCFLAGS := $(addprefix -I, ${__BIN_DIR}/include) $(addprefix -I, ${__BIN_DIR}/include/imgui)
+NTTINY_LDFLAGS := $(addprefix -L, ${__BIN_DIR}/)
+NTTINY_LIBS := $(addprefix -l, $(LIBRARIES) nttiny) $(addprefix -framework , $(FRAMEWORKS))
