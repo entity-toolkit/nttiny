@@ -7,9 +7,6 @@
 [submodule "extern/plog"]
 	path = extern/plog
 	url = https://github.com/SergiusTheBest/plog.git
-[submodule "extern/rapidcsv"]
-	path = extern/rapidcsv
-	url = https://github.com/d99kris/rapidcsv.git
 [submodule "extern/implot"]
 	path = extern/implot
 	url = https://github.com/epezent/implot.git

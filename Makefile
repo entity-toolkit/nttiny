@@ -1,147 +1,123 @@
 # # # # # Directories # # # # # # # # # #
 #
-ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-
+NTTINY_ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 # directory for the building
-BUILD_DIR := build
+NTTINY_BUILD_DIR := build
 # directory for the executable
-BIN_DIR := bin
+NTTINY_BIN_DIR := bin
 
-TARGET := main
+NTTINY_TARGET := nttiny.example
 # static libraries
-LIBRARIES := glfw3 fmt
+NTTINY_DEP_LIBRARIES := glfw3
 
-SRC_DIR := src
+NTTINY_SRC_DIR := nttiny
 
 # for external libraries
-LIB_DIR := lib
-# external header-only libraries
-IMGUI_INCDIR := $(shell find ${ROOT_DIR}${LIB_DIR}/imgui -type d)
-IMPLOT_INCDIR := $(shell find ${ROOT_DIR}${LIB_DIR}/implot -type d)
-INC_DIR := include include/nttiny $(subst ${ROOT_DIR},,$(IMGUI_INCDIR) $(IMPLOT_INCDIR))
-
-OS := $(shell uname -s | tr A-Z a-z)
-ifeq (${OS}, darwin)
-	FRAMEWORKS := Cocoa OpenGL IOKit
-else ifeq (${OS}, linux)
-	LIBRARIES := $(LIBRARIES) GL X11 pthread Xrandr Xi dl
-else
-	$(error Unrecognized operating system. Unable to set frameworks.)
-endif
+# NTTINY_LIB_DIR := lib
+NTTINY_EXTERN_DIR := extern
 
 # appending path
 # `__` means absolute path will be used ...
 # ... these variables are dummy
-__BUILD_DIR := ${ROOT_DIR}${BUILD_DIR}
-__BIN_DIR := ${ROOT_DIR}${BIN_DIR}
-__SRC_DIR := ${ROOT_DIR}${SRC_DIR}
-__LIB_DIR := ${ROOT_DIR}${LIB_DIR}
-__INC_DIR := $(addprefix ${ROOT_DIR},$(INC_DIR))
-__LIBBUILD_DIR := ${ROOT_DIR}${LIB_DIR}/${BUILD_DIR}
-__TARGET := ${__BIN_DIR}/${TARGET}
+__BUILD_DIR := ${NTTINY_ROOT_DIR}${NTTINY_BUILD_DIR}
+__BIN_DIR := ${NTTINY_ROOT_DIR}${NTTINY_BIN_DIR}
+__SRC_DIR := ${NTTINY_ROOT_DIR}${NTTINY_SRC_DIR}
+# __LIB_DIR := ${NTTINY_ROOT_DIR}${NTTINY_LIB_DIR}
+# __LIBBUILD_DIR := ${NTTINY_ROOT_DIR}${NTTINY_LIB_DIR}/${NTTINY_BUILD_DIR}
+__TARGET := ${__BIN_DIR}/${NTTINY_TARGET}
+
+# # external header-only libraries
+# IMGUI_INCDIR := $(shell find ${ROOT_DIR}${LIB_DIR}/imgui -type d)
+# IMPLOT_INCDIR := $(shell find ${ROOT_DIR}${LIB_DIR}/implot -type d)
+# INC_DIR := include include/nttiny $(subst ${ROOT_DIR},,$(IMGUI_INCDIR) $(IMPLOT_INCDIR))
+
 # # # # # Settings # # # # # # # # # # # #
 #
-_DEFAULT_VERBOSE := n
-_DEFAULT_DEBUG := n
-_DEFAULT_COMPILER := gcc
+NTTINY_OS := $(shell uname -s | tr A-Z a-z)
+ifeq (${NTTINY_OS}, darwin)
+	NTTINY_FRAMEWORKS := Cocoa OpenGL IOKit
+else ifeq (${NTTINY_OS}, linux)
+	NTTINY_LIBRARIES := $(NTTINY_LIBRARIES) GL X11 pthread Xrandr Xi dl
+else
+	$(error Unrecognized operating system. Unable to set frameworks.)
+endif
 
-VERBOSE ?= ${_DEFAULT_VERBOSE}
-DEBUG ?= ${_DEFAULT_DEBUG}
-COMPILER ?= ${_DEFAULT_COMPILER}
+VERBOSE ?= n
+DEBUG ?= n
+COMPILER ?= g++
 
 DEFINITIONS :=
 
 ifeq ($(strip ${VERBOSE}), y)
 	HIDE =
-	PREPFLAGS = -DVERBOSE
+	NTTINY_PREPFLAGS = -DVERBOSE
 else
 	HIDE = @
 endif
 
-# 3-rd party library configurations
-# ...
-
 # # # # # Compiler and flags # # # # # # #
 #
 ifeq ($(strip ${COMPILER}), gcc)
-	CC := gcc
-	CXX := g++
+	NTTINY_CXX := g++
 else
-	CC := clang
-	CXX := clang++
+	NTTINY_CXX := clang++
 endif
-LINK := ${CXX}
-CXXSTANDARD := -std=c++17
-CXX := ${CXX} ${CXXSTANDARD}
+NTTINY_LINK := ${NTTINY_CXX}
+NTTINY_CXXSTANDARD := -std=c++17
+NTTINY_CXX := ${NTTINY_CXX} ${NTTINY_CXXSTANDARD}
 ifeq ($(strip ${DEBUG}), y)
-	CONFFLAGS := -O0 -g
-	PREPFLAGS := $(PREPFLAGS) -DDEBUG
+	NTTINY_CFLAGS := $(NTTINY_PREPFLAGS) -O0 -g -DDEBUG
 else
-	CONFFLAGS := -O3 -Ofast
-	PREPFLAGS := $(PREPFLAGS) -DNDEBUG
+	NTTINY_CFLAGS := $(NTTINY_PREPFLAGS) -O3 -Ofast -DNDEBUG
 endif
+NTTINY_WARNFLAGS := -Wall -Wextra -pedantic
+NTTINY_CFLAGS := $(NTTINY_WARNFLAGS) $(NTTINY_CFLAGS)
 
-# warning flags
-WARNFLAGS := -Wall -Wextra -pedantic
-
-# custom preprocessor flags
-# ...
-
-CPPFLAGS := $(WARNFLAGS) $(PREPFLAGS)
-CXXFLAGS := $(CXXFLAGS) $(CONFFLAGS)
+NTTINY_EXTERNAL_INCLUDES := glfw/include implot imgui imgui/backends plog/include
+NTTINY_INC_DIRS := ${NTTINY_ROOT_DIR} $(shell find ${__SRC_DIR} -type d) ${NTTINY_EXTERN_DIR} $(addprefix ${NTTINY_EXTERN_DIR}/,${NTTINY_EXTERNAL_INCLUDES})
+NTTINY_INCFLAGS := $(addprefix -I,$(NTTINY_INC_DIRS))
 
 # # # # # File collection # # # # # # # # # # #
 #
-SRCS_CXX := $(shell find ${__SRC_DIR} -name \*.cpp)
-OBJS_CXX := $(subst ${__SRC_DIR},${__BUILD_DIR},$(SRCS_CXX:%=%.o))
-DEPS_CXX := $(OBJS_CXX:.o=.d)
+NTTINY_SRCS_CXX := $(shell find ${__SRC_DIR} -name \*.cpp -or -name \*.c)
+NTTINY_OBJS_CXX := $(subst ${__SRC_DIR},${__BUILD_DIR},$(NTTINY_SRCS_CXX:%=%.o))
+NTTINY_DEPS_CXX := $(NTTINY_OBJS_CXX:.o=.d)
 
-SRCS_CC := $(shell find ${__SRC_DIR} -name \*.c)
-OBJS_CC := $(subst ${__SRC_DIR},${__BUILD_DIR},$(SRCS_CC:%=%.o))
-DEPS_CC := $(OBJS_CC:.o=.d)
+# NTTINY_SLIBS_CXX := $(shell find ${__LIB_DIR} -name \*.cpp -or -name \*.c)
+# NTTINY_OLIBS_CXX := $(subst ${__LIB_DIR},${__LIBBUILD_DIR},$(NTTINY_SLIBS_CXX:%=%.o))
+# NTTINY_DLIBS_CXX := $(NTTINY_OLIBS_CXX:.o=.d)
 
-SLIBS_CXX := $(shell find ${__LIB_DIR} -name \*.cpp)
-OLIBS_CXX := $(subst ${__LIB_DIR},${__LIBBUILD_DIR},$(SLIBS_CXX:%=%.o))
-DLIBS_CXX := $(OLIBS_CXX:.o=.d)
-
-INC_DIRS := $(shell find ${__SRC_DIR} -type d) ${__INC_DIR} ${__LIB_DIR}
-INCFLAGS := $(addprefix -I,$(INC_DIRS))
-
-LDFLAGS := $(LDFALGS) $(addprefix -L, $(__LIB_DIR)) $(addprefix -l, $(LIBRARIES)) $(addprefix -framework , $(FRAMEWORKS))
-NTTINY_LDFLAGS := $(LDFLAGS)
-
-# for static library only:
-NTTINY_INCLUDES := $(wildcard ${ROOT_DIR}/include/nttiny/*.h)
-PLOG_INCLUDES := $(shell find ${ROOT_DIR}/include/plog -name \*.h)
-IMGUI_INCLUDES := $(wildcard ${__LIB_DIR}/imgui/*.h) $(wildcard ${__LIB_DIR}/imgui/backends/*.h) ${__LIB_DIR}/implot/implot.h
-GLAD_INCLUDES := ${__LIB_DIR}/glad/glad.h
-KHR_INCLUDES := ${__LIB_DIR}/KHR/khrplatform.h
-GLFW_INCLUDES := ${__LIB_DIR}/GLFW/glfw3.h
-ALL_INCLUDES_LIBS := $(NTTINY_INCLUDES) $(PLOG_INCLUDES) $(IMGUI_INCLUDES) $(GLAD_INCLUDES) $(KHR_INCLUDES) $(GLFW_INCLUDES)
-
-COMPILED_ST_LIBS := ${__LIB_DIR}/libfmt.a ${__LIB_DIR}/libglfw3.a
-ALL_INCLUDES_LIBS := $(ALL_INCLUDES_LIBS) $(COMPILED_ST_LIBS)
-
-STATIC_INCLUDES_LIBS := $(subst ${ROOT_DIR}/,,$(NTTINY_INCLUDES) $(PLOG_INCLUDES))
-STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/imgui/, $(notdir $(IMGUI_INCLUDES)))
-STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/glad/, $(notdir $(GLAD_INCLUDES)))
-STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/KHR/, $(notdir $(KHR_INCLUDES)))
-STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/GLFW/, $(notdir $(GLFW_INCLUDES)))
-
-STATIC_INCLUDES_LIBS := $(addprefix ${__BIN_DIR}/,$(STATIC_INCLUDES_LIBS) $(notdir $(COMPILED_ST_LIBS)))
-
-JOINED_INCLUDES_LIBS := $(join $(addsuffix :,$(ALL_INCLUDES_LIBS)), $(STATIC_INCLUDES_LIBS))
-GET_ALL  = $(word 1,$(subst :, ,$1))
-GET_STATIC = $(word 2,$(subst :, ,$1))
+NTTINY_OBJECTS := $(NTTINY_OBJS_CXX) $(NTTINY_OLIBS_CXX)
 
 # # # # # Targets # # # # # # # # # # # # # #
 #
-.PHONY: nttiny nttiny_help default nttiny_clean nttiny_cleanlib nttiny_static
 
-default : nttiny_help
+nttiny : ${__TARGET}
+
+${__TARGET} : $(NTTINY_OBJECTS)
+	@echo [L]inking $(subst ${NTTINY_ROOT_DIR},,$@) \<: $(subst ${NTTINY_ROOT_DIR},,$^)
+	$(HIDE)${NTTINY_LINK} $(NTTINY_OBJECTS) -o $@ $(LDFLAGS)
+
+${__BUILD_DIR}/%.o : ${__SRC_DIR}/%
+	@echo [C]ompiling $(subst ${ROOT_DIR},,$@)
+	@mkdir -p ${__BIN_DIR}
+	@mkdir -p $(dir $@)
+	$(HIDE)${NTTINY_CXX} $(NTTINY_INCFLAGS) $(DEFINITIONS) $(NTTINY_CFLAGS) -c $^ -o $@
+
+# define generateRules
+# $(1): $(2)
+# 	@echo [C]ompiling $(subst ${ROOT_DIR},,$(2))
+# 	@mkdir -p ${__BIN_DIR}
+# 	@mkdir -p $(dir $(1))
+# 	$(HIDE)$(3) $(INCFLAGS) $(DEFINITIONS) $(CPPFLAGS) $(CXXFLAGS) -c $(2) -o $(1)
+# endef
+# $(foreach obj, $(OBJS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${SRC_DIR},$(subst .o,,$(obj))), ${CXX})))
+# $(foreach obj, $(OBJS_CC), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${SRC_DIR},$(subst .o,,$(obj))), ${CC})))
+# $(foreach obj, $(OLIBS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${__LIBBUILD_DIR},${__LIB_DIR},$(subst .o,,$(obj))), ${CXX})))
+
 
 nttiny_help:
-	@echo "OS identified as \`${OS}\`"
+	@echo "OS identified as \`${NTTINY_OS}\`"
 	@echo
 	@echo "usage: \`make nttiny [OPTIONS]\`"
 	@echo
@@ -154,68 +130,17 @@ nttiny_help:
 	@echo
 	@echo "to build a static library:"
 	@echo "   \`make nttiny_static\`"
-	@echo
-	@echo "---------------"
-	@echo "for developers:"
-	@echo
-	@echo "use \`make [CLANG_COMMAND]\` to check the code matches with best practices & consistent stylistics"
-	@echo
-	@echo "list of all \`[CLANG_COMMAND]\`-s:"
-	@echo "   clang-tidy-naming       : test if the naming of variables/functionts/etc is consistent"
-	@echo "   clang-format            : test if the code formatting is consistent"
-	@echo "   clang-format-fix        : same as \`clang-format\` except now fix the issues"
-	@echo "   clang-tidy              : check if the code contains any bad practices or other deprecated features"
-	@echo "   clang-tidy-bugprone     : check if the code contains any bug-prone features"
-	@echo "   clang-all               : run \`clang-tidy-naming\`, \`clang-format\` and \`clang-tidy\`"
-	@echo
-
-# linking the main app
-nttiny : ${__TARGET}
-
-ALL_OBJECTS := $(OLIBS_CXX) $(OBJS_CXX) $(OBJS_CC)
-
-nttiny_static : ${__BIN_DIR}/libnttiny.a includes
-
-${__BIN_DIR}/libnttiny.a : $(filter-out %/main.cpp.o, $(ALL_OBJECTS))
-	@echo [A]rchiving $(subst ${ROOT_DIR},,$@) \<: $(subst ${ROOT_DIR},,$^)
-	$(HIDE)ar -rcs $@ $^
-
-includes : ${STATIC_INCLUDES_LIBS}
-
-define copyIncludes
-$(1): $(2)
-	@mkdir -p $(dir $(1))
-	$(HIDE)cp -f $(2) $(1)
-endef
-$(foreach j,$(JOINED_INCLUDES_LIBS),$(eval $(call copyIncludes, $(call GET_STATIC, $j), $(call GET_ALL, $j))))
-
-# main executable
-${__TARGET} : $(ALL_OBJECTS)
-	@echo [L]inking $(subst ${ROOT_DIR},,$@) \<: $(subst ${ROOT_DIR},,$^)
-	$(HIDE)${LINK} $(ALL_OBJECTS) -o $@ $(LDFLAGS)
-
-# generate compilation rules for all `.o` files
-define generateRules
-$(1): $(2)
-	@echo [C]ompiling $(subst ${ROOT_DIR},,$(2))
-	@mkdir -p ${__BIN_DIR}
-	@mkdir -p $(dir $(1))
-	$(HIDE)$(3) $(INCFLAGS) $(DEFINITIONS) $(CPPFLAGS) $(CXXFLAGS) -c $(2) -o $(1)
-endef
-$(foreach obj, $(OBJS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${SRC_DIR},$(subst .o,,$(obj))), ${CXX})))
-$(foreach obj, $(OBJS_CC), $(eval $(call generateRules, ${obj}, $(subst ${BUILD_DIR},${SRC_DIR},$(subst .o,,$(obj))), ${CC})))
-$(foreach obj, $(OLIBS_CXX), $(eval $(call generateRules, ${obj}, $(subst ${__LIBBUILD_DIR},${__LIB_DIR},$(subst .o,,$(obj))), ${CXX})))
-
-nttiny_clean:
-	rm -rf ${__BUILD_DIR} ${__BIN_DIR}
-
-nttiny_cleanlib:
-	rm -rf ${__LIB_DIR}/${BUILD_DIR}
-
--include $(DEPS_CXX) $(DEPS_CC) $(DLIBS_CXX)
-
-include ${ROOT_DIR}/Makefile.devel
-
-NTTINY_INCFLAGS := $(addprefix -I, ${__BIN_DIR}/include) $(addprefix -I, ${__BIN_DIR}/include/imgui)
-NTTINY_LDFLAGS := $(addprefix -L, ${__BIN_DIR}/)
-NTTINY_LIBS := $(addprefix -l, $(LIBRARIES) nttiny) $(addprefix -framework , $(FRAMEWORKS))
+	# @echo
+	# @echo "---------------"
+	# @echo "for developers:"
+	# @echo
+	# @echo "use \`make [CLANG_COMMAND]\` to check the code matches with best practices & consistent stylistics"
+	# @echo
+	# @echo "list of all \`[CLANG_COMMAND]\`-s:"
+	# @echo "   clang-tidy-naming       : test if the naming of variables/functionts/etc is consistent"
+	# @echo "   clang-format            : test if the code formatting is consistent"
+	# @echo "   clang-format-fix        : same as \`clang-format\` except now fix the issues"
+	# @echo "   clang-tidy              : check if the code contains any bad practices or other deprecated features"
+	# @echo "   clang-tidy-bugprone     : check if the code contains any bug-prone features"
+	# @echo "   clang-all               : run \`clang-tidy-naming\`, \`clang-format\` and \`clang-tidy\`"
+	# @echo

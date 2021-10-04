@@ -55,28 +55,6 @@ mv $NTTINY_PATH/extern/glfw/build/src/libglfw3.a $NTTINY_PATH/lib/
 unset NTTINY_PATH
 ```
 
-### `fmt`
-
-```shell
-# for convenience define the path to source code as a variable
-export NTTINY_PATH=...
-
-cd $NTTINY_PATH/extern/fmt
-# configure cmake
-cmake -B build -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE
-cd build
-# compile
-make -j <NCORES>
-
-# move the static library to `lib/`
-mv $NTTINY_PATH/extern/fmt/build/libfmt.a $NTTINY_PATH/lib/
-
-# (optional) also move updated header files
-# cp -r $NTTINY_PATH/extern/fmt/include/fmt $NTTINY_PATH/include/
-
-unset NTTINY_PATH
-```
-
 <!-- ### `imgui`, `implot`
 
 This library is compiled with the rest of the project, so need to just copy the proper files to `lib/imgui/`.
@@ -119,6 +97,6 @@ unset NTTINY_PATH
 
 > To find out your OpenGL version run `glxinfo | grep "OpenGL version"`.
 
-2. Download the generated `glad.zip` archive, and unzip it (`unzip glad.zip`). If you do this from the source code directory (`<NTTINY_PATH>`) the headers will be properly placed into `include/glad` and `include/KHR` directories (otherwise, do that manually).
+2. Download the generated `glad.zip` archive, and unzip it (`unzip glad.zip`). If you do this from the source code directory (`<NTTINY_PATH>`) the headers will be properly placed into `extern/glad` and `extern/KHR` directories (otherwise, do that manually).
 
 3. Move the `glad.c` file to a more appropriate place (and change `.c` to `.cpp`): `mv glad.c lib/glad.cpp`.
