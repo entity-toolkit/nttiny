@@ -3,7 +3,6 @@
 #include "api.h"
 
 #include <plog/Log.h>
-#include <fmt/core.h>
 #include <implot.h>
 
 #include <cmath>
@@ -30,7 +29,7 @@ template <class T>
 void Plot2d<T>::scale() {
   ImGui::SetNextItemWidth(120);
   if (ImGui::InputFloat("scale", &this->m_scale, 0.01f, 10.0f, "%.3f")) {
-    PLOGV_(VISPLOGID) << fmt::format("Scale changed to {}.", this->m_scale);
+    PLOGV_(VISPLOGID) << "Scale changed to " << this->m_scale << ".";
   }
 }
 
@@ -42,7 +41,7 @@ void Pcolor2d<T>::draw() {
   auto x1min = this->m_sim->get_x1min(), x1max = this->m_sim->get_x1max();
   auto x2min = this->m_sim->get_x2min(), x2max = this->m_sim->get_x2max();
   auto aspect = (x2max - x2min) / (x1max - x1min);
-  ImGui::Begin(fmt::format("Pcolor2d [{}]", this->m_ID).c_str());
+  ImGui::Begin(("Pcolor2d [" + std::to_string(this->m_ID) + "]").c_str());
   this->scale();
   // Choose field component to display
   std::string field_selected;
@@ -55,15 +54,14 @@ void Pcolor2d<T>::draw() {
       ++i;
     }
     if (ImGui::Combo("", &this->m_field_selected, field_names, IM_ARRAYSIZE(field_names))) {
-      PLOGV_(VISPLOGID) << fmt::format("Pcolor2d field changed to {}.",
-                                       field_names[this->m_field_selected]);
+      PLOGV_(VISPLOGID) << "Pcolor2d field changed to " << field_names[this->m_field_selected] << ".";
     }
     field_selected = static_cast<std::string>(field_names[this->m_field_selected]);
   }
   // setup axes
   int dim = this->m_sim->fields[field_selected]->get_dimension();
   if (dim != 2) {
-    PLOGE_(VISPLOGID) << fmt::format("Attempting to plot {}D data as a 2D heatmap.", dim);
+    PLOGE_(VISPLOGID) << "Attempting to plot " << dim << "D data as a 2D heatmap.";
   }
   ImPlot::PushColormap(this->m_cmap);
   // TODO: add log colormap here
@@ -90,8 +88,7 @@ void Pcolor2d<T>::draw() {
     if (ImPlot::ColormapButton(
             ImPlot::GetColormapName(this->m_cmap), ImVec2(this->m_sidebar_w, 0), this->m_cmap)) {
       this->m_cmap = (this->m_cmap + 1) % ImPlot::GetColormapCount();
-      PLOGV_(VISPLOGID) << fmt::format("Changed colormap to {}.",
-                                       ImPlot::GetColormapName(this->m_cmap));
+      PLOGV_(VISPLOGID) << "Changed colormap to " << ImPlot::GetColormapName(this->m_cmap) << ".";
     }
     float vmin, vmax;
     vmin = std::min(this->m_vmin, this->m_vmax);
@@ -106,7 +103,7 @@ void Pcolor2d<T>::draw() {
     ImGui::InputFloat("min", &this->m_vmin, 0.0f, 1000.0f, "%.3f");
     ImGui::Checkbox("log", &this->m_log);
     if (ImGui::Button("reset")) {
-      PLOGV_(VISPLOGID) << fmt::format("Reseting vmin & vmax for Pcolor2d.");
+      PLOGV_(VISPLOGID) << "Reseting vmin & vmax for Pcolor2d.";
       auto minmax = findMinMax(this->m_sim->fields[field_selected]->get_data(),
                                this->m_sim->fields[field_selected]->get_size(0)
                                    * this->m_sim->fields[field_selected]->get_size(1));
