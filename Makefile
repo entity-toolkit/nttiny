@@ -106,6 +106,31 @@ INCFLAGS := $(addprefix -I,$(INC_DIRS))
 
 LDFLAGS := $(LDFALGS) $(addprefix -L, $(__LIB_DIR)) $(addprefix -l, $(LIBRARIES)) $(addprefix -framework , $(FRAMEWORKS))
 NTTINY_LDFLAGS := $(LDFLAGS)
+
+# for static library only:
+NTTINY_INCLUDES := $(wildcard include/nttiny/*.h)
+PLOG_INCLUDES := $(shell find include/plog -name *.h)
+IMGUI_INCLUDES := $(wildcard lib/imgui/*.h) $(wildcard lib/imgui/backends/*.h) lib/implot/implot.h
+GLAD_INCLUDES := lib/glad/glad.h
+KHR_INCLUDES := lib/KHR/khrplatform.h
+GLFW_INCLUDES := lib/GLFW/glfw3.h
+ALL_INCLUDES_LIBS := $(NTTINY_INCLUDES) $(PLOG_INCLUDES) $(IMGUI_INCLUDES) $(GLAD_INCLUDES) $(KHR_INCLUDES) $(GLFW_INCLUDES)
+
+COMPILED_ST_LIBS := lib/libfmt.a lib/libglfw3.a
+ALL_INCLUDES_LIBS := $(ALL_INCLUDES_LIBS) $(COMPILED_ST_LIBS)
+
+STATIC_INCLUDES_LIBS := $(NTTINY_INCLUDES) $(PLOG_INCLUDES)
+STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/imgui/, $(notdir $(IMGUI_INCLUDES)))
+STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/glad/, $(notdir $(GLAD_INCLUDES)))
+STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/KHR/, $(notdir $(KHR_INCLUDES)))
+STATIC_INCLUDES_LIBS := $(STATIC_INCLUDES_LIBS) $(addprefix include/GLFW/, $(notdir $(GLFW_INCLUDES)))
+
+STATIC_INCLUDES_LIBS := $(addprefix ${__BIN_DIR}/,$(STATIC_INCLUDES_LIBS) $(notdir $(COMPILED_ST_LIBS)))
+
+JOINED_INCLUDES_LIBS := $(join $(addsuffix :,$(ALL_INCLUDES_LIBS)), $(STATIC_INCLUDES_LIBS))
+GET_ALL  = $(word 1,$(subst :, ,$1))
+GET_STATIC = $(word 2,$(subst :, ,$1))
+
 # # # # # Targets # # # # # # # # # # # # # #
 #
 .PHONY: all help default clean cleanlib static
@@ -146,11 +171,20 @@ all : ${__TARGET}
 
 ALL_OBJECTS := $(OLIBS_CXX) $(OBJS_CXX) $(OBJS_CC)
 
-static : ${__BIN_DIR}/libnttiny.a
+static : ${__BIN_DIR}/libnttiny.a includes
 
 ${__BIN_DIR}/libnttiny.a : $(filter-out %/main.cpp.o, $(ALL_OBJECTS))
 	@echo [A]rchiving $(subst ${ROOT_DIR},,$@) \<: $(subst ${ROOT_DIR},,$^)
 	$(HIDE)ar -rcs $@ $^
+
+includes : ${STATIC_INCLUDES_LIBS}
+
+define copyIncludes
+$(1): $(2)
+	@mkdir -p $(dir $(1))
+	$(HIDE)cp -f $(2) $(1)
+endef
+$(foreach j,$(JOINED_INCLUDES_LIBS),$(eval $(call copyIncludes, $(call GET_STATIC, $j), $(call GET_ALL, $j))))
 
 # main executable
 ${__TARGET} : $(ALL_OBJECTS)
