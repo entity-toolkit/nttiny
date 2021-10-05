@@ -4,7 +4,7 @@
 build/
 bin/
 *.tmp
-lib/*.a
+lib/
 run.sh
 imgui.ini
 
