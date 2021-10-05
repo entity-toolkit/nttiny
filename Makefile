@@ -61,9 +61,9 @@ NTTINY_LINK := ${NTTINY_CXX}
 NTTINY_CXXSTANDARD := -std=c++17
 NTTINY_CXX := ${NTTINY_CXX} ${NTTINY_CXXSTANDARD}
 ifeq ($(strip ${DEBUG}), y)
-	NTTINY_CFLAGS := $(NTTINY_PREPFLAGS) -O0 -g -DDEBUG
+	NTTINY_CFLAGS := $(NTTINY_PREPFLAGS) -O0 -g -DDEBUG -fPIE
 else
-	NTTINY_CFLAGS := $(NTTINY_PREPFLAGS) -O3 -Ofast -DNDEBUG
+	NTTINY_CFLAGS := $(NTTINY_PREPFLAGS) -O3 -Ofast -DNDEBUG -fPIE
 endif
 NTTINY_WARNFLAGS := -Wall -Wextra -pedantic
 NTTINY_CFLAGS := $(NTTINY_WARNFLAGS) $(NTTINY_CFLAGS)
@@ -152,7 +152,9 @@ nttiny_cleanlib:
 -include $(NTTINY_DEPS_CXX) $(NTTINY_DLIBS_CXX)
 
 NTTINY_LINKFLAGS := $(NTTINY_LDFLAGS) $(addprefix -L, ${__BUILD_DIR}) $(addprefix -l, nttiny)
+NTTINY_LIBS := ${__BUILD_DIR}/lib/libglfw3.a ${__BUILD_DIR}/libnttiny.a
 
 # exported variables to use in the upstream:
 # . . . ${NTTINY_INCFLAGS}
 # . . . ${NTTINY_LINKFLAGS}
+# . . . ${NTTINY_LIBS}
