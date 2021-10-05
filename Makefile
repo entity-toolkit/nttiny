@@ -148,7 +148,7 @@ nttiny_cleanlib:
 
 -include $(NTTINY_DEPS_CXX) $(NTTINY_DLIBS_CXX)
 
-NTTINY_LINKFLAGS := $(NTTINY_LDFLAGS) -lnttiny
+NTTINY_LINKFLAGS := $(NTTINY_LDFLAGS) $(addprefix -L, ${__BUILD_DIR}) $(addprefix -l, nttiny)
 
 # exported variables to use in the upstream:
 # . . . ${NTTINY_INCFLAGS}

@@ -18,16 +18,16 @@ To build a static library simply run `make nttiny_static [OPTIONS]`.
 
 File `src/main.cpp` contains an example usage of the `nttiny` as a standalone app. In most of the scenarios, however, you would need to build and use `nttiny` as a static library. To do that simply include `nttiny/Makefile` in your project's Makefile, add a dependency of your desired target on `nttiny_static`, and use `NTTINY_LINKFLAGS` and `NTTINY_INCFLAGS` for linking/compilation. A typical Makefile would look something like this:
 
-```shell
-all : nttiny_static myapp.exec
+```Makefile
+all: nttiny_static myapp
 
-myapp.exec : %.o
-  ${link} %^ -o $@ $(NTTINY_LINKFLAGS)
+myapp : $(OBJS)
+	${CXX} $< -o $@ $(NTTINY_LINKFLAGS)
 
-%.o : %.cpp
-  ${compile} $(NTTINY_INCFLAGS) -c $^ -o $@
+%.cpp.o : %.cpp
+	${CXX} $(NTTINY_INCFLAGS) -c $^ -o $@
 
-# assuming nttiny is in `extern/` directory of your code
+# assuming `nttiny` is in `extern` directory
 include extern/nttiny/Makefile
 ```
 
