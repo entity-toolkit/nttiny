@@ -31,6 +31,8 @@ myapp : $(OBJS)
 include extern/nttiny/Makefile
 ```
 
+---
+
 ### Note on `glad`
 
 `GLAD` and `KHR` for `GL=4.4` is included in the repo. If for some reason you might have other version of `openGL`, use the following instruction to obtain the proper `.cpp` and `.h` files.
