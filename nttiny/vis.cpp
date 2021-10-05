@@ -47,7 +47,7 @@ Visualization<T>::Visualization(int win_width, int win_height, bool resizable)
   ImGui::CreateContext();
   ImPlot::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+  io.ConfigFlags |= ImGuiConfigFlags_None;
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(m_window->get_window(), true);
   ImGui_ImplOpenGL3_Init("#version 150");

@@ -4,8 +4,6 @@ OpenGL-based interactive plotting library.
 
 ```shell
 git clone --recursive git@github.com:haykh/nttiny.git
-# or to add as an external library
-git add submodule git@github.com:haykh/nttiny.git extern/nttiny
 # to update submodules
 git submodule update --remote
 ```
@@ -18,7 +16,20 @@ To build a static library simply run `make nttiny_static [OPTIONS]`.
 
 ## Usage
 
-File `src/main.cpp` contains an example usage of the `nttiny` as a standalone app. In most of the scenarios, however, you would need to build and use `nttiny` as a static library. To do that simply include `nttiny/Makefile` in your project's Makefile, add a dependency of your desired target on `nttiny_static`, and use `${NTTINY_LDFLAGS}` and `${NTTINY_INCFLAGS}` for linking/compilation.
+File `src/main.cpp` contains an example usage of the `nttiny` as a standalone app. In most of the scenarios, however, you would need to build and use `nttiny` as a static library. To do that simply include `nttiny/Makefile` in your project's Makefile, add a dependency of your desired target on `nttiny_static`, and use `NTTINY_LINKFLAGS` and `NTTINY_INCFLAGS` for linking/compilation. A typical Makefile would look something like this:
+
+```shell
+all : nttiny_static myapp.exec
+
+myapp.exec : %.o
+  ${link} %^ -o $@ $(NTTINY_LINKFLAGS)
+
+%.o : %.cpp
+  ${compile} $(NTTINY_INCFLAGS) -c $^ -o $@
+
+# assuming nttiny is in `extern/` directory of your code
+include extern/nttiny/Makefile
+```
 
 ### Note on `glad`
 

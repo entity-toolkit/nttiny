@@ -148,11 +148,11 @@ nttiny_cleanlib:
 
 -include $(NTTINY_DEPS_CXX) $(NTTINY_DLIBS_CXX)
 
-NTTINY_LDFLAGS := $(NTTINY_LDFLAGS) -lnttiny
+NTTINY_LINKFLAGS := $(NTTINY_LDFLAGS) -lnttiny
 
-# exported variables to use upstream:
+# exported variables to use in the upstream:
 # . . . ${NTTINY_INCFLAGS}
-# . . . ${NTTINY_LDFLAGS}
+# . . . ${NTTINY_LINKFLAGS}
 
 # @echo
 # @echo "---------------"
