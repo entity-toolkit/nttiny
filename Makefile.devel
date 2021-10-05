@@ -1,3 +1,18 @@
+# @echo
+# @echo "---------------"
+# @echo "for developers:"
+# @echo
+# @echo "use \`make [CLANG_COMMAND]\` to check the code matches with best practices & consistent stylistics"
+# @echo
+# @echo "list of all \`[CLANG_COMMAND]\`-s:"
+# @echo "   clang-tidy-naming       : test if the naming of variables/functionts/etc is consistent"
+# @echo "   clang-format            : test if the code formatting is consistent"
+# @echo "   clang-format-fix        : same as \`clang-format\` except now fix the issues"
+# @echo "   clang-tidy              : check if the code contains any bad practices or other deprecated features"
+# @echo "   clang-tidy-bugprone     : check if the code contains any bug-prone features"
+# @echo "   clang-all               : run \`clang-tidy-naming\`, \`clang-format\` and \`clang-tidy\`"
+# @echo
+
 .PHONY: clang-all clang-tidy-naming clang-format-fix clang-format clang-tidy clang-tidy-bugprone
 
 SOURCES := $(subst ${ROOT_DIR},,$(SRCS_CC) $(SRCS_CXX))

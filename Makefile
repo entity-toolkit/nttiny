@@ -134,10 +134,12 @@ ${__BUILD_DIR}/lib/%.o : ${__EXTERN_DIR}/%
 glfw3 : ${__BUILD_DIR}/lib/libglfw3.a
 
 ${__BUILD_DIR}/lib/libglfw3.a : ${__EXTERN_DIR}/glfw/build/src/libglfw3.a
-	@echo [B]uilding GLFW
-	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/glfw && cmake -B build && cd build && $(MAKE) -j `ncores`
 	@mkdir -p $(dir $@)
 	$(HIDE)cp $< $@
+
+${__EXTERN_DIR}/glfw/build/src/libglfw3.a :
+	@echo [B]uilding GLFW
+	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/glfw && cmake -B build && cd build && $(MAKE) -j `ncores`
 
 nttiny_clean:
 	find ${__BUILD_DIR} -mindepth 1 -name lib -prune -o -exec rm -rf {} +
@@ -145,6 +147,7 @@ nttiny_clean:
 
 nttiny_cleanlib:
 	rm -rf ${__BUILD_DIR}/lib
+	rm -rf ${__EXTERN_DIR}/glfw/build
 
 -include $(NTTINY_DEPS_CXX) $(NTTINY_DLIBS_CXX)
 
@@ -153,18 +156,3 @@ NTTINY_LINKFLAGS := $(NTTINY_LDFLAGS) $(addprefix -L, ${__BUILD_DIR}) $(addprefi
 # exported variables to use in the upstream:
 # . . . ${NTTINY_INCFLAGS}
 # . . . ${NTTINY_LINKFLAGS}
-
-# @echo
-# @echo "---------------"
-# @echo "for developers:"
-# @echo
-# @echo "use \`make [CLANG_COMMAND]\` to check the code matches with best practices & consistent stylistics"
-# @echo
-# @echo "list of all \`[CLANG_COMMAND]\`-s:"
-# @echo "   clang-tidy-naming       : test if the naming of variables/functionts/etc is consistent"
-# @echo "   clang-format            : test if the code formatting is consistent"
-# @echo "   clang-format-fix        : same as \`clang-format\` except now fix the issues"
-# @echo "   clang-tidy              : check if the code contains any bad practices or other deprecated features"
-# @echo "   clang-tidy-bugprone     : check if the code contains any bug-prone features"
-# @echo "   clang-all               : run \`clang-tidy-naming\`, \`clang-format\` and \`clang-tidy\`"
-# @echo
