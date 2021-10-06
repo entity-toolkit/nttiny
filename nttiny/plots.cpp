@@ -41,7 +41,6 @@ void Pcolor2d<T>::draw() {
   auto x1min = this->m_sim->get_x1min(), x1max = this->m_sim->get_x1max();
   auto x2min = this->m_sim->get_x2min(), x2max = this->m_sim->get_x2max();
   auto aspect = (x2max - x2min) / (x1max - x1min);
-  aspect = 1 / aspect;
   ImGui::Begin(("Pcolor2d [" + std::to_string(this->m_ID) + "]").c_str());
   this->scale();
   // Choose field component to display
@@ -77,8 +76,8 @@ void Pcolor2d<T>::draw() {
                         this->m_vmin,
                         this->m_vmax,
                         nullptr,
-                        {x2min, x1min},
-                        {x2max, x1max});
+                        {x1min, x2min},
+                        {x1max, x2max});
     ImPlot::EndPlot();
   }
   // TODO: add close button here
