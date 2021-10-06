@@ -63,8 +63,8 @@ namespace nttiny {
     int m_sx, m_sy;
     float m_x1x2_extent[4];
     int m_timestep;
-    bool m_paused = false;
-    bool m_forward = true;
+    bool m_paused {true};
+    bool m_forward {true};
   };
 }
 
