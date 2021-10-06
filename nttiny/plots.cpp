@@ -47,13 +47,14 @@ void Pcolor2d<T>::draw() {
   std::string field_selected;
   {
     ImGui::Text("Field component to plot:");
-    const char* field_names[2];
+    const char ** field_names;
+    field_names = new const char*[this->m_sim->fields.size()];
     int i{0};
     for (const auto& fld : this->m_sim->fields) {
       field_names[i] = fld.first.c_str();
       ++i;
     }
-    if (ImGui::Combo("", &this->m_field_selected, field_names, IM_ARRAYSIZE(field_names))) {
+    if (ImGui::Combo("", &this->m_field_selected, field_names, this->m_sim->fields.size())) {
       PLOGV_(VISPLOGID) << "Pcolor2d field changed to " << field_names[this->m_field_selected] << ".";
     }
     field_selected = static_cast<std::string>(field_names[this->m_field_selected]);
