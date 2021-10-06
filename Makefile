@@ -52,11 +52,7 @@ endif
 
 # # # # # Compiler and flags # # # # # # #
 #
-ifeq ($(strip ${COMPILER}), gcc)
-	NTTINY_CXX := g++
-else
-	NTTINY_CXX := clang++
-endif
+NTTINY_CXX := ${COMPILER}
 NTTINY_LINK := ${NTTINY_CXX}
 NTTINY_CXXSTANDARD := -std=c++17
 NTTINY_CXX := ${NTTINY_CXX} ${NTTINY_CXXSTANDARD}
