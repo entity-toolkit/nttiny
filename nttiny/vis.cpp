@@ -107,7 +107,6 @@ void Visualization<T>::buildController() {
     ImGui::SameLine();
     if (ImGui::Button(this->m_sim->is_paused() ? "Play" : "Pause")) { this->m_sim->playToggle(); }
   }
-
   // Right step
   {
     ImGui::SameLine();
@@ -118,12 +117,21 @@ void Visualization<T>::buildController() {
     }
     ImGui::PopButtonRepeat();
   }
+
+  // Reset simulation
+  {
+    if (ImGui::Button("Reset")) {
+      if (!this->m_sim->is_paused()) { m_sim->playToggle(); }
+      this->m_sim->reset();
+    }
+  }
+  
   // Simulation speed
   {
     ImGui::Text("Simulation rate:");
     ImGui::SetNextItemWidth(
         std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 6));
-    ImGui::SliderFloat("dt per second", &this->m_tps_limit, 0, 1000);
+    ImGui::SliderFloat("dt per second", &this->m_tps_limit, 0, 100);
   }
   // Simulation direction
   {

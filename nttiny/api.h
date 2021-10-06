@@ -48,6 +48,7 @@ namespace nttiny {
     // updaters
     virtual void stepFwd() = 0;
     virtual void stepBwd() = 0;
+    virtual void reset() = 0;
     void updateData() {
       (!m_paused) ? (m_forward ? stepFwd() : stepBwd()) : void();
     }
