@@ -123,13 +123,13 @@ ${__BUILD_DIR}/%.o : ${__SRC_DIR}/%
 	@echo [C]ompiling $(subst ${ROOT_DIR},,$@)
 	@mkdir -p ${__BIN_DIR}
 	@mkdir -p $(dir $@)
-	$(HIDE)${NTTINY_CXX} $(NTTINY_INCFLAGS) $(DEFINITIONS) $(NTTINY_CFLAGS) -MMD -c $^ -o $@
+	$(HIDE)${NTTINY_CXX} $(NTTINY_INCFLAGS) $(DEFINITIONS) $(NTTINY_CFLAGS) -MMD -c $< -o $@
 
 ${__BUILD_DIR}/lib/%.o : ${__EXTERN_DIR}/%
 	@echo [C]ompiling $(subst ${ROOT_DIR},,$@)
 	@mkdir -p ${__BIN_DIR}
 	@mkdir -p $(dir $@)
-	$(HIDE)${NTTINY_CXX} $(NTTINY_INCFLAGS) $(DEFINITIONS) $(NTTINY_CFLAGS) -MMD -c $^ -o $@
+	$(HIDE)${NTTINY_CXX} $(NTTINY_INCFLAGS) $(DEFINITIONS) $(NTTINY_CFLAGS) -MMD -c $< -o $@
 
 glfw3 : ${__BUILD_DIR}/lib/libglfw3.a
 
