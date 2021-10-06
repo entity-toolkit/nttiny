@@ -26,6 +26,17 @@ void Ax<T>::bindSimulation(SimulationAPI<T>* sim) {
 }
 
 template <class T>
+void Plot2d<T>::close() {
+  if (ImGui::CloseButton("Close", pos, radius)) {
+
+  }
+  // ImGui::SetNextItemWidth(120);
+  // if (ImGui::InputFloat("scale", &this->m_scale, 0.01f, 10.0f, "%.3f")) {
+  //   PLOGV_(VISPLOGID) << "Scale changed to " << this->m_scale << ".";
+  // }
+}
+
+template <class T>
 void Plot2d<T>::scale() {
   ImGui::SetNextItemWidth(120);
   if (ImGui::InputFloat("scale", &this->m_scale, 0.01f, 10.0f, "%.3f")) {

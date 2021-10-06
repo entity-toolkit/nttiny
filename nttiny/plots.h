@@ -9,7 +9,7 @@
 #include <string>
 
 namespace nttiny {
-  
+
   template <class T> class Ax {
   protected:
     SimulationAPI<T> *m_sim;
@@ -31,6 +31,7 @@ namespace nttiny {
     Plot2d(int id) : Ax<T>(id) {}
     ~Plot2d() override = default;
     void scale();
+    void close();
   };
 
   template <class T> class Pcolor2d : public Plot2d<T> {
