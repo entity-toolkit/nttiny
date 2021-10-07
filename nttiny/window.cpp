@@ -18,7 +18,6 @@ Window::Window(int width, int height, const std::string& name, int swapInterval,
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
   m_win = glfwCreateWindow(m_winWidth, m_winHeight, name.c_str(), nullptr, nullptr);
-  glfwSetWindowAspectRatio(m_win, m_winWidth, m_winHeight);
   if (m_win == nullptr) {
     PLOGE_(VISPLOGID) << "Failed to open window.";
   } else {

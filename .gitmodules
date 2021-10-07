@@ -10,3 +10,6 @@
 [submodule "extern/implot"]
 	path = extern/implot
 	url = https://github.com/epezent/implot.git
+[submodule "extern/toml11"]
+	path = extern/toml11
+	url = git@github.com:ToruNiina/toml11.git

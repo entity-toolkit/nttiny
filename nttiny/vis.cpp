@@ -1,6 +1,5 @@
 #include "defs.h"
 #include "vis.h"
-#include "plots.h"
 
 #include "api.h"
 
@@ -118,14 +117,15 @@ void Visualization<T>::buildController() {
     ImGui::PopButtonRepeat();
   }
 
-  // Reset simulation
+  // restart simulation
   {
-    if (ImGui::Button("Reset")) {
+    ImGui::SameLine(ImGui::GetWindowWidth() - 40);
+    if (ImGui::Button("Rst")) {
       if (!this->m_sim->is_paused()) { m_sim->playToggle(); }
-      this->m_sim->reset();
+      this->m_sim->restart();
     }
   }
-  
+
   // Simulation speed
   {
     ImGui::Text("Simulation rate:");
@@ -147,6 +147,17 @@ void Visualization<T>::buildController() {
   // Add plots
   {
     if (ImGui::Button("Add 2d plot")) { addPcolor2d(0, 1); }
+  }
+  // Save state
+  {
+    if (ImGui::Button("Save state")) {
+      auto rewrite {true};
+      for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
+        auto metadata = (*plot)->exportMetadata();
+        metadata.writeToFile("nttiny.toml", rewrite);
+        rewrite = false;
+      }
+    }
   }
   ImGui::End();
 }
@@ -202,8 +213,16 @@ void Visualization<T>::loop() {
       ImGui::NewFrame();
 
       // render all the plots
+      std::vector<bool> close_plots;
       for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
-        (*plot)->draw();
+        close_plots.push_back((*plot)->draw());
+      }
+      for (std::size_t i{0}; i < close_plots.size(); ++i) {
+        if (close_plots[i]) {
+          this->m_plots.erase(this->m_plots.begin() + i);
+          close_plots.erase(close_plots.begin() + i);
+          --i;
+        }
       }
 
       buildController();

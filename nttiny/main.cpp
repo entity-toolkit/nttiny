@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 class FakeSimulation : public nttiny::SimulationAPI<float> {
 public:
@@ -36,13 +37,10 @@ public:
         this->bx.set(i * this->m_sy + j, (f_i / f_sx) * (f_j / f_sy));
       }
     }
-    try {
-      this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
-    }
-    catch (std::exception err) {
-      std::cerr << err.what();
-    }
+    this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
+
   }
+  void restart() override {}
   void stepFwd() override {
     ++this->m_timestep;
     for (int j{0}; j < this->m_sy; ++j) {
@@ -64,12 +62,18 @@ public:
 };
 
 auto main() -> int {
-  FakeSimulation sim(100, 150);
-  sim.setData();
+  try {
+    FakeSimulation sim(100, 150);
+    sim.setData();
 
-  nttiny::Visualization<float> vis;
-  vis.setTPSLimit(30.0f);
-  vis.bindSimulation(&sim);
-  vis.loop();
+    nttiny::Visualization<float> vis;
+    vis.setTPSLimit(30.0f);
+    vis.bindSimulation(&sim);
+    vis.loop();
+  }
+  catch (std::exception& err) {
+    std::cerr << err.what();
+    return -1;
+  }
   return 0;
 }

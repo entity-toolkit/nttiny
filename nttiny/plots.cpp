@@ -4,6 +4,7 @@
 
 #include <plog/Log.h>
 #include <implot.h>
+#include <toml.hpp>
 
 #include <cmath>
 #include <string>
@@ -15,7 +16,7 @@ Ax<T>::Ax(int id) : m_ID(id) {}
 template <class T>
 Ax<T>::~Ax() = default;
 template <class T>
-void Ax<T>::draw() {}
+auto Ax<T>::draw() -> bool { return false; }
 template <class T>
 auto Ax<T>::getId() -> int {
   return -1;
@@ -26,14 +27,12 @@ void Ax<T>::bindSimulation(SimulationAPI<T>* sim) {
 }
 
 template <class T>
-void Plot2d<T>::close() {
-  if (ImGui::CloseButton("Close", pos, radius)) {
-
+auto Plot2d<T>::close() -> bool {
+  if (ImGui::Button("X")) {
+    return true;
+  } else {
+    return false;
   }
-  // ImGui::SetNextItemWidth(120);
-  // if (ImGui::InputFloat("scale", &this->m_scale, 0.01f, 10.0f, "%.3f")) {
-  //   PLOGV_(VISPLOGID) << "Scale changed to " << this->m_scale << ".";
-  // }
 }
 
 template <class T>
@@ -45,7 +44,8 @@ void Plot2d<T>::scale() {
 }
 
 template <class T>
-void Pcolor2d<T>::draw() {
+auto Pcolor2d<T>::draw() -> bool {
+  bool close;
   float plot_size = this->m_plot_size * this->m_scale;
   float cmap_h = this->m_cmap_h * this->m_scale;
   // TODO: this shall come from simulation
@@ -53,7 +53,11 @@ void Pcolor2d<T>::draw() {
   auto x2min = this->m_sim->get_x2min(), x2max = this->m_sim->get_x2max();
   auto aspect = (x2max - x2min) / (x1max - x1min);
   ImGui::Begin(("Pcolor2d [" + std::to_string(this->m_ID) + "]").c_str());
-  this->scale();
+  {
+    this->scale();
+    ImGui::SameLine(ImGui::GetWindowWidth() - 30);
+    close = this->close();
+  }
   // Choose field component to display
   std::string field_selected;
   {
@@ -127,6 +131,20 @@ void Pcolor2d<T>::draw() {
   ImGui::PopItemWidth();
   ImPlot::PopColormap();
   ImGui::End();
+  return close;
+}
+
+template <class T>
+auto Pcolor2d<T>::exportMetadata() -> PlotMetadata {
+  PlotMetadata metadata;
+  metadata.m_ID = this->m_ID;
+  metadata.m_type = "Pcolor2d";
+  metadata.m_log = m_log;
+  metadata.m_vmin = m_vmin;
+  metadata.m_vmax = m_vmax;
+  metadata.m_cmap = ImPlot::GetColormapName(m_cmap);
+  metadata.m_field_selected = m_field_selected;
+  return metadata;
 }
 
 // template <typename T>
