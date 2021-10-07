@@ -74,6 +74,15 @@ void Visualization<T>::addPcolor2d(float vmin, float vmax) {
 }
 
 template <class T>
+void Visualization<T>::addScatter2d() {
+  PLOGD_(VISPLOGID) << "Opening Scatter2d.";
+  auto myplot{std::make_unique<Scatter2d<T>>(this->m_id)};
+  ++this->m_id;
+  this->m_plots.push_back(std::move(myplot));
+  this->bindSimulation();
+}
+
+template <class T>
 void Visualization<T>::bindSimulation() {
   for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
     (*plot)->bindSimulation(this->m_sim);
@@ -147,6 +156,7 @@ void Visualization<T>::buildController() {
   // Add plots
   {
     if (ImGui::Button("Add 2d plot")) { addPcolor2d(0, 1); }
+    if (ImGui::Button("Add scatter plot")) { addScatter2d(); }
   }
   // Save state
   {

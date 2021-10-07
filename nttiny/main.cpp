@@ -10,6 +10,11 @@ public:
   nttiny::Data<float> ex;
   nttiny::Data<float> bx;
 
+  nttiny::Data<float> electrons_x;
+  nttiny::Data<float> electrons_y;
+  nttiny::Data<float> positrons_x;
+  nttiny::Data<float> positrons_y;
+
   FakeSimulation(int sx, int sy) : nttiny::SimulationAPI<float>{sx, sy} {
     this->ex.allocate(sx * sy);
     this->bx.allocate(sx * sy);
@@ -19,6 +24,16 @@ public:
     this->bx.set_size(1, sy);
     this->ex.set_dimension(2);
     this->bx.set_dimension(2);
+
+    this->electrons_x.allocate(1000);
+    this->electrons_y.allocate(1000);
+    this->positrons_x.allocate(1000);
+    this->positrons_y.allocate(1000);
+
+    this->electrons_x.set_size(0, 1000);
+    this->electrons_y.set_size(0, 1000);
+    this->positrons_x.set_size(0, 1000);
+    this->positrons_y.set_size(0, 1000);
   }
   ~FakeSimulation() = default;
   void setData() override {
@@ -39,6 +54,20 @@ public:
     }
     this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
 
+    for (int i = 0; i < 1000; ++i) {
+      this->electrons_x.set(i, m_x1x2_extent[1] * i / 1000.0);
+      this->electrons_y.set(i, m_x1x2_extent[3] * i / 1000.0);
+      this->positrons_x.set(i, 0.1f + m_x1x2_extent[1] * i / 1000.0);
+      this->positrons_y.set(i, 0.1f + m_x1x2_extent[3] * i / 1000.0);
+    }
+    this->particles.insert({{"electrons",
+                                {&(this->electrons_x),
+                                 &(this->electrons_y)}
+                             },{
+                             "positrons",
+                                {&(this->positrons_x),
+                                 &(this->positrons_y)}
+                             }});
   }
   void restart() override {}
   void stepFwd() override {

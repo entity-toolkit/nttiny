@@ -135,6 +135,48 @@ auto Pcolor2d<T>::draw() -> bool {
 }
 
 template <class T>
+auto Scatter2d<T>::draw() -> bool {
+  bool close{false};
+  float plot_size = this->m_plot_size * this->m_scale;
+  auto x1min = this->m_sim->get_x1min(), x1max = this->m_sim->get_x1max();
+  auto x2min = this->m_sim->get_x2min(), x2max = this->m_sim->get_x2max();
+  auto aspect = (x2max - x2min) / (x1max - x1min);
+
+  ImGui::Begin(("Scatter2d [" + std::to_string(this->m_ID) + "]").c_str());
+  {
+    this->scale();
+    ImGui::SameLine(ImGui::GetWindowWidth() - 40);
+    close = this->close();
+  }
+  // Choose particles to display
+  std::string prtl_selected;
+  {
+    ImGui::Text("Particles to plot:");
+    const char ** prtl_names;
+    prtl_names = new const char*[this->m_sim->particles.size()];
+    int i{0};
+    for (const auto& prtl : this->m_sim->particles) {
+      prtl_names[i] = prtl.first.c_str();
+      ++i;
+    }
+    if (ImGui::Combo("", &this->m_prtl_selected, prtl_names, this->m_sim->particles.size())) {
+      PLOGV_(VISPLOGID) << "Scatter2d prtl changed to " << prtl_names[this->m_prtl_selected] << ".";
+    }
+    prtl_selected = static_cast<std::string>(prtl_names[this->m_prtl_selected]);
+  }
+
+  if (ImPlot::BeginPlot("", nullptr, nullptr, ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
+    auto npart {this->m_sim->particles[prtl_selected].first->get_size(0)};
+    ImPlot::PlotScatter(prtl_selected.c_str(),
+                              this->m_sim->particles[prtl_selected].first->get_data(),
+                              this->m_sim->particles[prtl_selected].second->get_data(), npart);
+    ImPlot::EndPlot();
+  }
+  ImGui::End();
+  return close;
+}
+
+template <class T>
 auto Pcolor2d<T>::exportMetadata() -> PlotMetadata {
   PlotMetadata metadata;
   metadata.m_ID = this->m_ID;

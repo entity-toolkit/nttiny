@@ -37,6 +37,7 @@ namespace nttiny {
 
     // ui
     std::map<std::string, Data<T> *> fields;
+    std::map<std::string, std::pair<Data<T> *, Data<T> *>> particles;
 
     // init
     virtual void setData() = 0;

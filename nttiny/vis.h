@@ -48,6 +48,7 @@ namespace nttiny {
     void processControllerInput();
     void loop();
     void addPcolor2d(float vmin, float vmax);
+    void addScatter2d();
   };
 }
 

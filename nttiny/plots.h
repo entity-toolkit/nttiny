@@ -63,19 +63,20 @@ public:
 template <class T> class Plot2d : public Ax<T> {
 protected:
   float m_scale{1.0f};
+  float m_plot_size{350};
 
 public:
   Plot2d(int id) : Ax<T>(id) {}
   ~Plot2d() override = default;
   void scale();
   auto close() -> bool;
+  auto getId() -> int override { return this->m_ID; }
 };
 
 template <class T> class Pcolor2d : public Plot2d<T> {
 protected:
   float m_sidebar_w{60}, m_cmap_h{225};
   bool m_log{false};
-  float m_plot_size{350};
   float m_vmin, m_vmax;
   ImPlotColormap m_cmap{ImPlotColormap_Jet};
   int m_field_selected{0};
@@ -84,9 +85,18 @@ public:
   Pcolor2d(int id, float vmin, float vmax)
       : Plot2d<T>(id), m_vmin(vmin), m_vmax(vmax) {}
   ~Pcolor2d() override = default;
-  auto getId() -> int override { return this->m_ID; }
   auto draw() -> bool override;
   auto exportMetadata() -> PlotMetadata override;
+};
+
+template <class T> class Scatter2d : public Plot2d<T> {
+protected:
+  int m_prtl_selected{0};
+public:
+  Scatter2d(int id) : Plot2d<T>(id) {}
+  ~Scatter2d() override = default;
+  auto draw() -> bool override;
+  auto exportMetadata() -> PlotMetadata override {};
 };
 
   // TODO: 1d plot, linear, log linear and log log, multiple data

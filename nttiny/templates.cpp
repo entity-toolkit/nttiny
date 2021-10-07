@@ -22,3 +22,7 @@ template class nttiny::Data<double>;
 template class nttiny::Pcolor2d<int>;
 template class nttiny::Pcolor2d<float>;
 template class nttiny::Pcolor2d<double>;
+
+template class nttiny::Scatter2d<int>;
+template class nttiny::Scatter2d<float>;
+template class nttiny::Scatter2d<double>;
