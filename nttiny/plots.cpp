@@ -165,8 +165,14 @@ auto Scatter2d<T>::draw() -> bool {
     prtl_selected = static_cast<std::string>(prtl_names[this->m_prtl_selected]);
   }
 
+  ImPlot::SetNextPlotLimits(x1min, x1max, x2min, x2max);
   if (ImPlot::BeginPlot("", nullptr, nullptr, ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
     auto npart {this->m_sim->particles[prtl_selected].first->get_size(0)};
+    ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(x1min, x2min));
+    ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(x1max, x2max));
+    ImPlot::PushPlotClipRect();
+    ImPlot::GetPlotDrawList()->AddRect(rmin, rmax, IM_COL32(250,250,240,255));
+    ImPlot::PopPlotClipRect();
     ImPlot::PlotScatter(prtl_selected.c_str(),
                               this->m_sim->particles[prtl_selected].first->get_data(),
                               this->m_sim->particles[prtl_selected].second->get_data(), npart);
