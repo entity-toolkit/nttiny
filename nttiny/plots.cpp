@@ -9,6 +9,9 @@
 #include <cmath>
 #include <string>
 
+#define BELYASH_PINK (ImVec4(1.0f,0.745f,0.745f,1))
+#define ALISA_BLUE (ImVec4(0.588f,0.784f,0.98f,1))
+
 namespace nttiny {
 
 template <class T>
@@ -149,33 +152,59 @@ auto Scatter2d<T>::draw() -> bool {
     close = this->close();
   }
   // Choose particles to display
-  std::string prtl_selected;
+  std::size_t nspec {this->m_sim->particles.size()};
   {
-    ImGui::Text("Particles to plot:");
-    const char ** prtl_names;
-    prtl_names = new const char*[this->m_sim->particles.size()];
-    int i{0};
-    for (const auto& prtl : this->m_sim->particles) {
-      prtl_names[i] = prtl.first.c_str();
-      ++i;
+    if ((this->m_prtl_enabled == nullptr) && (nspec != 0)) {
+      this->m_prtl_names = new const char*[nspec];
+      this->m_prtl_enabled = new bool[nspec];
+      std::size_t i{0};
+      for (const auto& prtl : this->m_sim->particles) {
+        this->m_prtl_enabled[i] = true;
+        this->m_prtl_names[i] = prtl.first.c_str();
+        ++i;
+      }
+    } else {
+      ImGui::BeginGroup();
+      for (std::size_t i{0}; i < nspec; ++i) {
+        ImGui::Checkbox(this->m_prtl_names[i], &(this->m_prtl_enabled[i]));
+        if (i < nspec - 1) { ImGui::SameLine(); }
+      }
+      ImGui::EndGroup();
     }
-    if (ImGui::Combo("", &this->m_prtl_selected, prtl_names, this->m_sim->particles.size())) {
-      PLOGV_(VISPLOGID) << "Scatter2d prtl changed to " << prtl_names[this->m_prtl_selected] << ".";
-    }
-    prtl_selected = static_cast<std::string>(prtl_names[this->m_prtl_selected]);
   }
+  // display scatter plots
+  {
+    ImPlot::SetNextPlotLimits(x1min, x1max, x2min, x2max);
+    if (ImPlot::BeginPlot("", nullptr, nullptr, ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
+      ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(x1min, x2min));
+      ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(x1max, x2max));
+      ImPlot::PushPlotClipRect();
+      ImPlot::GetPlotDrawList()->AddRect(rmin, rmax, IM_COL32(250,250,240,255));
+      ImPlot::PopPlotClipRect();
 
-  ImPlot::SetNextPlotLimits(x1min, x1max, x2min, x2max);
-  if (ImPlot::BeginPlot("", nullptr, nullptr, ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
-    auto npart {this->m_sim->particles[prtl_selected].first->get_size(0)};
-    ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(x1min, x2min));
-    ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(x1max, x2max));
-    ImPlot::PushPlotClipRect();
-    ImPlot::GetPlotDrawList()->AddRect(rmin, rmax, IM_COL32(250,250,240,255));
-    ImPlot::PopPlotClipRect();
-    ImPlot::PlotScatter(prtl_selected.c_str(),
-                              this->m_sim->particles[prtl_selected].first->get_data(),
-                              this->m_sim->particles[prtl_selected].second->get_data(), npart);
+      for (std::size_t i{0}; i < nspec; ++i) {
+        if (this->m_prtl_enabled[i]) {
+          auto spec {this->m_prtl_names[i]};
+          auto npart {this->m_sim->particles[spec].first->get_size(0)};
+          if (i == 0) {
+            ImPlot::SetNextMarkerStyle(IMPLOT_AUTO, IMPLOT_AUTO, ALISA_BLUE, IMPLOT_AUTO, ALISA_BLUE);
+          } else if (i == 1) {
+            ImPlot::SetNextMarkerStyle(IMPLOT_AUTO, IMPLOT_AUTO, BELYASH_PINK, IMPLOT_AUTO, BELYASH_PINK);
+          }
+          ImPlot::PlotScatter(spec,
+                              this->m_sim->particles[spec].first->get_data(),
+                              this->m_sim->particles[spec].second->get_data(), npart);
+
+        }
+      }
+    }
+    // ImPlot::SetNextMarkerStyle(ImPlotMarker_Square, 6, ImVec4(0,1,0,0.5f), IMPLOT_AUTO, ImVec4(0,1,0,1));
+    // ImPlot::PlotScatter("Data 2", xs2, ys2, 50);
+    // ImPlot::PopStyleVar();
+
+    // ImPlot::PlotScatter(prtl_selected.c_str(),
+    //                           this->m_sim->particles[prtl_selected].first->get_data(),
+    //                           this->m_sim->particles[prtl_selected].second->get_data(), npart);
     ImPlot::EndPlot();
   }
   ImGui::End();

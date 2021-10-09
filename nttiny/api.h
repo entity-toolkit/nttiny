@@ -9,12 +9,13 @@
 namespace nttiny {
 
   template <class T> class Data {
-  protected:
+  // protected:
+  public:
     int m_dimension{0};
     int m_size[3]{0, 0, 0};
     T *m_data;
 
-  public:
+  // public:
     Data() = default;
     ~Data() = default;
     void allocate(std::size_t n) { this->m_data = new T[n]; }

@@ -7,6 +7,7 @@
 #include <implot.h>
 #include <toml.hpp>
 
+#include <vector>
 #include <string>
 #include <fstream>
 #include <stdexcept>
@@ -91,12 +92,13 @@ public:
 
 template <class T> class Scatter2d : public Plot2d<T> {
 protected:
-  int m_prtl_selected{0};
+  bool * m_prtl_enabled{nullptr};
+  const char ** m_prtl_names;
 public:
   Scatter2d(int id) : Plot2d<T>(id) {}
   ~Scatter2d() override = default;
   auto draw() -> bool override;
-  auto exportMetadata() -> PlotMetadata override {};
+  auto exportMetadata() -> PlotMetadata override { return PlotMetadata(); }
 };
 
   // TODO: 1d plot, linear, log linear and log log, multiple data
