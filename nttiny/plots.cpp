@@ -194,17 +194,9 @@ auto Scatter2d<T>::draw() -> bool {
           ImPlot::PlotScatter(spec,
                               this->m_sim->particles[spec].first->get_data(),
                               this->m_sim->particles[spec].second->get_data(), npart);
-
         }
       }
     }
-    // ImPlot::SetNextMarkerStyle(ImPlotMarker_Square, 6, ImVec4(0,1,0,0.5f), IMPLOT_AUTO, ImVec4(0,1,0,1));
-    // ImPlot::PlotScatter("Data 2", xs2, ys2, 50);
-    // ImPlot::PopStyleVar();
-
-    // ImPlot::PlotScatter(prtl_selected.c_str(),
-    //                           this->m_sim->particles[prtl_selected].first->get_data(),
-    //                           this->m_sim->particles[prtl_selected].second->get_data(), npart);
     ImPlot::EndPlot();
   }
   ImGui::End();
