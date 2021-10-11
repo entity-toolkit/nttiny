@@ -26,7 +26,7 @@ namespace nttiny {
     [[nodiscard]] auto get_data() const -> T * { return this->m_data; }
     [[nodiscard]] auto get(std::size_t i) const -> T { return this->m_data[i]; }
 
-    void set_size(std::size_t i, int size) { m_size[i] = size; }
+    void set_size(std::size_t i, int size) { this->m_size[i] = size; }
     void set_dimension(int dim) { m_dimension = dim; }
     void set(std::size_t i, T value) { this->m_data[i] = value; }
   };

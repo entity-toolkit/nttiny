@@ -10,7 +10,6 @@
 #include <string>
 
 #define BELYASH_PINK (ImVec4(1.0f,0.745f,0.745f,1))
-#define ALISA_BLUE (ImVec4(0.588f,0.784f,0.98f,1))
 
 namespace nttiny {
 
@@ -186,9 +185,7 @@ auto Scatter2d<T>::draw() -> bool {
         if (this->m_prtl_enabled[i]) {
           auto spec {this->m_prtl_names[i]};
           auto npart {this->m_sim->particles[spec].first->get_size(0)};
-          if (i == 0) {
-            ImPlot::SetNextMarkerStyle(IMPLOT_AUTO, IMPLOT_AUTO, ALISA_BLUE, IMPLOT_AUTO, ALISA_BLUE);
-          } else if (i == 1) {
+          if (i == 1) {
             ImPlot::SetNextMarkerStyle(IMPLOT_AUTO, IMPLOT_AUTO, BELYASH_PINK, IMPLOT_AUTO, BELYASH_PINK);
           }
           ImPlot::PlotScatter(spec,
