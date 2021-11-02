@@ -83,8 +83,7 @@ auto Pcolor2d<T>::draw() -> bool {
   }
   ImPlot::PushColormap(this->m_cmap);
   // TODO: add log colormap here
-  if (ImPlot::BeginPlot(
-          "", nullptr, nullptr, ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
+  if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
     // plot
     ImPlot::PlotHeatmap("",
                         this->m_sim->fields[field_selected]->get_data(),
@@ -173,8 +172,8 @@ auto Scatter2d<T>::draw() -> bool {
   }
   // display scatter plots
   {
-    ImPlot::SetNextPlotLimits(x1min, x1max, x2min, x2max);
-    if (ImPlot::BeginPlot("", nullptr, nullptr, ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
+    ImPlot::SetNextAxisLimits(x1min, x1max, x2min, x2max);
+    if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
       ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(x1min, x2min));
       ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(x1max, x2max));
       ImPlot::PushPlotClipRect();
