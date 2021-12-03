@@ -30,7 +30,7 @@ struct Data {
 
 template <class T> class SimulationAPI {
 public:
-  SimulationAPI(int sx, int sy);
+  SimulationAPI(int, int) {}
   ~SimulationAPI() = default;
 
   // ui
@@ -60,7 +60,7 @@ public:
   void reverse() { m_forward = !m_forward; }
 
 protected:
-  int m_sx, m_sy;
+  // int m_sx, m_sy;
   float m_x1x2_extent[4];
   int m_timestep;
   bool m_paused {true};

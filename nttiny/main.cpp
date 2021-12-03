@@ -7,6 +7,7 @@
 
 class FakeSimulation : public nttiny::SimulationAPI<float> {
 public:
+  int nx1, nx2;
   nttiny::Data<float> ex;
   nttiny::Data<float> bx;
 
@@ -15,9 +16,16 @@ public:
   // nttiny::Data<float> positrons_x;
   // nttiny::Data<float> positrons_y;
 
-  FakeSimulation(int sx, int sy)
-    : nttiny::SimulationAPI<float>{sx, sy},
-      ex{sx, sy}, bx{sx, sy} {
+  FakeSimulation(int sx1, int sx2)
+    : nttiny::SimulationAPI<float>{sx1, sx2},
+      nx1(sx1), nx2(sx2),
+      ex{sx1, sx2},
+      bx{sx1, sx2} {
+    m_x1x2_extent[0] = 1.0f;
+    m_x1x2_extent[1] = 2.0f;
+    m_x1x2_extent[2] = 0.0f;
+    m_x1x2_extent[3] = M_PI;
+  }
     // this->ex.allocate(sx * sy);
     // this->bx.allocate(sx * sy);
     // this->ex.set_size(0, sx);
@@ -36,22 +44,18 @@ public:
     // this->electrons_y.set_size(0, 1000);
     // this->positrons_x.set_size(0, 1000);
     // this->positrons_y.set_size(0, 1000);
-  }
+  // }
   ~FakeSimulation() = default;
   void setData() override {
-    m_x1x2_extent[0] = 1.0f;
-    m_x1x2_extent[1] = 2.0f;
-    m_x1x2_extent[2] = 0.0f;
-    m_x1x2_extent[3] = M_PI;
     this->m_timestep = 0;
-    auto f_sx{static_cast<float>(this->m_sx)};
-    auto f_sy{static_cast<float>(this->m_sy)};
-    for (int j{0}; j < this->m_sy; ++j) {
+    auto f_sx{static_cast<float>(this->nx1)};
+    auto f_sy{static_cast<float>(this->nx2)};
+    for (int j{0}; j < this->nx2; ++j) {
       auto f_j{static_cast<float>(j)};
-      for (int i{0}; i < this->m_sx; ++i) {
+      for (int i{0}; i < this->nx1; ++i) {
         auto f_i{static_cast<float>(i)};
-        this->ex.set(i * this->m_sy + j, 0.5f * (f_i / f_sx) + 0.5f * (f_j / f_sy));
-        this->bx.set(i * this->m_sy + j, (f_i / f_sx) * (f_j / f_sy));
+        this->ex.set(i * this->nx2 + j, 0.5f * (f_i / f_sx) + 0.5f * (f_j / f_sy));
+        this->bx.set(i * this->nx2 + j, (f_i / f_sx) * (f_j / f_sy));
       }
     }
     this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
@@ -74,19 +78,19 @@ public:
   void restart() override {}
   void stepFwd() override {
     ++this->m_timestep;
-    for (int j{0}; j < this->m_sy; ++j) {
-      for (int i{0}; i < this->m_sx; ++i) {
-        this->ex.set(i * this->m_sy + j, this->ex.get(i * this->m_sy + j) + 0.001f);
-        this->bx.set(i * this->m_sy + j, this->bx.get(i * this->m_sy + j) + 0.001f);
+    for (int j{0}; j < this->nx2; ++j) {
+      for (int i{0}; i < this->nx1; ++i) {
+        this->ex.set(i * this->nx2 + j, this->ex.get(i * this->nx2 + j) + 0.001f);
+        this->bx.set(i * this->nx2 + j, this->bx.get(i * this->nx2 + j) + 0.001f);
       }
     }
   }
   void stepBwd() override {
     --this->m_timestep;
-    for (int j{0}; j < this->m_sy; ++j) {
-      for (int i{0}; i < this->m_sx; ++i) {
-        this->ex.set(i * this->m_sy + j, this->ex.get(i * this->m_sy + j) - 0.001f);
-        this->bx.set(i * this->m_sy + j, this->bx.get(i * this->m_sy + j) - 0.001f);
+    for (int j{0}; j < this->nx2; ++j) {
+      for (int i{0}; i < this->nx1; ++i) {
+        this->ex.set(i * this->nx2 + j, this->ex.get(i * this->nx2 + j) - 0.001f);
+        this->bx.set(i * this->nx2 + j, this->bx.get(i * this->nx2 + j) - 0.001f);
       }
     }
   }
