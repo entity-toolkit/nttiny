@@ -13,20 +13,20 @@
 
 namespace nttiny {
 
-template <class T>
-Ax<T>::Ax(int id) : m_ID(id) {}
-template <class T>
-Ax<T>::~Ax() = default;
-template <class T>
-auto Ax<T>::draw() -> bool { return false; }
-template <class T>
-auto Ax<T>::getId() -> int {
-  return -1;
-}
-template <class T>
-void Ax<T>::bindSimulation(SimulationAPI<T>* sim) {
-  this->m_sim = sim;
-}
+// template <class T>
+// Ax<T>::Ax(int id) : m_ID(id) {}
+// template <class T>
+// Ax<T>::~Ax() = default;
+// template <class T>
+// auto Ax<T>::draw() -> bool { return false; }
+// template <class T>
+// auto Ax<T>::getId() -> int {
+//   return -1;
+// }
+// template <class T>
+// void Ax<T>::bindSimulation(SimulationAPI<T>* sim) {
+//   this->m_sim = sim;
+// }
 
 template <class T>
 auto Plot2d<T>::close() -> bool {

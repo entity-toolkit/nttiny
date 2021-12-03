@@ -53,12 +53,12 @@ protected:
   const int m_ID;
 
 public:
-  Ax(int id);
-  virtual ~Ax() = 0;
-  virtual auto draw() -> bool;
-  virtual auto getId() -> int;
-  virtual auto exportMetadata() -> PlotMetadata;
-  void bindSimulation(SimulationAPI<T> *sim);
+  Ax(int id) : m_ID(id) {}
+  virtual ~Ax() = default;
+  virtual auto draw() -> bool { return false; }
+  virtual auto getId() -> int { return -1; }
+  virtual auto exportMetadata() -> PlotMetadata { return PlotMetadata(); }
+  void bindSimulation(SimulationAPI<T> *sim) { this->m_sim = sim; }
 };
 
 template <class T> class Plot2d : public Ax<T> {
@@ -103,19 +103,6 @@ public:
 
   // TODO: 1d plot, linear, log linear and log log, multiple data
 
-  // template<class T>
-  // class Plot : virtual public Plot2d {
-  // private:
-  //   T *m_xvalues, *m_yvalues;
-  //   int *n;
-  // protected:
-  //   float m_ratio;
-  //   float m_plot_size{350};
-  //   std::string m_xlabel, m_ylabel;
-  // public:
-  //   Plot(ImVec2 xlims, ImVec2 ylims, float ratio) : Plot2d(xlims, ylims),
-  //   m_ratio(ratio) {} ~Plot() = default; void draw() override;
-  // };
 }
 
 #endif
