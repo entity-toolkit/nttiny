@@ -62,20 +62,29 @@ auto Pcolor2d<T>::draw() -> bool {
     field_selected = static_cast<std::string>(field_names[this->m_field_selected]);
   }
   // setup axes
-  int dim = this->m_sim->fields[field_selected]->get_dimension();
-  if (dim != 2) {
-    PLOGE_(VISPLOGID) << "Attempting to plot " << dim << "D data as a 2D heatmap.";
-  }
   ImPlot::PushColormap(this->m_cmap);
+
+  double *r_array;
+  double *theta_array;
+  r_array = new double[this->m_sim->fields[field_selected]->get_size(1) + 1];
+  theta_array = new double[this->m_sim->fields[field_selected]->get_size(1) + 1];
+  for (int i {0}; i <= this->m_sim->fields[field_selected]->get_size(1); ++i) {
+    r_array[i] = 1.0 + exp((double)(i) / (double)(this->m_sim->fields[field_selected]->get_size(1)));
+  }
+  for (int j {0}; j <= this->m_sim->fields[field_selected]->get_size(0); ++j) {
+    theta_array[j] = 3.14159265 * (double)(j) / (double)(this->m_sim->fields[field_selected]->get_size(0));
+  }
+
   // TODO: add log colormap here
   if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
     // plot
-    ImPlot::PlotHeatmap("",
+    ImPlot::PlotPolarHeatmap("",
                         this->m_sim->fields[field_selected]->get_data(),
                         this->m_sim->fields[field_selected]->get_size(0),
                         this->m_sim->fields[field_selected]->get_size(1),
                         this->m_vmin,
                         this->m_vmax,
+                        r_array, theta_array,
                         nullptr,
                         {x1min, x2min},
                         {x1max, x2max});

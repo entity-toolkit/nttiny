@@ -10,37 +10,39 @@ public:
   nttiny::Data<float> ex;
   nttiny::Data<float> bx;
 
-  nttiny::Data<float> electrons_x;
-  nttiny::Data<float> electrons_y;
-  nttiny::Data<float> positrons_x;
-  nttiny::Data<float> positrons_y;
+  // nttiny::Data<float> electrons_x;
+  // nttiny::Data<float> electrons_y;
+  // nttiny::Data<float> positrons_x;
+  // nttiny::Data<float> positrons_y;
 
-  FakeSimulation(int sx, int sy) : nttiny::SimulationAPI<float>{sx, sy} {
-    this->ex.allocate(sx * sy);
-    this->bx.allocate(sx * sy);
-    this->ex.set_size(0, sx);
-    this->ex.set_size(1, sy);
-    this->bx.set_size(0, sx);
-    this->bx.set_size(1, sy);
-    this->ex.set_dimension(2);
-    this->bx.set_dimension(2);
+  FakeSimulation(int sx, int sy)
+    : nttiny::SimulationAPI<float>{sx, sy},
+      ex{sx, sy}, bx{sx, sy} {
+    // this->ex.allocate(sx * sy);
+    // this->bx.allocate(sx * sy);
+    // this->ex.set_size(0, sx);
+    // this->ex.set_size(1, sy);
+    // this->bx.set_size(0, sx);
+    // this->bx.set_size(1, sy);
+    // this->ex.set_dimension(2);
+    // this->bx.set_dimension(2);
 
-    this->electrons_x.allocate(1000);
-    this->electrons_y.allocate(1000);
-    this->positrons_x.allocate(1000);
-    this->positrons_y.allocate(1000);
-
-    this->electrons_x.set_size(0, 1000);
-    this->electrons_y.set_size(0, 1000);
-    this->positrons_x.set_size(0, 1000);
-    this->positrons_y.set_size(0, 1000);
+    // this->electrons_x.allocate(1000);
+    // this->electrons_y.allocate(1000);
+    // this->positrons_x.allocate(1000);
+    // this->positrons_y.allocate(1000);
+    //
+    // this->electrons_x.set_size(0, 1000);
+    // this->electrons_y.set_size(0, 1000);
+    // this->positrons_x.set_size(0, 1000);
+    // this->positrons_y.set_size(0, 1000);
   }
   ~FakeSimulation() = default;
   void setData() override {
-    m_x1x2_extent[0] = 0.0f;
-    m_x1x2_extent[1] = 1.0f;
+    m_x1x2_extent[0] = 1.0f;
+    m_x1x2_extent[1] = 2.0f;
     m_x1x2_extent[2] = 0.0f;
-    m_x1x2_extent[3] = 1.5f;
+    m_x1x2_extent[3] = M_PI;
     this->m_timestep = 0;
     auto f_sx{static_cast<float>(this->m_sx)};
     auto f_sy{static_cast<float>(this->m_sy)};
@@ -54,20 +56,20 @@ public:
     }
     this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
 
-    for (int i = 0; i < 1000; ++i) {
-      this->electrons_x.set(i, m_x1x2_extent[1] * i / 1000.0);
-      this->electrons_y.set(i, m_x1x2_extent[3] * i / 1000.0);
-      this->positrons_x.set(i, 0.1f + m_x1x2_extent[1] * i / 1000.0);
-      this->positrons_y.set(i, 0.1f + m_x1x2_extent[3] * i / 1000.0);
-    }
-    this->particles.insert({{"electrons",
-                                {&(this->electrons_x),
-                                 &(this->electrons_y)}
-                             },{
-                             "positrons",
-                                {&(this->positrons_x),
-                                 &(this->positrons_y)}
-                             }});
+    // for (int i = 0; i < 1000; ++i) {
+    //   this->electrons_x.set(i, m_x1x2_extent[1] * i / 1000.0);
+    //   this->electrons_y.set(i, m_x1x2_extent[3] * i / 1000.0);
+    //   this->positrons_x.set(i, 0.1f + m_x1x2_extent[1] * i / 1000.0);
+    //   this->positrons_y.set(i, 0.1f + m_x1x2_extent[3] * i / 1000.0);
+    // }
+    // this->particles.insert({{"electrons",
+    //                             {&(this->electrons_x),
+    //                              &(this->electrons_y)}
+    //                          },{
+    //                          "positrons",
+    //                             {&(this->positrons_x),
+    //                              &(this->positrons_y)}
+    //                          }});
   }
   void restart() override {}
   void stepFwd() override {
@@ -92,7 +94,7 @@ public:
 
 auto main() -> int {
   try {
-    FakeSimulation sim(100, 150);
+    FakeSimulation sim(10, 15);
     sim.setData();
 
     nttiny::Visualization<float> vis;
