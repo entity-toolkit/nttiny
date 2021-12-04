@@ -17,20 +17,20 @@ public:
   // nttiny::Data<float> positrons_y;
 
   FakeSimulation(int sx1, int sx2)
-    : nttiny::SimulationAPI<float>{"cartesian"},
-    // : nttiny::SimulationAPI<float>{"polar"},
+    // : nttiny::SimulationAPI<float>{"cartesian"},
+    : nttiny::SimulationAPI<float>{"polar"},
       nx1(sx1), nx2(sx2),
       ex{sx1, sx2},
       bx{sx1, sx2} {
 
-    // for (int i {0}; i <= sx1; ++i) {
-    //   ex.grid_x1[i] = 1.0 + exp((double)(i) / (double)(sx1));
-    //   bx.grid_x1[i] = 1.0 + exp((double)(i) / (double)(sx1));
-    // }
-    // for (int j {0}; j <= sx2; ++j) {
-    //   ex.grid_x2[j] = 3.14159265 * (double)(j) / (double)(sx2);
-    //   bx.grid_x2[j] = 3.14159265 * (double)(j) / (double)(sx2);
-    // }
+    for (int i {0}; i <= sx1; ++i) {
+      ex.grid_x1[i] = 1.0 + exp((double)(i) / (double)(sx1));
+      bx.grid_x1[i] = 1.0 + exp((double)(i) / (double)(sx1));
+    }
+    for (int j {0}; j <= sx2; ++j) {
+      ex.grid_x2[j] = 3.14159265 * (double)(j) / (double)(sx2);
+      bx.grid_x2[j] = 3.14159265 * (double)(j) / (double)(sx2);
+    }
 
     this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
     m_x1x2_extent[0] = 1.0f;
