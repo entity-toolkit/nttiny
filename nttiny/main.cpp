@@ -5,7 +5,7 @@
 #include <string>
 #include <stdexcept>
 
-class FakeSimulation : public nttiny::SimulationAPI<float> {
+class FieldVisualization : public nttiny::SimulationAPI<float> {
 public:
   int nx1, nx2;
   nttiny::Data<float> ex;
@@ -108,7 +108,7 @@ public:
 
 auto main() -> int {
   try {
-    FakeSimulation sim(20, 5);
+    FieldVisualization sim(20, 5);
     sim.setData();
 
     nttiny::Visualization<float> vis;
