@@ -16,27 +16,27 @@ public:
   // nttiny::Data<float> positrons_x;
   // nttiny::Data<float> positrons_y;
 
-  FakeSimulation(int sx1, int sx2)
+  FieldVisualization(int sx1, int sx2)
     // : nttiny::SimulationAPI<float>{"cartesian"},
     : nttiny::SimulationAPI<float>{"polar"},
       nx1(sx1), nx2(sx2),
       ex{sx1, sx2},
       bx{sx1, sx2} {
-
-    for (int i {0}; i <= sx1; ++i) {
-      ex.grid_x1[i] = 1.0 + exp((double)(i) / (double)(sx1));
-      bx.grid_x1[i] = 1.0 + exp((double)(i) / (double)(sx1));
-    }
-    for (int j {0}; j <= sx2; ++j) {
-      ex.grid_x2[j] = 3.14159265 * (double)(j) / (double)(sx2);
-      bx.grid_x2[j] = 3.14159265 * (double)(j) / (double)(sx2);
-    }
-
-    this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
     m_x1x2_extent[0] = 1.0f;
     m_x1x2_extent[1] = 5.0f;
     m_x1x2_extent[2] = 0.0f;
     m_x1x2_extent[3] = M_PI;
+
+    for (int i {0}; i <= sx1; ++i) {
+      ex.grid_x1[i] = m_x1x2_extent[0] + (m_x1x2_extent[1] - m_x1x2_extent[0]) * (exp((double)(i) / (double)(sx1)) - 1.0) / (exp(1.0) - 1.0);
+      bx.grid_x1[i] = ex.grid_x1[i];
+    }
+    for (int j {0}; j <= sx2; ++j) {
+      ex.grid_x2[j] = m_x1x2_extent[2] + (m_x1x2_extent[3] - m_x1x2_extent[2]) * (double)(j) / (double)(sx2);
+      bx.grid_x2[j] = ex.grid_x2[j];
+    }
+
+    this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
   }
     // this->ex.allocate(sx * sy);
     // this->bx.allocate(sx * sy);
@@ -57,7 +57,6 @@ public:
     // this->positrons_x.set_size(0, 1000);
     // this->positrons_y.set_size(0, 1000);
   // }
-  ~FakeSimulation() = default;
   void setData() override {
     this->m_timestep = 0;
     auto f_sx{(float)(this->nx1)};
@@ -108,7 +107,7 @@ public:
 
 auto main() -> int {
   try {
-    FieldVisualization sim(20, 5);
+    FieldVisualization sim(10, 50);
     sim.setData();
 
     nttiny::Visualization<float> vis;
