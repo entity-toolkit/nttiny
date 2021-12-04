@@ -1,6 +1,8 @@
 #ifndef NTTINY_API_H
 #define NTTINY_API_H
 
+#include "defs.h"
+
 #include <map>
 #include <vector>
 #include <string>
@@ -12,30 +14,44 @@ template <class T>
 struct Data {
   int m_size[2];
   T *m_data;
+  double *grid_x1, *grid_x2;
 
   Data(int nx1, int nx2) : m_size{nx1, nx2} {
+    grid_x1 = new double[m_size[0] + 1];
+    grid_x2 = new double[m_size[1] + 1];
     allocate(nx1 * nx2);
   }
   ~Data() = default;
-  void allocate(std::size_t n) { this->m_data = new T[n]; }
+  void allocate(std::size_t n) {
+    this->m_data = new T[n];
+  }
   [[nodiscard]] auto get_size(std::size_t i) const -> int {
     return this->m_size[i];
   }
-  [[nodiscard]] auto get_data() const -> T * { return this->m_data; }
-  [[nodiscard]] auto get(std::size_t i) const -> T { return this->m_data[i]; }
+  [[nodiscard]] auto get_data() const -> T * {
+    return this->m_data;
+  }
+  [[nodiscard]] auto get(std::size_t i, std::size_t j) const -> T {
+    return this->m_data[j * this->m_size[0] + i];
+  }
 
-  void set_size(std::size_t i, int size) { this->m_size[i] = size; }
-  void set(std::size_t i, T value) { this->m_data[i] = value; }
+  void set_size(std::size_t i, int size) {
+    this->m_size[i] = size;
+  }
+  void set(std::size_t i, std::size_t j, T value) {
+    this->m_data[j * this->m_size[0] + i] = value;
+  }
 };
 
 template <class T> class SimulationAPI {
 public:
-  SimulationAPI(int, int) {}
-  ~SimulationAPI() = default;
-
   // ui
   std::map<std::string, Data<T> *> fields;
   std::map<std::string, std::pair<Data<T> *, Data<T> *>> particles;
+  const std::string coords;
+
+  SimulationAPI(const std::string& coords) : coords(coords) {}
+  ~SimulationAPI() = default;
 
   // init
   virtual void setData() = 0;
@@ -60,7 +76,6 @@ public:
   void reverse() { m_forward = !m_forward; }
 
 protected:
-  // int m_sx, m_sy;
   float m_x1x2_extent[4];
   int m_timestep;
   bool m_paused {true};

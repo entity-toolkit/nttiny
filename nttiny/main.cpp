@@ -17,12 +17,24 @@ public:
   // nttiny::Data<float> positrons_y;
 
   FakeSimulation(int sx1, int sx2)
-    : nttiny::SimulationAPI<float>{sx1, sx2},
+    : nttiny::SimulationAPI<float>{"cartesian"},
+    // : nttiny::SimulationAPI<float>{"polar"},
       nx1(sx1), nx2(sx2),
       ex{sx1, sx2},
       bx{sx1, sx2} {
+
+    // for (int i {0}; i <= sx1; ++i) {
+    //   ex.grid_x1[i] = 1.0 + exp((double)(i) / (double)(sx1));
+    //   bx.grid_x1[i] = 1.0 + exp((double)(i) / (double)(sx1));
+    // }
+    // for (int j {0}; j <= sx2; ++j) {
+    //   ex.grid_x2[j] = 3.14159265 * (double)(j) / (double)(sx2);
+    //   bx.grid_x2[j] = 3.14159265 * (double)(j) / (double)(sx2);
+    // }
+
+    this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
     m_x1x2_extent[0] = 1.0f;
-    m_x1x2_extent[1] = 2.0f;
+    m_x1x2_extent[1] = 5.0f;
     m_x1x2_extent[2] = 0.0f;
     m_x1x2_extent[3] = M_PI;
   }
@@ -48,18 +60,16 @@ public:
   ~FakeSimulation() = default;
   void setData() override {
     this->m_timestep = 0;
-    auto f_sx{static_cast<float>(this->nx1)};
-    auto f_sy{static_cast<float>(this->nx2)};
-    for (int j{0}; j < this->nx2; ++j) {
-      auto f_j{static_cast<float>(j)};
-      for (int i{0}; i < this->nx1; ++i) {
-        auto f_i{static_cast<float>(i)};
-        this->ex.set(i * this->nx2 + j, 0.5f * (f_i / f_sx) + 0.5f * (f_j / f_sy));
-        this->bx.set(i * this->nx2 + j, (f_i / f_sx) * (f_j / f_sy));
+    auto f_sx{(float)(this->nx1)};
+    auto f_sy{(float)(this->nx2)};
+    for (int i{0}; i < this->nx1; ++i) {
+      auto f_i{(float)(i)};
+      for (int j{0}; j < this->nx2; ++j) {
+        auto f_j{(float)(j)};
+        this->ex.set(i, j, 0.5f * (f_i / f_sx));
+        this->bx.set(i, j, (f_i / f_sx) * (f_j / f_sy));
       }
     }
-    this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
-
     // for (int i = 0; i < 1000; ++i) {
     //   this->electrons_x.set(i, m_x1x2_extent[1] * i / 1000.0);
     //   this->electrons_y.set(i, m_x1x2_extent[3] * i / 1000.0);
@@ -80,8 +90,8 @@ public:
     ++this->m_timestep;
     for (int j{0}; j < this->nx2; ++j) {
       for (int i{0}; i < this->nx1; ++i) {
-        this->ex.set(i * this->nx2 + j, this->ex.get(i * this->nx2 + j) + 0.001f);
-        this->bx.set(i * this->nx2 + j, this->bx.get(i * this->nx2 + j) + 0.001f);
+        this->ex.set(i, j, this->ex.get(i, j) + 0.001f);
+        this->bx.set(i, j, this->bx.get(i, j) + 0.001f);
       }
     }
   }
@@ -89,8 +99,8 @@ public:
     --this->m_timestep;
     for (int j{0}; j < this->nx2; ++j) {
       for (int i{0}; i < this->nx1; ++i) {
-        this->ex.set(i * this->nx2 + j, this->ex.get(i * this->nx2 + j) - 0.001f);
-        this->bx.set(i * this->nx2 + j, this->bx.get(i * this->nx2 + j) - 0.001f);
+        this->ex.set(i, j, this->ex.get(i, j) - 0.001f);
+        this->bx.set(i, j, this->bx.get(i, j) - 0.001f);
       }
     }
   }
@@ -98,7 +108,7 @@ public:
 
 auto main() -> int {
   try {
-    FakeSimulation sim(10, 15);
+    FakeSimulation sim(20, 5);
     sim.setData();
 
     nttiny::Visualization<float> vis;
