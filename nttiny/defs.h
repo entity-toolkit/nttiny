@@ -6,8 +6,6 @@
 #define UNUSED(x) (void)(x)
 #define VISPLOGID (42)
 
-#define M_PI 3.14159265359
-
 template <typename T>
 auto findMinMax(T* array, std::size_t len) -> std::pair<T, T> {
   T min{array[0]}, max{array[0]};
