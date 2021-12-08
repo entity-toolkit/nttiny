@@ -8,7 +8,6 @@
 
 #include <cmath>
 #include <string>
-#include <iostream>
 
 #define BELYASH_PINK (ImVec4(1.0f,0.745f,0.745f,1))
 
