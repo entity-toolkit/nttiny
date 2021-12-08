@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <string>
+#include <iostream>
 
 #define BELYASH_PINK (ImVec4(1.0f,0.745f,0.745f,1))
 
@@ -177,7 +178,7 @@ auto Scatter2d<T>::draw() -> bool {
   }
   // display scatter plots
   {
-    ImPlot::SetNextAxisLimits(x1min, x1max, x2min, x2max);
+    ImPlot::SetNextAxesLimits(x1min, x1max, x2min, x2max, true);
     if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
       ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(x1min, x2min));
       ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(x1max, x2max));
@@ -197,8 +198,8 @@ auto Scatter2d<T>::draw() -> bool {
                               this->m_sim->particles[spec].second->get_data(), npart);
         }
       }
+      ImPlot::EndPlot();
     }
-    ImPlot::EndPlot();
   }
   ImGui::End();
   return close;
