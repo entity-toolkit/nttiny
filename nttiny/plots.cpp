@@ -24,6 +24,32 @@ auto Plot2d<T>::close() -> bool {
 }
 
 template <class T>
+void Plot2d<T>::outlineDomain(std::string field_selected) {
+  if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
+    auto rmin = this->m_sim->fields[field_selected]->grid_x1[2];
+    auto rmax = this->m_sim->fields[field_selected]->grid_x1[this->m_sim->fields[field_selected]->get_size(0) - 2];
+    auto p1 = ImPlot::PlotToPixels(ImPlotPoint(0, rmin));
+    auto p2 = ImPlot::PlotToPixels(ImPlotPoint(0, rmax));
+    ImPlot::GetPlotDrawList()->AddLine(p1, p2, IM_COL32(250,250,240,255), 0.2);
+    for (int i {0}; i < 100; ++i) {
+      float phi_min = M_PI * (float)(i) / (float)(100);
+      float phi_max = M_PI * (float)(i + 1) / (float)(100);
+      auto p01 = ImPlot::PlotToPixels(ImPlotPoint(rmin * std::sin(phi_min), rmin * std::cos(phi_min)));
+      auto p02 = ImPlot::PlotToPixels(ImPlotPoint(rmin * std::sin(phi_max), rmin * std::cos(phi_max)));
+      ImPlot::GetPlotDrawList()->AddLine(p01, p02, IM_COL32(250,250,240,255), 0.2);
+      auto p11 = ImPlot::PlotToPixels(ImPlotPoint(rmax * std::sin(phi_min), rmax * std::cos(phi_min)));
+      auto p12 = ImPlot::PlotToPixels(ImPlotPoint(rmax * std::sin(phi_max), rmax * std::cos(phi_max)));
+      ImPlot::GetPlotDrawList()->AddLine(p11, p12, IM_COL32(250,250,240,255), 0.2);
+    }
+    auto p3 = ImPlot::PlotToPixels(ImPlotPoint(0, -rmin));
+    auto p4 = ImPlot::PlotToPixels(ImPlotPoint(0, -rmax));
+    ImPlot::GetPlotDrawList()->AddLine(p3, p4, IM_COL32(250,250,240,255), 0.2);
+  } else {
+    // add cartesian here
+  }
+}
+
+template <class T>
 void Plot2d<T>::scale() {
   ImGui::SetNextItemWidth(120);
   if (ImGui::InputFloat("scale", &this->m_scale, 0.01f, 10.0f, "%.3f")) {
@@ -40,7 +66,7 @@ auto Pcolor2d<T>::draw() -> bool {
   auto x1min = this->m_sim->get_x1min(), x1max = this->m_sim->get_x1max();
   auto x2min = this->m_sim->get_x2min(), x2max = this->m_sim->get_x2max();
   float aspect;
-  if (this->m_sim->coords == "polar") {
+  if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
     aspect = 1.75;
   } else {
     aspect = (x2max - x2min) / (x1max - x1min);
@@ -72,7 +98,7 @@ auto Pcolor2d<T>::draw() -> bool {
 
   // TODO: add log colormap here
   if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
-    if (this->m_sim->coords == "polar") {
+    if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
       x1min = 0.0;
       x1max = this->m_sim->fields[field_selected]->grid_x1[this->m_sim->fields[field_selected]->get_size(0)];
       x2min = -x1max;
@@ -99,10 +125,10 @@ auto Pcolor2d<T>::draw() -> bool {
                           {x1min, x2min},
                           {x1max, x2max});
     }
+    this->outlineDomain(field_selected);
     ImPlot::EndPlot();
   }
 
-  // TODO: add close button here
   // decorations
   ImGui::SameLine();
   ImGui::PushItemWidth(m_sidebar_w);
@@ -127,11 +153,15 @@ auto Pcolor2d<T>::draw() -> bool {
     ImGui::Checkbox("log", &this->m_log);
     if (ImGui::Button("reset")) {
       PLOGV_(VISPLOGID) << "Reseting vmin & vmax for Pcolor2d.";
-      auto minmax = findMinMax(this->m_sim->fields[field_selected]->get_data(),
-                               this->m_sim->fields[field_selected]->get_size(0)
-                                   * this->m_sim->fields[field_selected]->get_size(1));
+      auto n_elements {this->m_sim->fields[field_selected]->get_size(0) * this->m_sim->fields[field_selected]->get_size(1)};
+      auto minmax = findMinMax(this->m_sim->fields[field_selected]->get_data(), n_elements);
       this->m_vmin = minmax.first;
       this->m_vmax = minmax.second;
+      if (this->m_vmin * this->m_vmax < 0) {
+        auto max = std::max(std::abs(this->m_vmax), std::abs(this->m_vmin));
+        this->m_vmin = -max;
+        this->m_vmax = max;
+      }
     }
   }
   ImGui::EndGroup();

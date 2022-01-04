@@ -72,11 +72,13 @@ public:
   [[nodiscard]] auto is_paused() const -> bool { return m_paused; }
   [[nodiscard]] auto is_forward() const -> bool { return m_forward; }
   [[nodiscard]] auto get_timestep() const -> int { return m_timestep; }
+  [[nodiscard]] auto get_time() const -> float { return m_time; }
   void playToggle() { m_paused = !m_paused; }
   void reverse() { m_forward = !m_forward; }
 
 protected:
   float m_x1x2_extent[4];
+  float m_time;
   int m_timestep;
   bool m_paused {true};
   bool m_forward {true};

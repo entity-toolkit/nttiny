@@ -72,6 +72,7 @@ public:
   void scale();
   auto close() -> bool;
   auto getId() -> int override { return this->m_ID; }
+  void outlineDomain(std::string field_selected);
 };
 
 template <class T> class Pcolor2d : public Plot2d<T> {
