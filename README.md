@@ -47,4 +47,4 @@ include extern/nttiny/Makefile
 
 ### Note on `glfw`
 
-Your system might already have a globally preinstalled `glfw` (to test that run `g++ -lglfw`). In this case you can avoid compiling `glfw3` with the code. To fix the Makefile for that simply set `NTTINY_LIBRARIES := glfw` (instead of `glfw3`), and remove the `glfw3` dependency from the following targets: `nttiny : glfw3 ${__TARGET}`, `nttiny_static : glfw3 ${__STATIC}`.
+Your system might already have a globally preinstalled `glfw` (to test that run `g++ -lglfw`). In this case you can avoid compiling `glfw3` with the code: simply compile with the `-COMPILE_GLFW=n` flag.

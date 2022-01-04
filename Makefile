@@ -9,7 +9,15 @@ NTTINY_BIN_DIR := bin
 NTTINY_TARGET := nttiny.example
 NTTINY_STATIC := libnttiny.a
 # static libraries
-NTTINY_LIBRARIES := glfw3
+COMPILE_GLFW ?= y
+GLFW_TARGET :=
+ifeq (${COMPILE_GLFW}, y)
+	GLFW_TARGET := glfw3
+	NTTINY_LIBRARIES := glfw3
+else
+	GLFW_TARGET :=
+	NTTINY_LIBRARIES := glfw
+endif
 
 NTTINY_SRC_DIR := nttiny
 
@@ -97,15 +105,16 @@ nttiny_help:
 	@echo "   DEBUG={y|n}             : enable/disable debug mode [default: n]"
 	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation/run mode [default: n]"
 	@echo "   COMPILER={g++|clang++}  : choose the compiler [default: g++]"
+	@echo "   COMPILE_GLFW={y|n}" 	  : compile glfw3 or use system default
 	@echo
 	@echo "cleanup: \`make nttiny_clean\` or \`make nttiny_cleanlib\`"
 	@echo
 	@echo "to build a static library:"
 	@echo "   \`make nttiny_static\`"
 
-nttiny : glfw3 ${__TARGET}
+nttiny : ${GLFW_TARGET} ${__TARGET}
 
-nttiny_static : glfw3 ${__STATIC}
+nttiny_static : ${GLFW_TARGET} ${__STATIC}
 
 ${__STATIC} : $(filter-out %/main.cpp.o, $(NTTINY_OBJECTS))
 	@echo [A]rchiving $(subst ${NTTINY_ROOT_DIR},,$@) \<: $(subst ${NTTINY_ROOT_DIR},,$^)
@@ -148,7 +157,10 @@ nttiny_cleanlib:
 -include $(NTTINY_DEPS_CXX) $(NTTINY_DLIBS_CXX)
 
 NTTINY_LINKFLAGS := $(NTTINY_LDFLAGS) $(addprefix -L, ${__BUILD_DIR}) $(addprefix -l, nttiny)
-NTTINY_LIBS := ${__BUILD_DIR}/lib/libglfw3.a ${__BUILD_DIR}/libnttiny.a
+NTTINY_LIBS := ${__BUILD_DIR}/libnttiny.a
+ifeq (${COMPILE_GLFW}, y)
+	NTTINY_LIBS := ${NTTINY_LIBS} ${__BUILD_DIR}/lib/libglfw3.a
+endif
 
 # exported variables to use in the upstream:
 # . . . ${NTTINY_INCFLAGS}
