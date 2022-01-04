@@ -47,4 +47,4 @@ include extern/nttiny/Makefile
 
 ### Note on `glfw`
 
-Your system might already have a globally preinstalled `glfw` (to test that run `g++ -lglfw`). In this case you can avoid compiling `glfw3` with the code: simply compile with the `-COMPILE_GLFW=n` flag.
+Your system might already have a globally preinstalled `glfw` (to test that run `g++ -lglfw`). In this case you can avoid compiling `glfw3` with the code: simply compile with the `COMPILE_GLFW=n` flag.
