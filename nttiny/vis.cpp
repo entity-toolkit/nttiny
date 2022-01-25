@@ -102,6 +102,7 @@ template <class T>
 void Visualization<T>::buildController() {
   ImGui::Begin("Simulation control");
   ImGui::Text("Timestep: %d", this->m_sim->get_timestep());
+  ImGui::Text("Time: %f", this->m_sim->get_time());
   {
     ImGui::PushButtonRepeat(true);
     if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {

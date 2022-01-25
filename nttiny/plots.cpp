@@ -23,6 +23,9 @@ auto Plot2d<T>::close() -> bool {
   }
 }
 
+/**
+ * @todo: fix for empty field_selected and arbitrary nghost
+ */
 template <class T>
 void Plot2d<T>::outlineDomain(std::string field_selected) {
   if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
@@ -45,6 +48,18 @@ void Plot2d<T>::outlineDomain(std::string field_selected) {
     auto p4 = ImPlot::PlotToPixels(ImPlotPoint(0, -rmax));
     ImPlot::GetPlotDrawList()->AddLine(p3, p4, IM_COL32(250,250,240,255), 0.2);
   } else {
+    auto xmin = this->m_sim->fields[field_selected]->grid_x1[2];
+    auto xmax = this->m_sim->fields[field_selected]
+                    ->grid_x1[this->m_sim->fields[field_selected]->get_size(0) - 2];
+    auto ymin = this->m_sim->fields[field_selected]->grid_x2[2];
+    auto ymax = this->m_sim->fields[field_selected]
+                    ->grid_x2[this->m_sim->fields[field_selected]->get_size(0) - 2];
+    ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(xmin, ymin));
+    ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(ymax, xmax));
+    ImPlot::PushPlotClipRect();
+    ImPlot::GetPlotDrawList()->AddRect(rmin, rmax, IM_COL32(250,250,240,255));
+    ImPlot::PopPlotClipRect();
+
     // add cartesian here
   }
 }
@@ -98,7 +113,8 @@ auto Pcolor2d<T>::draw() -> bool {
 
   // TODO: add log colormap here
   if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
-    if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
+    if ((this->m_sim->coords == "spherical") ||
+        (this->m_sim->coords == "qspherical")) {
       x1min = 0.0;
       x1max = this->m_sim->fields[field_selected]->grid_x1[this->m_sim->fields[field_selected]->get_size(0)];
       x2min = -x1max;
@@ -208,13 +224,13 @@ auto Scatter2d<T>::draw() -> bool {
   }
   // display scatter plots
   {
-    ImPlot::SetNextAxesLimits(x1min, x1max, x2min, x2max, true);
+    // ImPlot::SetNextAxesLimits(x1min, x1max, x2min, x2max, true);
     if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
-      ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(x1min, x2min));
-      ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(x1max, x2max));
-      ImPlot::PushPlotClipRect();
-      ImPlot::GetPlotDrawList()->AddRect(rmin, rmax, IM_COL32(250,250,240,255));
-      ImPlot::PopPlotClipRect();
+      // ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(x1min, x2min));
+      // ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(x1max, x2max));
+      // ImPlot::PushPlotClipRect();
+      // ImPlot::GetPlotDrawList()->AddRect(rmin, rmax, IM_COL32(250,250,240,255));
+      // ImPlot::PopPlotClipRect();
 
       for (std::size_t i{0}; i < nspec; ++i) {
         if (this->m_prtl_enabled[i]) {
@@ -228,6 +244,10 @@ auto Scatter2d<T>::draw() -> bool {
                               this->m_sim->particles[spec].second->get_data(), npart);
         }
       }
+      /**
+       * @todo: fix this
+       */
+      this->outlineDomain("ex1");
       ImPlot::EndPlot();
     }
   }
