@@ -5,7 +5,7 @@ OpenGL-based interactive plotting library.
 ```shell
 git clone --recursive git@github.com:haykh/nttiny.git
 # to update submodules
-git submodule update --remote
+git submodule foreach git pull
 ```
 
 ## Compilation
