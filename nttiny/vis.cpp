@@ -8,6 +8,8 @@
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 
+#include <toml.hpp>
+
 #include <implot.h>
 
 #include <imgui.h>
@@ -21,7 +23,9 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <fstream>
 #include <filesystem>
+#include <stdexcept>
 
 namespace nttiny {
 template <class T>
@@ -162,12 +166,57 @@ void Visualization<T>::buildController() {
   // Save state
   {
     if (ImGui::Button("Save state")) {
-      auto rewrite {true};
+      auto rewrite{true};
+      auto cntr {0};
       for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
+        ++cntr;
         auto metadata = (*plot)->exportMetadata();
-        metadata.writeToFile("nttiny.toml", rewrite);
+        metadata.writeToFile(STATE_FILENAME, rewrite);
         rewrite = false;
       }
+      std::ofstream export_file;
+      export_file.open(STATE_FILENAME, std::fstream::app);
+      if (export_file.is_open()) {
+        export_file << "[Plot]\nnpanels = " << cntr << "\n";
+        export_file.close();
+      }
+    }
+  }
+  // Load state
+  {
+    if (ImGui::Button("Load state")) {
+      this->m_plots.clear();
+      try {
+        auto input = toml::parse("nttiny.toml");
+        const auto& panels = toml::find(input, "Plot");
+        auto npanels = toml::find<int>(panels, "npanels");
+        for (int i{0}; i < npanels; ++i) {
+          const auto& plot = toml::find(panels, std::to_string(i));
+          PlotMetadata metadata;
+          metadata.m_field_selected = toml::find<int>(plot, "field_selected");
+          metadata.m_type = toml::find<std::string>(plot, "type");
+          metadata.m_cmap = toml::find<std::string>(plot, "cmap");
+          metadata.m_vmax = toml::find<float>(plot, "vmax");
+          metadata.m_vmin = toml::find<float>(plot, "vmin");
+          metadata.m_log = toml::find<bool>(plot, "log");
+          if (metadata.m_type == "Pcolor2d") {
+            addPcolor2d(metadata.m_vmin, metadata.m_vmax);
+            this->m_plots.back()->importMetadata(metadata);
+          } else if (metadata.m_type == "Scatter2d") {
+            addScatter2d();
+            this->m_plots.back()->importMetadata(metadata);
+          }
+        }
+      }
+      catch (std::exception& err) {
+        PLOGE_(VISPLOGID) << "Error loading state: " << err.what();
+      }
+      // auto rewrite{true};
+      // for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
+      //   auto metadata = (*plot)->exportMetadata();
+      //   metadata.writeToFile("nttiny.toml", rewrite);
+      //   rewrite = false;
+      // }
     }
   }
   ImGui::End();

@@ -1,4 +1,4 @@
-# `nttiny v0.4`
+# `nttiny v0.5.1`
 
 OpenGL-based interactive plotting library.
 
@@ -30,6 +30,12 @@ myapp : $(OBJS)
 # assuming `nttiny` is in `extern` directory
 include extern/nttiny/Makefile
 ```
+
+## To-do
+
+[x] save/load states
+[ ] linked axes
+[ ] resizing of plots / grids of plots
 
 ---
 
