@@ -162,9 +162,11 @@ ${__BUILD_DIR}/lib/libfreetype.a : ${__EXTERN_DIR}/freetype/build/libfreetype.a
 	@mkdir -p $(dir $@)
 	$(HIDE)cp $< $@
 
+FREETYPE_SETTINGS := -D FT_DISABLE_BROTLI=TRUE -D FT_DISABLE_HARFBUZZ=TRUE -D FT_DISABLE_ZLIB=TRUE -D FT_DISABLE_BZIP2=TRUE -D FT_DISABLE_PNG=TRUE
+
 ${__EXTERN_DIR}/freetype/build/libfreetype.a :
 	@echo [B]uilding freetype
-	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/freetype && cmake -B build -D FT_DISABLE_ZLIB=TRUE -D FT_DISABLE_BZIP2=TRUE -D FT_DISABLE_PNG=TRUE && cd build && $(MAKE) -j `ncores`
+	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/freetype && cmake -B build $(FREETYPE_SETTINGS) && cd build && $(MAKE) -j `ncores`
 
 nttiny_clean:
 	find ${__BUILD_DIR} -mindepth 1 -name lib -prune -o -exec rm -rf {} +
