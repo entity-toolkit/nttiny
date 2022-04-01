@@ -40,11 +40,11 @@ include extern/nttiny/Makefile
 
 ## To-do
 
-[ ] hidpi support
-[ ] user-specific outlining
-[x] save/load states
-[ ] linked axes
-[ ] resizing of plots / grids of plots
+- [x] save/load states
+- [ ] hidpi support
+- [ ] user-specific outlining
+- [ ] subplots & linked axes
+- [ ] resizing of plots
 
 ---
 
