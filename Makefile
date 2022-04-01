@@ -19,6 +19,15 @@ else
 	NTTINY_LIBRARIES := glfw
 endif
 
+COMPILE_FREETYPE ?= y
+ifeq (${COMPILE_FREETYPE}, y)
+	FREETYPE_TARGET := freetype
+	NTTINY_LIBRARIES += freetype
+	IMGUI_FREETYPE_FLAG := -DIMGUI_ENABLE_FREETYPE 
+else
+	FREETYPE_TARGET := 
+endif
+
 NTTINY_SRC_DIR := nttiny
 
 # for external libraries
@@ -49,7 +58,7 @@ VERBOSE ?= n
 DEBUG ?= n
 COMPILER ?= g++
 
-DEFINITIONS :=
+DEFINITIONS := ${IMGUI_FREETYPE_FLAG}
 
 ifeq ($(strip ${VERBOSE}), y)
 	HIDE =
@@ -72,7 +81,7 @@ endif
 NTTINY_WARNFLAGS := -Wall -Wextra -pedantic
 NTTINY_CFLAGS := $(NTTINY_WARNFLAGS) $(NTTINY_CFLAGS)
 
-NTTINY_EXTERNAL_INCLUDES := glfw/include implot imgui imgui/backends plog/include KHR toml11
+NTTINY_EXTERNAL_INCLUDES := glfw/include implot imgui imgui/backends plog/include KHR toml11 freetype/include
 NTTINY_INC_DIRS := ${NTTINY_ROOT_DIR} $(shell find ${__SRC_DIR} -type d) ${__EXTERN_DIR} $(addprefix ${__EXTERN_DIR}/,${NTTINY_EXTERNAL_INCLUDES})
 NTTINY_INCFLAGS := $(addprefix -I,$(NTTINY_INC_DIRS))
 
@@ -105,16 +114,17 @@ nttiny_help:
 	@echo "   DEBUG={y|n}             : enable/disable debug mode [default: n]"
 	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation/run mode [default: n]"
 	@echo "   COMPILER={g++|clang++}  : choose the compiler [default: g++]"
-	@echo "   COMPILE_GLFW={y|n}" 	  : compile glfw3 or use system default
+	@echo "   COMPILE_GLFW={y|n}" 	  : compile glfw3 or use system default"
+	@echo "   COMPILE_FREETYPE={y|n}" : use freetype for font rasterization"
 	@echo
 	@echo "cleanup: \`make nttiny_clean\` or \`make nttiny_cleanlib\`"
 	@echo
 	@echo "to build a static library:"
 	@echo "   \`make nttiny_static\`"
 
-nttiny : ${GLFW_TARGET} ${__TARGET}
+nttiny : ${FREETYPE_TARGET} ${GLFW_TARGET} ${__TARGET}
 
-nttiny_static : ${GLFW_TARGET} ${__STATIC}
+nttiny_static : ${FREETYPE_TARGET} ${GLFW_TARGET} ${__STATIC}
 
 ${__STATIC} : $(filter-out %/main.cpp.o, $(NTTINY_OBJECTS))
 	@echo [A]rchiving $(subst ${NTTINY_ROOT_DIR},,$@) \<: $(subst ${NTTINY_ROOT_DIR},,$^)
@@ -146,13 +156,25 @@ ${__EXTERN_DIR}/glfw/build/src/libglfw3.a :
 	@echo [B]uilding GLFW
 	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/glfw && cmake -B build && cd build && $(MAKE) -j `ncores`
 
+freetype : ${__BUILD_DIR}/lib/libfreetype.a
+
+${__BUILD_DIR}/lib/libfreetype.a : ${__EXTERN_DIR}/freetype/build/libfreetype.a
+	@mkdir -p $(dir $@)
+	$(HIDE)cp $< $@
+
+${__EXTERN_DIR}/freetype/build/libfreetype.a :
+	@echo [B]uilding freetype
+	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/freetype && cmake -B build -D FT_DISABLE_ZLIB=TRUE -D FT_DISABLE_BZIP2=TRUE -D FT_DISABLE_PNG=TRUE && cd build && $(MAKE) -j `ncores`
+
 nttiny_clean:
 	find ${__BUILD_DIR} -mindepth 1 -name lib -prune -o -exec rm -rf {} +
 	rm -rf ${__BIN_DIR}
 
+
 nttiny_cleanlib:
-	rm -rf ${__BUILD_DIR}/lib
 	rm -rf ${__EXTERN_DIR}/glfw/build
+	rm -rf ${__BUILD_DIR}/lib
+	rm -rf ${__EXTERN_DIR}/freetype/build
 
 -include $(NTTINY_DEPS_CXX) $(NTTINY_DLIBS_CXX)
 
@@ -160,6 +182,10 @@ NTTINY_LINKFLAGS := $(NTTINY_LDFLAGS) $(addprefix -L, ${__BUILD_DIR}) $(addprefi
 NTTINY_LIBS := ${__BUILD_DIR}/libnttiny.a
 ifeq (${COMPILE_GLFW}, y)
 	NTTINY_LIBS := ${NTTINY_LIBS} ${__BUILD_DIR}/lib/libglfw3.a
+endif
+
+ifeq (${COMPILE_FREETYPE}, y)
+	NTTINY_LIBS += ${__BUILD_DIR}/lib/libfreetype.a
 endif
 
 # exported variables to use in the upstream:

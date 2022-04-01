@@ -1,4 +1,4 @@
-# `nttiny v0.4`
+# `nttiny v0.5.1`
 
 OpenGL-based interactive plotting library.
 
@@ -30,6 +30,21 @@ myapp : $(OBJS)
 # assuming `nttiny` is in `extern` directory
 include extern/nttiny/Makefile
 ```
+
+## Releases
+
+* `v0.5.1` [Mar 2022]:
+  - saving and loading of plotter states
+  - "log"-scale: uses `sign(x) * abs(x)^0.25`
+  - freetype font rendering
+
+## To-do
+
+[ ] hidpi support
+[ ] user-specific outlining
+[x] save/load states
+[ ] linked axes
+[ ] resizing of plots / grids of plots
 
 ---
 

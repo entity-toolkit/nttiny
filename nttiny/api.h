@@ -13,7 +13,7 @@ namespace nttiny {
 template <class T>
 struct Data {
   int m_size[2];
-  T *m_data;
+  T* m_data;
   double *grid_x1, *grid_x2;
 
   Data(int nx1, int nx2) : m_size{nx1, nx2} {
@@ -22,32 +22,23 @@ struct Data {
     allocate(nx1 * nx2);
   }
   ~Data() = default;
-  void allocate(std::size_t n) {
-    this->m_data = new T[n];
-  }
-  [[nodiscard]] auto get_size(std::size_t i) const -> int {
-    return this->m_size[i];
-  }
-  [[nodiscard]] auto get_data() const -> T * {
-    return this->m_data;
-  }
+  void allocate(std::size_t n) { this->m_data = new T[n]; }
+  [[nodiscard]] auto get_size(std::size_t i) const -> int { return this->m_size[i]; }
+  [[nodiscard]] auto get_data() const -> T* { return this->m_data; }
   [[nodiscard]] auto get(std::size_t i, std::size_t j) const -> T {
     return this->m_data[j * this->m_size[0] + i];
   }
 
-  void set_size(std::size_t i, int size) {
-    this->m_size[i] = size;
-  }
-  void set(std::size_t i, std::size_t j, T value) {
-    this->m_data[j * this->m_size[0] + i] = value;
-  }
+  void set_size(std::size_t i, int size) { this->m_size[i] = size; }
+  void set(std::size_t i, std::size_t j, T value) { this->m_data[j * this->m_size[0] + i] = value; }
 };
 
-template <class T> class SimulationAPI {
+template <class T>
+class SimulationAPI {
 public:
   // ui
-  std::map<std::string, Data<T> *> fields;
-  std::map<std::string, std::pair<Data<T> *, Data<T> *>> particles;
+  std::map<std::string, Data<T>*> fields;
+  std::map<std::string, std::pair<Data<T>*, Data<T>*>> particles;
   const std::string coords;
 
   SimulationAPI(const std::string& coords) : coords(coords) {}
@@ -64,9 +55,7 @@ public:
   virtual void stepFwd() = 0;
   virtual void stepBwd() = 0;
   virtual void restart() = 0;
-  void updateData() {
-    (!m_paused) ? (m_forward ? stepFwd() : stepBwd()) : void();
-  }
+  void updateData() { (!m_paused) ? (m_forward ? stepFwd() : stepBwd()) : void(); }
 
   // controls
   [[nodiscard]] auto is_paused() const -> bool { return m_paused; }
@@ -80,9 +69,9 @@ protected:
   float m_x1x2_extent[4];
   float m_time;
   int m_timestep;
-  bool m_paused {true};
-  bool m_forward {true};
+  bool m_paused{true};
+  bool m_forward{true};
 };
-}
+} // namespace nttiny
 
 #endif

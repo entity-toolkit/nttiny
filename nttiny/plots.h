@@ -22,7 +22,7 @@ struct PlotMetadata {
   std::string m_cmap;
   int m_field_selected;
 
-  void writeToFile(const std::string& fname, bool rewrite=false) {
+  void writeToFile(const std::string& fname, bool rewrite = false) {
     const toml::value data{{"ID", m_ID},
                            {"type", m_type},
                            {"log", m_log},
@@ -37,7 +37,7 @@ struct PlotMetadata {
       export_file.open(fname, std::fstream::app);
     }
     if (export_file.is_open()) {
-      export_file << "[Plot " << m_ID << "]\n";
+      export_file << "[Plot." << m_ID << "]\n";
       export_file << data;
       export_file << "\n";
       export_file.close();
@@ -47,9 +47,10 @@ struct PlotMetadata {
   }
 };
 
-template <class T> class Ax {
+template <class T>
+class Ax {
 protected:
-  SimulationAPI<T> *m_sim;
+  SimulationAPI<T>* m_sim;
   const int m_ID;
 
 public:
@@ -58,10 +59,12 @@ public:
   virtual auto draw() -> bool { return false; }
   virtual auto getId() -> int { return -1; }
   virtual auto exportMetadata() -> PlotMetadata { return PlotMetadata(); }
-  void bindSimulation(SimulationAPI<T> *sim) { this->m_sim = sim; }
+  virtual void importMetadata(const PlotMetadata&){};
+  void bindSimulation(SimulationAPI<T>* sim) { this->m_sim = sim; }
 };
 
-template <class T> class Plot2d : public Ax<T> {
+template <class T>
+class Plot2d : public Ax<T> {
 protected:
   float m_scale{1.0f};
   float m_plot_size{350};
@@ -75,7 +78,8 @@ public:
   void outlineDomain(std::string field_selected);
 };
 
-template <class T> class Pcolor2d : public Plot2d<T> {
+template <class T>
+class Pcolor2d : public Plot2d<T> {
 protected:
   float m_sidebar_w{60}, m_cmap_h{225};
   bool m_log{false};
@@ -84,26 +88,29 @@ protected:
   int m_field_selected{0};
 
 public:
-  Pcolor2d(int id, float vmin, float vmax)
-      : Plot2d<T>(id), m_vmin(vmin), m_vmax(vmax) {}
+  Pcolor2d(int id, float vmin, float vmax) : Plot2d<T>(id), m_vmin(vmin), m_vmax(vmax) {}
   ~Pcolor2d() override = default;
   auto draw() -> bool override;
   auto exportMetadata() -> PlotMetadata override;
+  void importMetadata(const PlotMetadata&) override;
 };
 
-template <class T> class Scatter2d : public Plot2d<T> {
+template <class T>
+class Scatter2d : public Plot2d<T> {
 protected:
-  bool * m_prtl_enabled{nullptr};
-  const char ** m_prtl_names;
+  bool* m_prtl_enabled{nullptr};
+  const char** m_prtl_names;
+
 public:
   Scatter2d(int id) : Plot2d<T>(id) {}
   ~Scatter2d() override = default;
   auto draw() -> bool override;
   auto exportMetadata() -> PlotMetadata override { return PlotMetadata(); }
+  void importMetadata(const PlotMetadata&) override {}
 };
 
-  // TODO: 1d plot, linear, log linear and log log, multiple data
+// TODO: 1d plot, linear, log linear and log log, multiple data
 
-}
+} // namespace nttiny
 
 #endif
