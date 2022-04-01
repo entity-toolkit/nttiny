@@ -3,6 +3,8 @@
 
 #include "api.h"
 
+#include "cousine.h"
+
 #include <plog/Log.h>
 #include <plog/Init.h>
 #include <plog/Formatters/TxtFormatter.h>
@@ -51,7 +53,19 @@ Visualization<T>::Visualization(int win_width, int win_height, bool resizable)
   ImPlot::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
   io.ConfigFlags |= ImGuiConfigFlags_None;
+  try {
+    ImGui::GetIO().Fonts->Clear();
+    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
+        Cousine_compressed_data, Cousine_compressed_size, 16.0f);
+    ImGui::GetIO().Fonts->Build();
+  }
+  catch (std::runtime_error& e) {
+    PLOGW << "Warning: " << e.what();
+  }
   ImGui::StyleColorsDark();
+  ImGui::GetStyle().AntiAliasedLines = true;
+  ImGui::GetStyle().AntiAliasedFill = true;
+  ImGui::GetStyle().FrameRounding = 3.0f;
   ImGui_ImplGlfw_InitForOpenGL(m_window->get_window(), true);
   ImGui_ImplOpenGL3_Init("#version 150");
 }
@@ -145,7 +159,7 @@ void Visualization<T>::buildController() {
     ImGui::Text("Simulation rate:");
     ImGui::SetNextItemWidth(
         std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 6));
-    ImGui::SliderFloat("dt per second", &this->m_tps_limit, 0, 100);
+    ImGui::SliderFloat("dt per second", &this->m_tps_limit, 1, 1000);
   }
   // Simulation direction
   {
@@ -167,7 +181,7 @@ void Visualization<T>::buildController() {
   {
     if (ImGui::Button("Save state")) {
       auto rewrite{true};
-      auto cntr {0};
+      auto cntr{0};
       for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
         ++cntr;
         auto metadata = (*plot)->exportMetadata();
@@ -211,12 +225,6 @@ void Visualization<T>::buildController() {
       catch (std::exception& err) {
         PLOGE_(VISPLOGID) << "Error loading state: " << err.what();
       }
-      // auto rewrite{true};
-      // for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
-      //   auto metadata = (*plot)->exportMetadata();
-      //   metadata.writeToFile("nttiny.toml", rewrite);
-      //   rewrite = false;
-      // }
     }
   }
   ImGui::End();

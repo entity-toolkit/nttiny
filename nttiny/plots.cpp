@@ -28,6 +28,7 @@ auto Plot2d<T>::close() -> bool {
  */
 template <class T>
 void Plot2d<T>::outlineDomain(std::string field_selected) {
+  ImPlot::PushPlotClipRect();
   if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
     auto rmin = this->m_sim->fields[field_selected]->grid_x1[2];
     auto rmax = this->m_sim->fields[field_selected]
@@ -67,6 +68,7 @@ void Plot2d<T>::outlineDomain(std::string field_selected) {
 
     // add cartesian here
   }
+  ImPlot::PopPlotClipRect();
 }
 
 template <class T>
@@ -94,7 +96,7 @@ auto Pcolor2d<T>::draw() -> bool {
   ImGui::Begin(("Pcolor2d [" + std::to_string(this->m_ID) + "]").c_str());
   {
     this->scale();
-    ImGui::SameLine(ImGui::GetWindowWidth() - 30);
+    ImGui::SameLine(ImGui::GetWindowWidth() - 3.0f * ImGui::GetFontSize());
     close = this->close();
   }
   // Choose field component to display
@@ -171,9 +173,9 @@ auto Pcolor2d<T>::draw() -> bool {
     }
     this->m_vmin = vmin;
     this->m_vmax = vmax;
-    ImGui::InputFloat("max", &this->m_vmax, 0.0f, 1000.0f, "%.3f");
+    ImGui::InputFloat("max", &this->m_vmax, 0.0f, 1000.0f, "%.1e");
     ImPlot::ColormapScale("", vmin, vmax, ImVec2(this->m_sidebar_w, cmap_h));
-    ImGui::InputFloat("min", &this->m_vmin, 0.0f, 1000.0f, "%.3f");
+    ImGui::InputFloat("min", &this->m_vmin, 0.0f, 1000.0f, "%.1e");
     ImGui::Checkbox("log", &this->m_log);
     if (ImGui::Button("reset")) {
       PLOGV_(VISPLOGID) << "Reseting vmin & vmax for Pcolor2d.";
