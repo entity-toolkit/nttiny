@@ -10,8 +10,6 @@
 #include <string>
 #include <iostream>
 
-#define BELYASH_PINK (ImVec4(1.0f, 0.745f, 0.745f, 1))
-
 namespace nttiny {
 
 template <class T>
@@ -24,7 +22,7 @@ auto Plot2d<T>::close() -> bool {
 }
 
 /**
- * @todo: fix for empty field_selected and arbitrary nghost
+ * @TODO: fix for empty field_selected and arbitrary nghost
  */
 template <class T>
 void Plot2d<T>::outlineDomain(std::string field_selected) {
@@ -152,6 +150,7 @@ auto Pcolor2d<T>::draw() -> bool {
                           {x1max, x2max});
     }
     this->outlineDomain(field_selected);
+    this->m_sim->customAnnotatePcolor2d();
     ImPlot::EndPlot();
   }
 
@@ -297,6 +296,15 @@ void Pcolor2d<T>::importMetadata(const PlotMetadata& metadata) {
 }
 
 } // namespace nttiny
+
+template class nttiny::Pcolor2d<int>;
+template class nttiny::Pcolor2d<float>;
+template class nttiny::Pcolor2d<double>;
+
+template class nttiny::Scatter2d<int>;
+template class nttiny::Scatter2d<float>;
+template class nttiny::Scatter2d<double>;
+
 // template <typename T>
 // void Plot::draw(T *x_values, T *y_values, int n, const std::string &label) {
 //   float plot_size = m_plot_size * m_scale;

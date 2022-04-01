@@ -10,6 +10,13 @@
 
 namespace nttiny {
 
+using point_t = float[2];
+
+void drawCircle(const point_t& center,
+                const float& radius,
+                const point_t& phi_range = {0.0f, 2.0f * M_PI},
+                const int& resolution = 128);
+
 template <class T>
 struct Data {
   int m_size[2];
@@ -64,6 +71,8 @@ public:
   [[nodiscard]] auto get_time() const -> float { return m_time; }
   void playToggle() { m_paused = !m_paused; }
   void reverse() { m_forward = !m_forward; }
+
+  virtual void customAnnotatePcolor2d() = 0;
 
 protected:
   float m_x1x2_extent[4];

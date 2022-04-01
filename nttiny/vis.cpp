@@ -30,6 +30,7 @@
 #include <stdexcept>
 
 namespace nttiny {
+
 template <class T>
 Visualization<T>::Visualization(int win_width, int win_height, bool resizable)
     : m_win_width(win_width), m_win_height(win_height), m_resizable(resizable) {
@@ -66,6 +67,8 @@ Visualization<T>::Visualization(int win_width, int win_height, bool resizable)
   ImGui::GetStyle().AntiAliasedLines = true;
   ImGui::GetStyle().AntiAliasedFill = true;
   ImGui::GetStyle().FrameRounding = 3.0f;
+  ImGui::GetStyle().ChildRounding = 3.0f;
+  ImGui::GetStyle().WindowRounding = 3.0f;
   ImGui_ImplGlfw_InitForOpenGL(m_window->get_window(), true);
   ImGui_ImplOpenGL3_Init("#version 150");
 }
@@ -313,3 +316,7 @@ void Visualization<T>::loop() {
   }
 }
 } // namespace nttiny
+
+template class nttiny::Visualization<int>;
+template class nttiny::Visualization<float>;
+template class nttiny::Visualization<double>;

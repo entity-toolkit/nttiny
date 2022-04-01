@@ -14,6 +14,8 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include <implot.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -22,6 +24,7 @@
 #include <vector>
 
 namespace nttiny {
+
 template <class T>
 class Visualization {
 private:
@@ -38,7 +41,7 @@ protected:
   std::vector<std::unique_ptr<Ax<T>>> m_plots;
 
 public:
-  Visualization(int win_width = 1920, int win_height = 1080, bool resizable = true);
+  Visualization(int win_width = 1280, int win_height = 720, bool resizable = true);
   ~Visualization();
   void bindSimulation();
   void bindSimulation(SimulationAPI<T>* sim);
@@ -50,6 +53,7 @@ public:
   void addPcolor2d(float vmin, float vmax);
   void addScatter2d();
 };
+
 } // namespace nttiny
 
 #endif

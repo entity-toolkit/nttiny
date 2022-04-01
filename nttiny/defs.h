@@ -21,6 +21,8 @@
 
 #define STATE_FILENAME ("nttiny.toml")
 
+#define BELYASH_PINK   (ImVec4(1.0f, 0.745f, 0.745f, 1))
+
 template <typename T>
 auto findMinMax(T* array, std::size_t len, bool use_log) -> std::pair<T, T> {
   T min, max;
