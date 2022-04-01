@@ -6,9 +6,18 @@
 
 #define UNUSED(x)      (void)(x)
 #define VISPLOGID      (42)
-#define SIGN(x)        (((x) < 0.0) ? -1.0 : 1.0)
-#define ABS(x)         (((x) < 0.0) ? -(x) : (x))
-#define QLOGSCALE(x)   ((SIGN(x) * powf(ABS(x), 0.25f)))
+
+#ifndef SIGN
+  #define SIGN(x)        (((x) < 0.0) ? -1.0 : 1.0)
+#endif
+
+#ifndef ABS
+  #define ABS(x)         (((x) < 0.0) ? -(x) : (x))
+#endif
+
+#ifndef QLOGSCALE
+  #define QLOGSCALE(x)   ((SIGN(x) * powf(ABS(x), 0.25f)))
+#endif
 
 #define STATE_FILENAME ("nttiny.toml")
 
@@ -32,5 +41,9 @@ auto findMinMax(T* array, std::size_t len, bool use_log) -> std::pair<T, T> {
   }
   return {min, max};
 }
+
+#undef SIGN
+#undef ABS
+#undef QLOGSCALE
 
 #endif
