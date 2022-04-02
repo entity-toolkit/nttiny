@@ -67,7 +67,7 @@ template <class T>
 class Plot2d : public Ax<T> {
 protected:
   float m_scale{1.0f};
-  float m_plot_size{350};
+  float m_plot_size{20.0f * ImGui::GetFontSize()};
 
 public:
   Plot2d(int id) : Ax<T>(id) {}
@@ -81,7 +81,7 @@ public:
 template <class T>
 class Pcolor2d : public Plot2d<T> {
 protected:
-  float m_sidebar_w{60}, m_cmap_h{225};
+  float m_sidebar_w{5.0f * ImGui::GetFontSize()}, m_cmap_h{20.0f * ImGui::GetFontSize()};
   bool m_log{false};
   float m_vmin, m_vmax;
   ImPlotColormap m_cmap{ImPlotColormap_Jet};

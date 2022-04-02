@@ -71,7 +71,7 @@ void Plot2d<T>::outlineDomain(std::string field_selected) {
 
 template <class T>
 void Plot2d<T>::scale() {
-  ImGui::SetNextItemWidth(120);
+  ImGui::SetNextItemWidth(ImGui::GetFontSize() * 6.0f);
   if (ImGui::SliderFloat("scale", &this->m_scale, 0.01f, 10.0f, "%.3f")) {
     PLOGV_(VISPLOGID) << "Scale changed to " << this->m_scale << ".";
   }
@@ -100,7 +100,7 @@ auto Pcolor2d<T>::draw() -> bool {
   // Choose field component to display
   std::string field_selected;
   {
-    ImGui::Text("Field component to plot:");
+    ImGui::Text("Field to plot:");
     const char** field_names;
     field_names = new const char*[this->m_sim->fields.size()];
     int i{0};
@@ -117,7 +117,6 @@ auto Pcolor2d<T>::draw() -> bool {
   // setup axes
   ImPlot::PushColormap(this->m_cmap);
 
-  // TODO: add log colormap here
   if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
     // if (ImPlot::BeginPlot("", ImVec2(-1, plot_size), ImPlotFlags_Equal)) {
     if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
@@ -172,9 +171,17 @@ auto Pcolor2d<T>::draw() -> bool {
     }
     this->m_vmin = vmin;
     this->m_vmax = vmax;
-    ImGui::InputFloat("max", &this->m_vmax, 0.0f, 1000.0f, "%.1e");
+
+    ImGui::PushID(0);
+    ImGui::InputFloat("", &this->m_vmax, 0.0f, 1000.0f, "%.1e");
+    ImGui::PopID();
+
     ImPlot::ColormapScale("", vmin, vmax, ImVec2(this->m_sidebar_w, cmap_h));
-    ImGui::InputFloat("min", &this->m_vmin, 0.0f, 1000.0f, "%.1e");
+
+    ImGui::PushID(1);
+    ImGui::InputFloat("", &this->m_vmin, 0.0f, 1000.0f, "%.1e");
+    ImGui::PopID();
+
     ImGui::Checkbox("log", &this->m_log);
     if (ImGui::Button("reset")) {
       PLOGV_(VISPLOGID) << "Reseting vmin & vmax for Pcolor2d.";
