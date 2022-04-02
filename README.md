@@ -5,7 +5,7 @@ OpenGL-based interactive plotting library.
 ```shell
 git clone --recursive git@github.com:haykh/nttiny.git
 # to update submodules
-git submodule foreach git pull
+git submodule update --remote
 ```
 
 ## Compilation
@@ -63,3 +63,7 @@ include extern/nttiny/Makefile
 ### Note on `glfw`
 
 Your system might already have a globally preinstalled `glfw` (to test that run `g++ -lglfw`). In this case you can avoid compiling `glfw3` with the code: simply compile with the `COMPILE_GLFW=n` flag.
+
+### Note on `freetype`
+
+On some of the hidpi monitors using freetype for font rasterization may improve the text quality. For that it is advised to compile the code together with the freetype library (included as a submodule). To disable this behavior set `COMPILE_FREETYPE=n` during compilation.
