@@ -163,6 +163,13 @@ void Visualization<T>::buildController() {
     ImGui::SetNextItemWidth(
         std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 6));
     ImGui::SliderFloat("dt per second", &this->m_tps_limit, 1, 1000);
+    
+    ImGui::Text("Jump over timesteps:");
+    ImGui::SetNextItemWidth(
+        std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 3));
+    int jmp{this->m_sim->get_jumpover()};
+    ImGui::InputInt("", &jmp);
+    this->m_sim->set_jumpover(jmp);
   }
   // Simulation direction
   {

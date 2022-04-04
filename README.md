@@ -1,4 +1,4 @@
-# `nttiny v0.5.1`
+# `nttiny v0.5.2`
 
 OpenGL-based interactive plotting library.
 
@@ -33,6 +33,8 @@ include extern/nttiny/Makefile
 
 ## Releases
 
+* `v0.5.2` [Apr 2022]:
+  - timestep jumpover to skip rendering certain number of steps (faster)
 * `v0.5.1` [Mar 2022]:
   - saving and loading of plotter states
   - "log"-scale: uses `sign(x) * abs(x)^0.25`
@@ -41,6 +43,7 @@ include extern/nttiny/Makefile
 ## To-do
 
 - [x] save/load states
+- [x] timestep jumpover
 - [ ] hidpi support
 - [ ] user-specific outlining
 - [ ] subplots & linked axes

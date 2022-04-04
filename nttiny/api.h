@@ -69,6 +69,8 @@ public:
   [[nodiscard]] auto is_forward() const -> bool { return m_forward; }
   [[nodiscard]] auto get_timestep() const -> int { return m_timestep; }
   [[nodiscard]] auto get_time() const -> float { return m_time; }
+  [[nodiscard]] auto get_jumpover() const -> int { return m_jumpover; }
+  void set_jumpover(int jumpover) { m_jumpover = jumpover; }
   void playToggle() { m_paused = !m_paused; }
   void reverse() { m_forward = !m_forward; }
 
@@ -80,6 +82,7 @@ protected:
   int m_timestep;
   bool m_paused{true};
   bool m_forward{true};
+  int m_jumpover{1};
 };
 } // namespace nttiny
 
