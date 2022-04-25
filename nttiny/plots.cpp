@@ -22,7 +22,7 @@ auto Plot2d<T>::close() -> bool {
 }
 
 /**
- * @TODO: fix for empty field_selected and arbitrary nghost
+ * TODO: fix for empty field_selected and arbitrary nghost
  */
 template <class T>
 void Plot2d<T>::outlineDomain(std::string field_selected) {
@@ -270,9 +270,9 @@ auto Scatter2d<T>::draw() -> bool {
         }
       }
       /**
-       * @todo: fix this
+       * TODO: fix this
        */
-      this->outlineDomain("ex1");
+      // this->outlineDomain("ex1");
       ImPlot::EndPlot();
     }
   }
@@ -312,6 +312,7 @@ template class nttiny::Scatter2d<int>;
 template class nttiny::Scatter2d<float>;
 template class nttiny::Scatter2d<double>;
 
+// ! LEGACY code
 // template <typename T>
 // void Plot::draw(T *x_values, T *y_values, int n, const std::string &label) {
 //   float plot_size = m_plot_size * m_scale;

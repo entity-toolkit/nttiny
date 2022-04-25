@@ -103,6 +103,7 @@ public:
       }
     }
   }
+  void customAnnotatePcolor2d() {}
 };
 
 auto main() -> int {
