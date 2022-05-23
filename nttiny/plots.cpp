@@ -21,16 +21,20 @@ auto Plot2d<T>::close() -> bool {
   }
 }
 
-/**
- * TODO: fix for empty field_selected and arbitrary nghost
- */
 template <class T>
 void Plot2d<T>::outlineDomain(std::string field_selected) {
   ImPlot::PushPlotClipRect();
   if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
-    auto rmin = this->m_sim->fields[field_selected]->grid_x1[2];
-    auto rmax = this->m_sim->fields[field_selected]
-                    ->grid_x1[this->m_sim->fields[field_selected]->get_size(0) - 2];
+    float rmin, rmax;
+    if (field_selected == "" || this->m_sim->fields[field_selected]->grid_x1 == nullptr) {
+      rmin = this->m_sim->m_global_grid.m_x1[2];
+      auto nx1 = this->m_sim->m_global_grid.m_size[0];
+      rmax = this->m_sim->m_global_grid.m_x1[nx1 - 2];
+    } else {
+      rmin = this->m_sim->fields[field_selected]->grid_x1[2];
+      auto nx1 = this->m_sim->fields[field_selected]->get_size(0);
+      rmax = this->m_sim->fields[field_selected]->grid_x1[nx1 - 2];
+    }
     auto p1 = ImPlot::PlotToPixels(ImPlotPoint(0, rmin));
     auto p2 = ImPlot::PlotToPixels(ImPlotPoint(0, rmax));
     ImPlot::GetPlotDrawList()->AddLine(p1, p2, IM_COL32(250, 250, 240, 255), 0.2);
@@ -52,12 +56,22 @@ void Plot2d<T>::outlineDomain(std::string field_selected) {
     auto p4 = ImPlot::PlotToPixels(ImPlotPoint(0, -rmax));
     ImPlot::GetPlotDrawList()->AddLine(p3, p4, IM_COL32(250, 250, 240, 255), 0.2);
   } else {
-    auto xmin = this->m_sim->fields[field_selected]->grid_x1[2];
-    auto xmax = this->m_sim->fields[field_selected]
-                    ->grid_x1[this->m_sim->fields[field_selected]->get_size(0) - 2];
-    auto ymin = this->m_sim->fields[field_selected]->grid_x2[2];
-    auto ymax = this->m_sim->fields[field_selected]
-                    ->grid_x2[this->m_sim->fields[field_selected]->get_size(0) - 2];
+    float xmin, xmax, ymin, ymax;
+    if (field_selected == "" || this->m_sim->fields[field_selected]->grid_x1 == nullptr) {
+      xmin = this->m_sim->m_global_grid.m_x1[2];
+      auto nx = this->m_sim->m_global_grid.m_size[0];
+      xmax = this->m_sim->m_global_grid.m_x1[nx - 2];
+      ymin = this->m_sim->m_global_grid.m_x2[2];
+      auto ny = this->m_sim->m_global_grid.m_size[1];
+      ymax = this->m_sim->m_global_grid.m_x2[ny - 2];
+    } else {
+      xmin = this->m_sim->fields[field_selected]->grid_x1[2];
+      auto nx = this->m_sim->fields[field_selected]->get_size(0);
+      xmax = this->m_sim->fields[field_selected]->grid_x1[nx - 2];
+      ymin = this->m_sim->fields[field_selected]->grid_x2[2];
+      auto ny = this->m_sim->fields[field_selected]->get_size(0);
+      ymax = this->m_sim->fields[field_selected]->grid_x2[ny - 2];
+    }
     ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(xmin, ymin));
     ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(ymax, xmax));
     ImPlot::PushPlotClipRect();
@@ -82,12 +96,12 @@ auto Pcolor2d<T>::draw() -> bool {
   bool close;
   float plot_size = this->m_plot_size * this->m_scale;
   float cmap_h = this->m_cmap_h * this->m_scale;
-  // TODO: this shall come from simulation
   auto x1min = this->m_sim->get_x1min(), x1max = this->m_sim->get_x1max();
   auto x2min = this->m_sim->get_x2min(), x2max = this->m_sim->get_x2max();
   float aspect;
   if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
-    aspect = 1.75;
+    aspect = 1.0f;
+    plot_size *= 1.75f;
   } else {
     aspect = (x2max - x2min) / (x1max - x1min);
   }
@@ -120,9 +134,19 @@ auto Pcolor2d<T>::draw() -> bool {
   if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
     // if (ImPlot::BeginPlot("", ImVec2(-1, plot_size), ImPlotFlags_Equal)) {
     if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
+      double *x1_grid, *x2_grid;
       x1min = 0.0;
-      x1max = this->m_sim->fields[field_selected]
-                  ->grid_x1[this->m_sim->fields[field_selected]->get_size(0)];
+      if (field_selected == "" || this->m_sim->fields[field_selected]->grid_x1 == nullptr) {
+        x1_grid = this->m_sim->m_global_grid.m_x1;
+        x2_grid = this->m_sim->m_global_grid.m_x2;
+        auto nx1 = this->m_sim->m_global_grid.m_size[0];
+        x1max = this->m_sim->m_global_grid.m_x1[nx1 - 2];
+      } else {
+        x1_grid = this->m_sim->fields[field_selected]->grid_x1;
+        x2_grid = this->m_sim->fields[field_selected]->grid_x2;
+        x1max = this->m_sim->fields[field_selected]
+                    ->grid_x1[this->m_sim->fields[field_selected]->get_size(0)];
+      }
       x2min = -x1max;
       x2max = x1max;
       ImPlot::PlotPolarHeatmap("",
@@ -131,8 +155,8 @@ auto Pcolor2d<T>::draw() -> bool {
                                this->m_sim->fields[field_selected]->get_size(0),
                                this->m_vmin,
                                this->m_vmax,
-                               this->m_sim->fields[field_selected]->grid_x1,
-                               this->m_sim->fields[field_selected]->grid_x2,
+                               x1_grid,
+                               x2_grid,
                                this->m_log,
                                nullptr,
                                {x1min, x2min},
@@ -213,7 +237,8 @@ auto Scatter2d<T>::draw() -> bool {
   auto x2min = this->m_sim->get_x2min(), x2max = this->m_sim->get_x2max();
   float aspect;
   if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
-    aspect = 1.75;
+    aspect = 1.0f;
+    plot_size *= 1.75f;
   } else {
     aspect = (x2max - x2min) / (x1max - x1min);
   }
@@ -224,6 +249,7 @@ auto Scatter2d<T>::draw() -> bool {
     ImGui::SameLine(ImGui::GetWindowWidth() - 40);
     close = this->close();
   }
+
   // Choose particles to display
   std::size_t nspec{this->m_sim->particles.size()};
   {
@@ -248,11 +274,11 @@ auto Scatter2d<T>::draw() -> bool {
   // display scatter plots
   {
     if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
-      x1min = 0.0;
-      x1max = this->m_sim->fields["ex1"]->grid_x1[this->m_sim->fields["ex1"]->get_size(0)];
-      x2min = -x1max;
-      x2max = x1max;
-      ImPlot::SetNextAxesLimits(x1min, x1max, x2min, x2max, true);
+      // x1min = 0.0;
+      // x1max = this->m_sim->fields["Ex1"]->grid_x1[this->m_sim->fields["Ex1"]->get_size(0)];
+      // x2min = -x1max;
+      // x2max = x1max;
+      // ImPlot::SetNextAxesLimits(x1min, x1max, x2min, x2max, true);
     }
     if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
       for (std::size_t i{0}; i < nspec; ++i) {
@@ -269,10 +295,8 @@ auto Scatter2d<T>::draw() -> bool {
                               npart);
         }
       }
-      /**
-       * TODO: fix this
-       */
-      // this->outlineDomain("ex1");
+      // TODO: fix this
+      this->outlineDomain();
       ImPlot::EndPlot();
     }
   }
@@ -301,6 +325,17 @@ void Pcolor2d<T>::importMetadata(const PlotMetadata& metadata) {
   m_cmap = ImPlot::GetColormapIndex(metadata.m_cmap.c_str());
   m_field_selected = metadata.m_field_selected;
 }
+
+template <class T>
+auto Scatter2d<T>::exportMetadata() -> PlotMetadata {
+  PlotMetadata metadata;
+  metadata.m_ID = this->m_ID;
+  metadata.m_type = "Scatter2d";
+  return metadata;
+}
+
+template <class T>
+void Scatter2d<T>::importMetadata(const PlotMetadata&) {}
 
 } // namespace nttiny
 

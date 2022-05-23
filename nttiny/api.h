@@ -17,6 +17,19 @@ void drawCircle(const point_t& center,
                 const point_t& phi_range = {0.0f, 2.0f * M_PI},
                 const int& resolution = 128);
 
+struct Grid {
+  int m_size[3];
+  double *m_x1, *m_x2, *m_x3;
+  Grid() {}
+  Grid(int nx1, int nx2, int nx3) : m_size{nx1, nx2, nx3} { allocate(); }
+  void allocate() {
+    m_x1 = new double[m_size[0]];
+    m_x2 = new double[m_size[1]];
+    m_x3 = new double[m_size[2]];
+  }
+  ~Grid() = default;
+};
+
 template <class T>
 struct Data {
   int m_size[2];
@@ -24,8 +37,8 @@ struct Data {
   double *grid_x1, *grid_x2;
 
   Data(int nx1, int nx2) : m_size{nx1, nx2} {
-    grid_x1 = new double[m_size[0] + 1];
-    grid_x2 = new double[m_size[1] + 1];
+    grid_x1 = nullptr;
+    grid_x2 = nullptr;
     allocate(nx1 * nx2);
   }
   ~Data() = default;
@@ -41,11 +54,12 @@ struct Data {
 };
 
 template <class T>
-class SimulationAPI {
+struct SimulationAPI {
 public:
   // ui
   std::map<std::string, Data<T>*> fields;
   std::map<std::string, std::pair<Data<T>*, Data<T>*>> particles;
+  Grid m_global_grid;
   const std::string coords;
 
   SimulationAPI(const std::string& coords) : coords(coords) {}

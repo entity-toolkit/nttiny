@@ -15,7 +15,8 @@ void drawCircle(const point_t& center,
   ImPlot::PushPlotClipRect();
   for (int i{0}; i < resolution; ++i) {
     float phi_min = phi_range[0] + (phi_range[1] - phi_range[0]) * (float)(i) / (float)(resolution);
-    float phi_max = phi_range[0] + (phi_range[1] - phi_range[0]) * (float)(i + 1) / (float)(resolution);
+    float phi_max
+        = phi_range[0] + (phi_range[1] - phi_range[0]) * (float)(i + 1) / (float)(resolution);
     auto p01 = ImPlot::PlotToPixels(ImPlotPoint(center[0] + radius * std::sin(phi_min),
                                                 center[1] + radius * std::cos(phi_min)));
     auto p02 = ImPlot::PlotToPixels(ImPlotPoint(center[0] + radius * std::sin(phi_max),
@@ -26,6 +27,6 @@ void drawCircle(const point_t& center,
 }
 } // namespace nttiny
 
-template class nttiny::Data<int>;
-template class nttiny::Data<float>;
-template class nttiny::Data<double>;
+template struct nttiny::Data<int>;
+template struct nttiny::Data<float>;
+template struct nttiny::Data<double>;

@@ -75,7 +75,7 @@ public:
   void scale();
   auto close() -> bool;
   auto getId() -> int override { return this->m_ID; }
-  void outlineDomain(std::string field_selected);
+  void outlineDomain(std::string field_selected = "");
 };
 
 template <class T>
@@ -105,8 +105,8 @@ public:
   Scatter2d(int id) : Plot2d<T>(id) {}
   ~Scatter2d() override = default;
   auto draw() -> bool override;
-  auto exportMetadata() -> PlotMetadata override { return PlotMetadata(); }
-  void importMetadata(const PlotMetadata&) override {}
+  auto exportMetadata() -> PlotMetadata override;
+  void importMetadata(const PlotMetadata&) override;
 };
 
 // TODO: 1d plot, linear, log linear and log log, multiple data
