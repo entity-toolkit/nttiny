@@ -121,9 +121,9 @@ void Visualization<T>::bindSimulation(SimulationAPI<T>* sim) {
 
 template <class T>
 void Visualization<T>::buildController() {
-  ImGui::Begin("Simulation control");
-  ImGui::Text("Timestep: %d", this->m_sim->get_timestep());
-  ImGui::Text("Time: %f", this->m_sim->get_time());
+  ImGui::Begin("simulation control");
+  ImGui::Text("timestep: %d", this->m_sim->get_timestep());
+  ImGui::Text("time: %f", this->m_sim->get_time());
   {
     ImGui::PushButtonRepeat(true);
     if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
@@ -135,7 +135,7 @@ void Visualization<T>::buildController() {
   // Toggle play/pause
   {
     ImGui::SameLine();
-    if (ImGui::Button(this->m_sim->is_paused() ? "Play" : "Pause")) { this->m_sim->playToggle(); }
+    if (ImGui::Button(this->m_sim->is_paused() ? "play" : "pause")) { this->m_sim->playToggle(); }
   }
   // Right step
   {
@@ -151,7 +151,7 @@ void Visualization<T>::buildController() {
   // restart simulation
   {
     ImGui::SameLine(ImGui::GetWindowWidth() - 40);
-    if (ImGui::Button("Rst")) {
+    if (ImGui::Button("rst")) {
       if (!this->m_sim->is_paused()) { m_sim->playToggle(); }
       this->m_sim->restart();
     }
@@ -159,16 +159,15 @@ void Visualization<T>::buildController() {
 
   // Simulation speed
   {
-    ImGui::Text("Simulation rate:");
     ImGui::SetNextItemWidth(
         std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 6));
-    ImGui::SliderFloat("dt per second", &this->m_tps_limit, 1, 1000);
+    ImGui::SliderFloat("TPS", &this->m_tps_limit, 1, 1000);
     
-    ImGui::Text("Jump over timesteps:");
+    // ImGui::Text("Jump over timesteps:");
     ImGui::SetNextItemWidth(
         std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 3));
     int jmp{this->m_sim->get_jumpover()};
-    ImGui::InputInt("", &jmp);
+    ImGui::InputInt("skip", &jmp);
     this->m_sim->set_jumpover(jmp);
   }
   // Simulation direction
@@ -176,20 +175,19 @@ void Visualization<T>::buildController() {
     int dir = this->m_sim->is_forward() ? 1 : 0;
     const char* directions[2] = {"<<", ">>"};
     const char* direction = directions[dir];
-    ImGui::Text("Simulation direction:");
     ImGui::SetNextItemWidth(
         std::max(ImGui::GetContentRegionAvail().x * 0.2f, ImGui::GetFontSize() * 4));
-    ImGui::SliderInt(this->m_sim->is_forward() ? "Forward" : "Backward", &dir, 0, 1, direction);
+    ImGui::SliderInt(this->m_sim->is_forward() ? "fwd" : "bwd", &dir, 0, 1, direction);
     if (this->m_sim->is_forward() != static_cast<bool>(dir == 1)) { this->m_sim->reverse(); }
   }
   // Add plots
   {
-    if (ImGui::Button("Add 2d plot")) { addPcolor2d(0, 1); }
-    if (ImGui::Button("Add scatter plot")) { addScatter2d(); }
+    if (ImGui::Button("add 2d plot")) { addPcolor2d(0, 1); }
+    if (ImGui::Button("add scatter plot")) { addScatter2d(); }
   }
   // Save state
   {
-    if (ImGui::Button("Save state")) {
+    if (ImGui::Button("save state")) {
       auto rewrite{true};
       auto cntr{0};
       for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
@@ -208,7 +206,7 @@ void Visualization<T>::buildController() {
   }
   // Load state
   {
-    if (ImGui::Button("Load state")) {
+    if (ImGui::Button("load state")) {
       this->m_plots.clear();
       try {
         auto input = toml::parse("nttiny.toml");

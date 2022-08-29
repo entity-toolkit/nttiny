@@ -24,17 +24,32 @@ public:
     m_x1x2_extent[2] = 0.0f;
     m_x1x2_extent[3] = M_PI;
 
-    for (int i{0}; i <= sx1; ++i) {
-      ex.grid_x1[i] = m_x1x2_extent[0]
-                    + (m_x1x2_extent[1] - m_x1x2_extent[0])
-                          * (exp((double)(i) / (double)(sx1)) - 1.0) / (exp(1.0) - 1.0);
-      bx.grid_x1[i] = ex.grid_x1[i];
+    m_global_grid.m_size[0] = nx1 + 1;
+    m_global_grid.m_size[1] = nx2 + 1;
+    m_global_grid.m_size[2] = 1;
+    m_global_grid.allocate();
+
+    for (int i{0}; i <= nx1; ++i) {
+      m_global_grid.m_x1[i]
+          = m_x1x2_extent[0] + (m_x1x2_extent[1] - m_x1x2_extent[0]) * (double)(i) / (double)(nx1);
     }
-    for (int j{0}; j <= sx2; ++j) {
-      ex.grid_x2[j]
-          = m_x1x2_extent[2] + (m_x1x2_extent[3] - m_x1x2_extent[2]) * (double)(j) / (double)(sx2);
-      bx.grid_x2[j] = ex.grid_x2[j];
+    for (int j{0}; j <= nx2; ++j) {
+      m_global_grid.m_x2[j]
+          = m_x1x2_extent[2] + (m_x1x2_extent[3] - m_x1x2_extent[2]) * (double)(j) / (double)(nx2);
     }
+
+    // for (int i{0}; i < sx1; ++i) {
+    //   ex.grid_x1[i] = m_x1x2_extent[0]
+    //                 + (m_x1x2_extent[1] - m_x1x2_extent[0])
+    //                       * (exp((double)(i) / (double)(sx1)) - 1.0) / (exp(1.0) - 1.0);
+    //   bx.grid_x1[i] = ex.grid_x1[i];
+    // }
+    // for (int j{0}; j < sx2; ++j) {
+    //   ex.grid_x2[j]
+    //       = m_x1x2_extent[2] + (m_x1x2_extent[3] - m_x1x2_extent[2]) * (double)(j) /
+    //       (double)(sx2);
+    //   bx.grid_x2[j] = ex.grid_x2[j];
+    // }
 
     this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
   }

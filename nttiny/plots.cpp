@@ -114,7 +114,7 @@ auto Pcolor2d<T>::draw() -> bool {
   // Choose field component to display
   std::string field_selected;
   {
-    ImGui::Text("Field to plot:");
+    // ImGui::Text("Field to plot:");
     const char** field_names;
     field_names = new const char*[this->m_sim->fields.size()];
     int i{0};
@@ -122,7 +122,7 @@ auto Pcolor2d<T>::draw() -> bool {
       field_names[i] = fld.first.c_str();
       ++i;
     }
-    if (ImGui::Combo("", &this->m_field_selected, field_names, this->m_sim->fields.size())) {
+    if (ImGui::Combo("field", &this->m_field_selected, field_names, this->m_sim->fields.size())) {
       PLOGV_(VISPLOGID) << "Pcolor2d field changed to " << field_names[this->m_field_selected]
                         << ".";
     }
@@ -131,7 +131,7 @@ auto Pcolor2d<T>::draw() -> bool {
   // setup axes
   ImPlot::PushColormap(this->m_cmap);
 
-  if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
+  if (ImPlot::BeginPlot("##", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
     // if (ImPlot::BeginPlot("", ImVec2(-1, plot_size), ImPlotFlags_Equal)) {
     if ((this->m_sim->coords == "spherical") || (this->m_sim->coords == "qspherical")) {
       double *x1_grid, *x2_grid;
@@ -149,7 +149,7 @@ auto Pcolor2d<T>::draw() -> bool {
       }
       x2min = -x1max;
       x2max = x1max;
-      ImPlot::PlotPolarHeatmap("",
+      ImPlot::PlotPolarHeatmap("##",
                                this->m_sim->fields[field_selected]->get_data(),
                                this->m_sim->fields[field_selected]->get_size(1),
                                this->m_sim->fields[field_selected]->get_size(0),
@@ -162,7 +162,7 @@ auto Pcolor2d<T>::draw() -> bool {
                                {x1min, x2min},
                                {x1max, x2max});
     } else {
-      ImPlot::PlotHeatmap("",
+      ImPlot::PlotHeatmap("##",
                           this->m_sim->fields[field_selected]->get_data(),
                           this->m_sim->fields[field_selected]->get_size(1),
                           this->m_sim->fields[field_selected]->get_size(0),
@@ -197,13 +197,13 @@ auto Pcolor2d<T>::draw() -> bool {
     this->m_vmax = vmax;
 
     ImGui::PushID(0);
-    ImGui::InputFloat("", &this->m_vmax, 0.0f, 1000.0f, "%.1e");
+    ImGui::InputFloat("##", &this->m_vmax, 0.0f, 1000.0f, "%.1e");
     ImGui::PopID();
 
-    ImPlot::ColormapScale("", vmin, vmax, ImVec2(this->m_sidebar_w, cmap_h));
+    ImPlot::ColormapScale("##", vmin, vmax, ImVec2(this->m_sidebar_w, cmap_h));
 
     ImGui::PushID(1);
-    ImGui::InputFloat("", &this->m_vmin, 0.0f, 1000.0f, "%.1e");
+    ImGui::InputFloat("##", &this->m_vmin, 0.0f, 1000.0f, "%.1e");
     ImGui::PopID();
 
     ImGui::Checkbox("log", &this->m_log);
@@ -280,7 +280,7 @@ auto Scatter2d<T>::draw() -> bool {
       // x2max = x1max;
       // ImPlot::SetNextAxesLimits(x1min, x1max, x2min, x2max, true);
     }
-    if (ImPlot::BeginPlot("", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
+    if (ImPlot::BeginPlot("##", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
       for (std::size_t i{0}; i < nspec; ++i) {
         if (this->m_prtl_enabled[i]) {
           auto spec{this->m_prtl_names[i]};
