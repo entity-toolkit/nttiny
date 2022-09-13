@@ -12,8 +12,7 @@
 	url = git@github.com:ToruNiina/toml11.git
 [submodule "extern/implot"]
 	path = extern/implot
-	url = git@github.com:haykh/implot.git
-	branch = devel
+	url = git@github.com:epezent/implot.git
 [submodule "extern/freetype"]
 	path = extern/freetype
 	url = https://gitlab.freedesktop.org/freetype/freetype.git

@@ -2,6 +2,8 @@
 #include "plots.h"
 #include "api.h"
 
+#include "implot_extra.h"
+
 #include <plog/Log.h>
 #include <implot.h>
 #include <toml.hpp>
