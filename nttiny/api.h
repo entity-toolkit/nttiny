@@ -5,72 +5,73 @@
 
 #include <map>
 #include <vector>
+#include <array>
 #include <string>
 #include <utility>
 
 namespace nttiny {
 
-using point_t = float[2];
+enum class Coord { Cartesian, Spherical };
 
 void drawCircle(const point_t& center,
                 const float& radius,
                 const point_t& phi_range = {0.0f, 2.0f * M_PI},
                 const int& resolution = 128);
 
+template <class T, ushort D>
 struct Grid {
-  int m_size[3];
-  double *m_x1, *m_x2, *m_x3;
-  Grid() {}
-  Grid(int nx1, int nx2, int nx3) : m_size{nx1, nx2, nx3} { allocate(); }
-  void allocate() {
-    m_x1 = new double[m_size[0]];
-    m_x2 = new double[m_size[1]];
-    m_x3 = new double[m_size[2]];
+  std::array<int, D> m_size;
+  std::array<T*, D> m_xi;
+  ushort m_ngh;
+  Coord m_coord;
+  Grid(const Coord& coord, const std::array<int, D>& size, const ushort& ngh = 2)
+      : m_coord(coord), m_size(size), m_ngh(ngh) {
+    for (ushort i{0}; i < D; ++i) {
+      m_xi[i] = new T[m_size[i]];
+    }
   }
-  ~Grid() = default;
 };
 
-template <class T>
-struct Data {
-  int m_size[2];
-  T* m_data;
-  double *grid_x1, *grid_x2;
+// template <class T>
+// struct Data {
+//   int m_size[2];
+//   T* m_data;
+//   double *grid_x1, *grid_x2;
 
-  Data(int nx1, int nx2) : m_size{nx1, nx2} {
-    grid_x1 = nullptr;
-    grid_x2 = nullptr;
-    allocate(nx1 * nx2);
-  }
-  ~Data() = default;
-  void allocate(std::size_t n) { this->m_data = new T[n]; }
-  [[nodiscard]] auto get_size(std::size_t i) const -> int { return this->m_size[i]; }
-  [[nodiscard]] auto get_data() const -> T* { return this->m_data; }
-  [[nodiscard]] auto get(std::size_t i, std::size_t j) const -> T {
-    return this->m_data[j * this->m_size[0] + i];
-  }
+//   Data(int nx1, int nx2) : m_size{nx1, nx2} {
+//     grid_x1 = nullptr;
+//     grid_x2 = nullptr;
+//     allocate(nx1 * nx2);
+//   }
+//   ~Data() = default;
+//   void allocate(std::size_t n) { this->m_data = new T[n]; }
+//   [[nodiscard]] auto get_size(std::size_t i) const -> int { return this->m_size[i]; }
+//   [[nodiscard]] auto get_data() const -> T* { return this->m_data; }
+//   [[nodiscard]] auto get(std::size_t i, std::size_t j) const -> T {
+//     return this->m_data[j * this->m_size[0] + i];
+//   }
 
-  void set_size(std::size_t i, int size) { this->m_size[i] = size; }
-  void set(std::size_t i, std::size_t j, T value) { this->m_data[j * this->m_size[0] + i] = value; }
-};
+//   void set_size(std::size_t i, int size) { this->m_size[i] = size; }
+//   void set(std::size_t i, std::size_t j, T value) { this->m_data[j * this->m_size[0] + i] =
+//   value; }
+// };
 
-template <class T>
+template <class T, ushort D>
 struct SimulationAPI {
-public:
   // ui
-  std::map<std::string, Data<T>*> fields;
-  std::map<std::string, std::pair<Data<T>*, Data<T>*>> particles;
-  Grid m_global_grid;
-  const std::string coords;
+  std::map<std::string, T*> fields;
+  std::map<std::string, std::array<T*, D>> particles;
+  Grid<T, D> m_global_grid;
 
-  SimulationAPI(const std::string& coords) : coords(coords) {}
+  SimulationAPI() {}
   ~SimulationAPI() = default;
 
   // init
   virtual void setData() = 0;
-  [[nodiscard]] auto get_x1min() const -> float { return m_x1x2_extent[0]; }
-  [[nodiscard]] auto get_x1max() const -> float { return m_x1x2_extent[1]; }
-  [[nodiscard]] auto get_x2min() const -> float { return m_x1x2_extent[2]; }
-  [[nodiscard]] auto get_x2max() const -> float { return m_x1x2_extent[3]; }
+  // [[nodiscard]] auto get_x1min() const -> T { return m_x1x2_extent[0]; }
+  // [[nodiscard]] auto get_x1max() const -> T { return m_x1x2_extent[1]; }
+  // [[nodiscard]] auto get_x2min() const -> T { return m_x1x2_extent[2]; }
+  // [[nodiscard]] auto get_x2max() const -> T { return m_x1x2_extent[3]; }
 
   // updaters
   virtual void stepFwd() = 0;
@@ -82,16 +83,16 @@ public:
   [[nodiscard]] auto is_paused() const -> bool { return m_paused; }
   [[nodiscard]] auto is_forward() const -> bool { return m_forward; }
   [[nodiscard]] auto get_timestep() const -> int { return m_timestep; }
-  [[nodiscard]] auto get_time() const -> float { return m_time; }
+  [[nodiscard]] auto get_time() const -> T { return m_time; }
   [[nodiscard]] auto get_jumpover() const -> int { return m_jumpover; }
-  void set_jumpover(int jumpover) { m_jumpover = jumpover; }
+  void set_jumpover(const int& jumpover) { m_jumpover = jumpover; }
   void playToggle() { m_paused = !m_paused; }
   void reverse() { m_forward = !m_forward; }
 
   virtual void customAnnotatePcolor2d() = 0;
 
 protected:
-  float m_x1x2_extent[4];
+  // float m_x1x2_extent[4];
   float m_time;
   int m_timestep;
   bool m_paused{true};

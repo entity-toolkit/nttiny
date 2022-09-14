@@ -31,8 +31,8 @@
 
 namespace nttiny {
 
-template <class T>
-Visualization<T>::Visualization(int win_width, int win_height, bool resizable)
+template <class T, ushort D>
+Visualization<T, D>::Visualization(int win_width, int win_height, bool resizable)
     : m_win_width(win_width), m_win_height(win_height), m_resizable(resizable) {
   // initialize plog
   plog::Severity max_severity;
@@ -73,8 +73,8 @@ Visualization<T>::Visualization(int win_width, int win_height, bool resizable)
   ImGui_ImplOpenGL3_Init("#version 150");
 }
 
-template <class T>
-Visualization<T>::~Visualization() {
+template <class T, ushort D>
+Visualization<T, D>::~Visualization() {
   // deinitialize imgui
   PLOGD_(VISPLOGID) << "Destroying Visualization.";
   ImGui_ImplOpenGL3_Shutdown();
@@ -85,8 +85,8 @@ Visualization<T>::~Visualization() {
   glfwTerminate();
 }
 
-template <class T>
-void Visualization<T>::addPcolor2d(float vmin, float vmax) {
+template <class T, ushort D>
+void Visualization<T, D>::addPcolor2d(float vmin, float vmax) {
   PLOGD_(VISPLOGID) << "Opening Pcolor2d.";
   auto myplot{std::make_unique<Pcolor2d<T>>(this->m_id, vmin, vmax)};
   ++this->m_id;
@@ -94,8 +94,8 @@ void Visualization<T>::addPcolor2d(float vmin, float vmax) {
   this->bindSimulation();
 }
 
-template <class T>
-void Visualization<T>::addScatter2d() {
+template <class T, ushort D>
+void Visualization<T, D>::addScatter2d() {
   PLOGD_(VISPLOGID) << "Opening Scatter2d.";
   auto myplot{std::make_unique<Scatter2d<T>>(this->m_id)};
   ++this->m_id;
@@ -103,15 +103,15 @@ void Visualization<T>::addScatter2d() {
   this->bindSimulation();
 }
 
-template <class T>
-void Visualization<T>::bindSimulation() {
+template <class T, ushort D>
+void Visualization<T, D>::bindSimulation() {
   for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
     (*plot)->bindSimulation(this->m_sim);
   }
 }
 
-template <class T>
-void Visualization<T>::bindSimulation(SimulationAPI<T>* sim) {
+template <class T, ushort D>
+void Visualization<T, D>::bindSimulation(SimulationAPI<T, D>* sim) {
   PLOGD_(VISPLOGID) << "Binding simulation.";
   this->m_sim = sim;
   for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
@@ -119,8 +119,8 @@ void Visualization<T>::bindSimulation(SimulationAPI<T>* sim) {
   }
 }
 
-template <class T>
-void Visualization<T>::buildController() {
+template <class T, ushort D>
+void Visualization<T, D>::buildController() {
   ImGui::Begin("simulation control");
   ImGui::Text("timestep: %d", this->m_sim->get_timestep());
   ImGui::Text("time: %f", this->m_sim->get_time());
@@ -162,7 +162,7 @@ void Visualization<T>::buildController() {
     ImGui::SetNextItemWidth(
         std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 6));
     ImGui::SliderFloat("TPS", &this->m_tps_limit, 1, 1000);
-    
+
     // ImGui::Text("Jump over timesteps:");
     ImGui::SetNextItemWidth(
         std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 3));
@@ -238,8 +238,8 @@ void Visualization<T>::buildController() {
   ImGui::End();
 }
 
-template <class T>
-void Visualization<T>::processControllerInput() {
+template <class T, ushort D>
+void Visualization<T, D>::processControllerInput() {
   static bool pressing_spacebar = false;
   if (glfwGetKey(this->m_window->get_window(), GLFW_KEY_SPACE) == GLFW_PRESS) {
     pressing_spacebar = true;
@@ -274,8 +274,8 @@ void Visualization<T>::processControllerInput() {
   }
 }
 
-template <class T>
-void Visualization<T>::loop() {
+template <class T, ushort D>
+void Visualization<T, D>::loop() {
   PLOGD_(VISPLOGID) << "Starting Visualization loop.";
   double fps_limit{glfwGetTime()};
   double tps_limit{glfwGetTime()};
@@ -322,6 +322,5 @@ void Visualization<T>::loop() {
 }
 } // namespace nttiny
 
-template class nttiny::Visualization<int>;
-template class nttiny::Visualization<float>;
-template class nttiny::Visualization<double>;
+template class nttiny::Visualization<float, 2>;
+template class nttiny::Visualization<double, 2>;

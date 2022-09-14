@@ -92,10 +92,10 @@ struct GetterPolarHeatmap {
   GetterPolarHeatmap(const T* values,
                      int rows,
                      int cols,
-                     double scale_min,
-                     double scale_max,
-                     const double* r_array,
-                     const double* theta_array,
+                     T scale_min,
+                     T scale_max,
+                     const T* r_array,
+                     const T* theta_array,
                      const bool use_log_scale)
       : Values(values),
         Rows(rows),
@@ -109,17 +109,17 @@ struct GetterPolarHeatmap {
 
   template <typename I>
   IMPLOT_INLINE ArcInfo operator()(I idx) const {
-    double val;
+    T val;
     if (UseLogScale) {
-      val = (double)(QLOGSCALE(Values[idx]));
+      val = (T)(QLOGSCALE(Values[idx]));
     } else {
-      val = (double)Values[idx];
+      val = (T)Values[idx];
     }
     const int r = idx / Cols;
     const int c = idx % Cols;
 
-    double rlow{RArray[c]}, rhigh{RArray[c + 1]};
-    double th1{ThetaArray[r]}, th2{ThetaArray[r + 1]};
+    T rlow{RArray[c]}, rhigh{RArray[c + 1]};
+    T th1{ThetaArray[r]}, th2{ThetaArray[r + 1]};
 
     ArcInfo arc;
     arc.Min.x = rlow;
@@ -133,8 +133,8 @@ struct GetterPolarHeatmap {
   }
   const T* const Values;
   const int Rows, Cols, Count;
-  const double ScaleMin, ScaleMax;
-  const double *RArray, *ThetaArray;
+  const T ScaleMin, ScaleMax;
+  const T *RArray, *ThetaArray;
   const bool UseLogScale;
 };
 
@@ -148,10 +148,10 @@ void RenderPolarHeatmap(Transformer transformer,
                         const T* values,
                         int rows,
                         int cols,
-                        double scale_min,
-                        double scale_max,
-                        double* r_array,
-                        double* theta_array,
+                        T scale_min,
+                        T scale_max,
+                        T* r_array,
+                        T* theta_array,
                         bool use_log_scale,
                         const char* fmt,
                         const ImPlotPoint& bounds_min,
@@ -161,8 +161,8 @@ void RenderPolarHeatmap(Transformer transformer,
   if (scale_min == 0 && scale_max == 0) {
     T temp_min, temp_max;
     ImMinMaxArray(values, rows * cols, &temp_min, &temp_max);
-    scale_min = (double)temp_min;
-    scale_max = (double)temp_max;
+    scale_min = (T)temp_min;
+    scale_max = (T)temp_max;
   }
   if (scale_min == scale_max) {
     ImVec2 a = transformer(bounds_min);
@@ -171,8 +171,8 @@ void RenderPolarHeatmap(Transformer transformer,
     DrawList.AddRectFilled(a, b, col);
     return;
   }
-  const double yref = reverse_y ? bounds_max.y : bounds_min.y;
-  const double ydir = reverse_y ? -1 : 1;
+  const T yref = reverse_y ? bounds_max.y : bounds_min.y;
+  const T ydir = reverse_y ? -1 : 1;
   // @TODO: maybe pass an array of r_i and theta_i?
   GetterPolarHeatmap<T> getter(
       values, rows, cols, scale_min, scale_max, r_array, theta_array, use_log_scale);
@@ -206,8 +206,8 @@ void RenderPolarHeatmap(Transformer transformer,
     ;
   }
   if (fmt != NULL) {
-    const double w = (bounds_max.x - bounds_min.x) / cols;
-    const double h = (bounds_max.y - bounds_min.y) / rows;
+    const T w = (bounds_max.x - bounds_min.x) / cols;
+    const T h = (bounds_max.y - bounds_min.y) / rows;
     const ImPlotPoint half_size(w * 0.5, h * 0.5);
     int i = 0;
     for (int r = 0; r < rows; ++r) {
@@ -219,7 +219,7 @@ void RenderPolarHeatmap(Transformer transformer,
         char buff[32];
         sprintf(buff, fmt, values[i]);
         ImVec2 size = ImGui::CalcTextSize(buff);
-        double t = ImClamp(ImRemap01((double)values[i], scale_min, scale_max), 0.0, 1.0);
+        T t = ImClamp(ImRemap01((double)values[i], (double)scale_min, (double)scale_max), 0.0, 1.0);
         ImVec4 color = SampleColormap((float)t);
         ImU32 col = CalcTextColor(color);
         DrawList.AddText(px - size * 0.5f, col, buff);
@@ -234,10 +234,10 @@ void PlotPolarHeatmap(const char* label_id,
                       const T* values,
                       int rows,
                       int cols,
-                      double scale_min,
-                      double scale_max,
-                      double* r_array,
-                      double* theta_array,
+                      T scale_min,
+                      T scale_max,
+                      T* r_array,
+                      T* theta_array,
                       bool use_log_scale,
                       const char* fmt,
                       const ImPlotPoint& bounds_min,
@@ -266,98 +266,14 @@ void PlotPolarHeatmap(const char* label_id,
   }
 }
 
-template IMPLOT_API void PlotPolarHeatmap<ImS8>(const char*,
-                                                const ImS8*,
-                                                int,
-                                                int,
-                                                double,
-                                                double,
-                                                double*,
-                                                double*,
-                                                bool,
-                                                const char*,
-                                                const ImPlotPoint&,
-                                                const ImPlotPoint&);
-template IMPLOT_API void PlotPolarHeatmap<ImS16>(const char*,
-                                                 const ImS16*,
-                                                 int,
-                                                 int,
-                                                 double,
-                                                 double,
-                                                 double*,
-                                                 double*,
-                                                 bool,
-                                                 const char*,
-                                                 const ImPlotPoint&,
-                                                 const ImPlotPoint&);
-template IMPLOT_API void PlotPolarHeatmap<ImU16>(const char*,
-                                                 const ImU16*,
-                                                 int,
-                                                 int,
-                                                 double,
-                                                 double,
-                                                 double*,
-                                                 double*,
-                                                 bool,
-                                                 const char*,
-                                                 const ImPlotPoint&,
-                                                 const ImPlotPoint&);
-template IMPLOT_API void PlotPolarHeatmap<ImS32>(const char*,
-                                                 const ImS32*,
-                                                 int,
-                                                 int,
-                                                 double,
-                                                 double,
-                                                 double*,
-                                                 double*,
-                                                 bool,
-                                                 const char*,
-                                                 const ImPlotPoint&,
-                                                 const ImPlotPoint&);
-template IMPLOT_API void PlotPolarHeatmap<ImU32>(const char*,
-                                                 const ImU32*,
-                                                 int,
-                                                 int,
-                                                 double,
-                                                 double,
-                                                 double*,
-                                                 double*,
-                                                 bool,
-                                                 const char*,
-                                                 const ImPlotPoint&,
-                                                 const ImPlotPoint&);
-template IMPLOT_API void PlotPolarHeatmap<ImS64>(const char*,
-                                                 const ImS64*,
-                                                 int,
-                                                 int,
-                                                 double,
-                                                 double,
-                                                 double*,
-                                                 double*,
-                                                 bool,
-                                                 const char*,
-                                                 const ImPlotPoint&,
-                                                 const ImPlotPoint&);
-template IMPLOT_API void PlotPolarHeatmap<ImU64>(const char*,
-                                                 const ImU64*,
-                                                 int,
-                                                 int,
-                                                 double,
-                                                 double,
-                                                 double*,
-                                                 double*,
-                                                 bool,
-                                                 const char*,
-                                                 const ImPlotPoint&,
-                                                 const ImPlotPoint&);
 template IMPLOT_API void PlotPolarHeatmap<float>(const char*,
                                                  const float*,
                                                  int,
                                                  int,
-                                                 double,
-                                                 double,
-                                                 double*,
-                                                 double*,
+                                                 float,
+                                                 float,
+                                                 float*,
+                                                 float*,
                                                  bool,
                                                  const char*,
                                                  const ImPlotPoint&,

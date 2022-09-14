@@ -1,3 +1,4 @@
+#include "nttiny/defs.h"
 #include "nttiny/vis.h"
 #include "nttiny/api.h"
 
@@ -5,128 +6,83 @@
 #include <string>
 #include <stdexcept>
 
-class FieldVisualization : public nttiny::SimulationAPI<float> {
-public:
-  int nx1, nx2;
-  nttiny::Data<float> ex;
-  nttiny::Data<float> bx;
+/* -------------------------------------------------------------------------- */
+/*                         simple 2D cartesian fields                         */
+/* -------------------------------------------------------------------------- */
+struct Example1 : public nttiny::SimulationAPI<float, 2> {
+  float* ex;
+  float* bz;
 
-  // nttiny::Data<float> electrons_x;
-  // nttiny::Data<float> electrons_y;
-  // nttiny::Data<float> positrons_x;
-  // nttiny::Data<float> positrons_y;
-
-  FieldVisualization(int sx1, int sx2)
-      // : nttiny::SimulationAPI<float>{"cartesian"},
-      : nttiny::SimulationAPI<float>{"polar"}, nx1(sx1), nx2(sx2), ex{sx1, sx2}, bx{sx1, sx2} {
-    m_x1x2_extent[0] = 1.0f;
-    m_x1x2_extent[1] = 5.0f;
-    m_x1x2_extent[2] = 0.0f;
-    m_x1x2_extent[3] = M_PI;
-
-    m_global_grid.m_size[0] = nx1 + 1;
-    m_global_grid.m_size[1] = nx2 + 1;
-    m_global_grid.m_size[2] = 1;
-    m_global_grid.allocate();
-
-    for (int i{0}; i <= nx1; ++i) {
-      m_global_grid.m_x1[i]
-          = m_x1x2_extent[0] + (m_x1x2_extent[1] - m_x1x2_extent[0]) * (double)(i) / (double)(nx1);
+  Example1(int sx1, int sx2) : nttiny::SimulationAPI<float, 2>{} {
+    this->m_global_grid
+        = nttiny::Grid<float, 2>{nttiny::Coord::Cartesian, std::array<int, 2>{sx1, sx2}};
+    for (int i{0}; i <= sx1; ++i) {
+      this->m_global_grid.m_xi[0][i] = -1.0f + 2.0f * (float)(i) / (float)(sx1);
     }
-    for (int j{0}; j <= nx2; ++j) {
-      m_global_grid.m_x2[j]
-          = m_x1x2_extent[2] + (m_x1x2_extent[3] - m_x1x2_extent[2]) * (double)(j) / (double)(nx2);
+    for (int j{0}; j <= sx2; ++j) {
+      this->m_global_grid.m_xi[1][j] = -3.0f + 6.0f * (float)(j) / (float)(sx2);
     }
-
-    // for (int i{0}; i < sx1; ++i) {
-    //   ex.grid_x1[i] = m_x1x2_extent[0]
-    //                 + (m_x1x2_extent[1] - m_x1x2_extent[0])
-    //                       * (exp((double)(i) / (double)(sx1)) - 1.0) / (exp(1.0) - 1.0);
-    //   bx.grid_x1[i] = ex.grid_x1[i];
-    // }
-    // for (int j{0}; j < sx2; ++j) {
-    //   ex.grid_x2[j]
-    //       = m_x1x2_extent[2] + (m_x1x2_extent[3] - m_x1x2_extent[2]) * (double)(j) /
-    //       (double)(sx2);
-    //   bx.grid_x2[j] = ex.grid_x2[j];
-    // }
-
-    this->fields.insert({{"ex", &(this->ex)}, {"bx", &(this->bx)}});
-  }
-  // this->ex.allocate(sx * sy);
-  // this->bx.allocate(sx * sy);
-  // this->ex.set_size(0, sx);
-  // this->ex.set_size(1, sy);
-  // this->bx.set_size(0, sx);
-  // this->bx.set_size(1, sy);
-  // this->ex.set_dimension(2);
-  // this->bx.set_dimension(2);
-
-  // this->electrons_x.allocate(1000);
-  // this->electrons_y.allocate(1000);
-  // this->positrons_x.allocate(1000);
-  // this->positrons_y.allocate(1000);
-  //
-  // this->electrons_x.set_size(0, 1000);
-  // this->electrons_y.set_size(0, 1000);
-  // this->positrons_x.set_size(0, 1000);
-  // this->positrons_y.set_size(0, 1000);
-  // }
-  void setData() override {
+    this->fields.insert(std::make_pair("ex", ex));
+    this->fields.insert(std::make_pair("bz", bz));
     this->m_timestep = 0;
-    auto f_sx{(float)(this->nx1)};
-    auto f_sy{(float)(this->nx2)};
-    for (int i{0}; i < this->nx1; ++i) {
+    this->m_time = 0.0;
+  }
+
+  void setData() override {
+    const auto nx1{this->m_global_grid.m_size[0]};
+    const auto nx2{this->m_global_grid.m_size[1]};
+    auto f_sx{(float)(nx1)};
+    auto f_sy{(float)(nx2)};
+    for (int i{0}; i < nx1; ++i) {
       auto f_i{(float)(i)};
-      for (int j{0}; j < this->nx2; ++j) {
+      for (int j{0}; j < nx2; ++j) {
         auto f_j{(float)(j)};
-        this->ex.set(i, j, 0.5f * (f_i / f_sx));
-        this->bx.set(i, j, (f_i / f_sx) * (f_j / f_sy));
+        const auto idx{j * nx1 + i};
+        ex[idx] = 0.5f * (f_i / f_sx);
+        bz[idx] = (f_i / f_sx) * (f_j / f_sy);
       }
     }
-    // for (int i = 0; i < 1000; ++i) {
-    //   this->electrons_x.set(i, m_x1x2_extent[1] * i / 1000.0);
-    //   this->electrons_y.set(i, m_x1x2_extent[3] * i / 1000.0);
-    //   this->positrons_x.set(i, 0.1f + m_x1x2_extent[1] * i / 1000.0);
-    //   this->positrons_y.set(i, 0.1f + m_x1x2_extent[3] * i / 1000.0);
-    // }
-    // this->particles.insert({{"electrons",
-    //                             {&(this->electrons_x),
-    //                              &(this->electrons_y)}
-    //                          },{
-    //                          "positrons",
-    //                             {&(this->positrons_x),
-    //                              &(this->positrons_y)}
-    //                          }});
   }
   void restart() override {}
   void stepFwd() override {
     ++this->m_timestep;
-    for (int j{0}; j < this->nx2; ++j) {
-      for (int i{0}; i < this->nx1; ++i) {
-        this->ex.set(i, j, this->ex.get(i, j) + 0.001f);
-        this->bx.set(i, j, this->bx.get(i, j) + 0.001f);
+    ++this->m_time;
+    const auto nx1{this->m_global_grid.m_size[0]};
+    const auto nx2{this->m_global_grid.m_size[1]};
+    for (int j{0}; j < nx2; ++j) {
+      for (int i{0}; i < nx1; ++i) {
+        const auto idx{j * nx1 + i};
+        ex[idx] += 0.001f;
+        bz[idx] += 0.001f;
       }
     }
   }
   void stepBwd() override {
     --this->m_timestep;
-    for (int j{0}; j < this->nx2; ++j) {
-      for (int i{0}; i < this->nx1; ++i) {
-        this->ex.set(i, j, this->ex.get(i, j) - 0.001f);
-        this->bx.set(i, j, this->bx.get(i, j) - 0.001f);
+    --this->m_time;
+    const auto nx1{this->m_global_grid.m_size[0]};
+    const auto nx2{this->m_global_grid.m_size[1]};
+    for (int j{0}; j < nx2; ++j) {
+      for (int i{0}; i < nx1; ++i) {
+        const auto idx{j * nx1 + i};
+        ex[idx] -= 0.001f;
+        bz[idx] -= 0.001f;
       }
     }
   }
-  void customAnnotatePcolor2d() {}
+  void customAnnotatePcolor2d() {
+    setData();
+    this->m_time = 0.0;
+    this->m_timestep = 0;
+  }
 };
 
 auto main() -> int {
   try {
-    FieldVisualization sim(10, 50);
+    Example1 sim(10, 50);
     sim.setData();
 
-    nttiny::Visualization<float> vis;
+    nttiny::Visualization<float, 2> vis;
     vis.setTPSLimit(30.0f);
     vis.bindSimulation(&sim);
     vis.loop();
@@ -137,3 +93,18 @@ auto main() -> int {
   }
   return 0;
 }
+
+// for (int i = 0; i < 1000; ++i) {
+//   this->electrons_x.set(i, m_x1x2_extent[1] * i / 1000.0);
+//   this->electrons_y.set(i, m_x1x2_extent[3] * i / 1000.0);
+//   this->positrons_x.set(i, 0.1f + m_x1x2_extent[1] * i / 1000.0);
+//   this->positrons_y.set(i, 0.1f + m_x1x2_extent[3] * i / 1000.0);
+// }
+// this->particles.insert({{"electrons",
+//                             {&(this->electrons_x),
+//                              &(this->electrons_y)}
+//                          },{
+//                          "positrons",
+//                             {&(this->positrons_x),
+//                              &(this->positrons_y)}
+//                          }});
