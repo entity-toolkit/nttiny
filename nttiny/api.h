@@ -9,6 +9,8 @@
 #include <string>
 #include <utility>
 
+#include <iostream>
+
 namespace nttiny {
 
 enum class Coord { Cartesian, Spherical };
@@ -20,10 +22,10 @@ void drawCircle(const point_t& center,
 
 template <class T, ushort D>
 struct Grid {
-  std::array<int, D> m_size;
-  std::array<T*, D> m_xi;
-  ushort m_ngh;
   Coord m_coord;
+  std::array<int, D> m_size;
+  ushort m_ngh;
+  std::array<T*, D> m_xi;
   Grid(const Coord& coord, const std::array<int, D>& size, const ushort& ngh = 2)
       : m_coord(coord), m_size(size), m_ngh(ngh) {
     for (ushort i{0}; i < D; ++i) {
@@ -56,6 +58,15 @@ struct Grid {
 //   value; }
 // };
 
+// template <class T>
+// struct Data {
+//   T* m_data;
+//   Data() {}
+//   Data(int nx1, int nx2) { this->m_data = new T[nx1 * nx2]; }
+//   ~Data() = default;
+//   void allocate(std::size_t n) {  }
+// };
+
 template <class T, ushort D>
 struct SimulationAPI {
   // ui
@@ -63,8 +74,14 @@ struct SimulationAPI {
   std::map<std::string, std::array<T*, D>> particles;
   Grid<T, D> m_global_grid;
 
-  SimulationAPI() {}
+  SimulationAPI(const Coord& coord, const std::array<int, D>& size, const ushort& ngh = 2)
+      : m_global_grid{coord, size, ngh} {}
   ~SimulationAPI() = default;
+
+  auto Index(const int& i, const int& j) const -> int {
+    return i + (m_global_grid.m_size[1] - 1 - j) * m_global_grid.m_size[0];
+  }
+  auto Xi(const int& i, const ushort& d) const -> T { return m_global_grid.m_xi[d][i]; }
 
   // init
   virtual void setData() = 0;

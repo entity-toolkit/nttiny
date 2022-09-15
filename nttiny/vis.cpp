@@ -121,7 +121,7 @@ void Visualization<T, D>::bindSimulation(SimulationAPI<T, D>* sim) {
 
 template <class T, ushort D>
 void Visualization<T, D>::buildController() {
-  ImGui::Begin("simulation control");
+  ImGui::BeginChild("simulation control");
   ImGui::Text("timestep: %d", this->m_sim->get_timestep());
   ImGui::Text("time: %f", this->m_sim->get_time());
   {
@@ -235,7 +235,7 @@ void Visualization<T, D>::buildController() {
       }
     }
   }
-  ImGui::End();
+  ImGui::EndChild();
 }
 
 template <class T, ushort D>
@@ -290,18 +290,54 @@ void Visualization<T, D>::loop() {
 
       // render all the plots
       std::vector<bool> close_plots;
-      for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
-        close_plots.push_back((*plot)->draw());
-      }
-      for (std::size_t i{0}; i < close_plots.size(); ++i) {
-        if (close_plots[i]) {
-          this->m_plots.erase(this->m_plots.begin() + i);
-          close_plots.erase(close_plots.begin() + i);
-          --i;
+
+      static bool use_work_area = false;
+      static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove
+                                    | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
+      const ImGuiViewport* viewport = ImGui::GetMainViewport();
+      ImGui::SetNextWindowPos(use_work_area ? viewport->WorkPos : viewport->Pos);
+      ImGui::SetNextWindowSize(use_work_area ? viewport->WorkSize : viewport->Size);
+      bool open = true;
+
+      if (ImGui::Begin("main dashboard", &open, flags)) {
+        {
+          ImGui::BeginChild("controls", ImVec2(150, 0), true);
+          buildController();
+          ImGui::EndChild();
         }
+        ImGui::SameLine();
+        // if (ImPlot::BeginSubplots("##Subplots",
+        //                                  this->m_plots.size(),
+        //                                  1,
+        //                                  ImVec2(-1, -1),
+        //                                  ImGuiWindowFlags_NoScrollbar)) {
+        {
+          ImGui::BeginGroup();
+          ImPlot::BeginSubplots("##subplots",
+                                (int)std::ceil(this->m_plots.size() / 3.0f),
+                                std::fmin(this->m_plots.size(), 3),
+                                ImVec2(-1, -1));
+          for (std::size_t i{0}; i < this->m_plots.size(); ++i) {
+            // auto plot = ;
+            ImGui::PushID(i);
+            close_plots.push_back(this->m_plots[i]->draw());
+            ImGui::PopID();
+          }
+          ImPlot::EndSubplots();
+          ImGui::EndGroup();
+        }
+        // }
       }
 
-      buildController();
+      // for (std::size_t i{0}; i < close_plots.size(); ++i) {
+      //   if (close_plots[i]) {
+      //     this->m_plots.erase(this->m_plots.begin() + i);
+      //     close_plots.erase(close_plots.begin() + i);
+      //     --i;
+      //   }
+      // }
+
+      ImGui::End();
       ImGui::Render();
 
       glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

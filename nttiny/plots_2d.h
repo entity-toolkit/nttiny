@@ -35,12 +35,12 @@ class Pcolor2d : public Plot2d<T> {
 protected:
   float m_sidebar_w{5.0f * ImGui::GetFontSize()}, m_cmap_h{20.0f * ImGui::GetFontSize()};
   bool m_log{false};
-  float m_vmin, m_vmax;
+  T m_vmin, m_vmax;
   ImPlotColormap m_cmap{ImPlotColormap_Jet};
   int m_field_selected{0};
 
 public:
-  Pcolor2d(int id, float vmin, float vmax) : Plot2d<T>(id), m_vmin(vmin), m_vmax(vmax) {}
+  Pcolor2d(int id, T vmin, T vmax) : Plot2d<T>(id), m_vmin(vmin), m_vmax(vmax) {}
   ~Pcolor2d() override = default;
   auto draw() -> bool override;
   auto exportMetadata() -> PlotMetadata override;

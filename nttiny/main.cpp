@@ -10,20 +10,18 @@
 /*                         simple 2D cartesian fields                         */
 /* -------------------------------------------------------------------------- */
 struct Example1 : public nttiny::SimulationAPI<float, 2> {
-  float* ex;
-  float* bz;
-
-  Example1(int sx1, int sx2) : nttiny::SimulationAPI<float, 2>{} {
-    this->m_global_grid
-        = nttiny::Grid<float, 2>{nttiny::Coord::Cartesian, std::array<int, 2>{sx1, sx2}};
+  Example1(int sx1, int sx2)
+      : nttiny::SimulationAPI<float, 2>{nttiny::Coord::Cartesian, {sx1, sx2}} {
     for (int i{0}; i <= sx1; ++i) {
-      this->m_global_grid.m_xi[0][i] = -1.0f + 2.0f * (float)(i) / (float)(sx1);
+      this->m_global_grid.m_xi[0][i] = -3.0f + 6.0f * (float)(i) / (float)(sx1);
     }
     for (int j{0}; j <= sx2; ++j) {
-      this->m_global_grid.m_xi[1][j] = -3.0f + 6.0f * (float)(j) / (float)(sx2);
+      this->m_global_grid.m_xi[1][j] = -1.5f + 3.0f * (float)(j) / (float)(sx2);
     }
-    this->fields.insert(std::make_pair("ex", ex));
-    this->fields.insert(std::make_pair("bz", bz));
+    this->fields.insert({"ex", new float[sx1 * sx2]});
+    this->fields.insert({"bz", new float[sx1 * sx2]});
+    this->fields.insert({"xx", new float[sx1 * sx2]});
+    this->fields.insert({"yy", new float[sx1 * sx2]});
     this->m_timestep = 0;
     this->m_time = 0.0;
   }
@@ -37,13 +35,18 @@ struct Example1 : public nttiny::SimulationAPI<float, 2> {
       auto f_i{(float)(i)};
       for (int j{0}; j < nx2; ++j) {
         auto f_j{(float)(j)};
-        const auto idx{j * nx1 + i};
-        ex[idx] = 0.5f * (f_i / f_sx);
-        bz[idx] = (f_i / f_sx) * (f_j / f_sy);
+        (this->fields)["ex"][Index(i, j)] = 0.5f * (f_i / f_sx);
+        (this->fields)["bz"][Index(i, j)] = (f_i / f_sx) * (f_j / f_sy);
+        (this->fields)["xx"][Index(i, j)] = Xi(i, 0);
+        (this->fields)["yy"][Index(i, j)] = Xi(j, 1);
       }
     }
   }
-  void restart() override {}
+  void restart() override {
+    setData();
+    this->m_time = 0.0;
+    this->m_timestep = 0;
+  }
   void stepFwd() override {
     ++this->m_timestep;
     ++this->m_time;
@@ -51,9 +54,9 @@ struct Example1 : public nttiny::SimulationAPI<float, 2> {
     const auto nx2{this->m_global_grid.m_size[1]};
     for (int j{0}; j < nx2; ++j) {
       for (int i{0}; i < nx1; ++i) {
-        const auto idx{j * nx1 + i};
-        ex[idx] += 0.001f;
-        bz[idx] += 0.001f;
+        const auto idx{i * nx2 + j};
+        (this->fields)["ex"][idx] += 0.001f;
+        (this->fields)["bz"][idx] += 0.001f;
       }
     }
   }
@@ -64,22 +67,18 @@ struct Example1 : public nttiny::SimulationAPI<float, 2> {
     const auto nx2{this->m_global_grid.m_size[1]};
     for (int j{0}; j < nx2; ++j) {
       for (int i{0}; i < nx1; ++i) {
-        const auto idx{j * nx1 + i};
-        ex[idx] -= 0.001f;
-        bz[idx] -= 0.001f;
+        const auto idx{i * nx2 + j};
+        (this->fields)["ex"][idx] -= 0.001f;
+        (this->fields)["bz"][idx] -= 0.001f;
       }
     }
   }
-  void customAnnotatePcolor2d() {
-    setData();
-    this->m_time = 0.0;
-    this->m_timestep = 0;
-  }
+  void customAnnotatePcolor2d() {}
 };
 
 auto main() -> int {
   try {
-    Example1 sim(10, 50);
+    Example1 sim(32, 16);
     sim.setData();
 
     nttiny::Visualization<float, 2> vis;
