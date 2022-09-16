@@ -17,7 +17,7 @@ namespace nttiny {
 
 template <class T>
 auto Plot2d<T>::close() -> bool {
-  if (ImGui::Button("X")) {
+  if (ImGui::Button("close")) {
     return true;
   } else {
     return false;
@@ -25,7 +25,7 @@ auto Plot2d<T>::close() -> bool {
 }
 
 template <class T>
-void Plot2d<T>::outlineDomain(std::string) {
+void Plot2d<T>::outlineDomain() {
   // const auto nx1 = this->m_sim->m_global_grid.m_size[0];
   // const auto nx2 = this->m_sim->m_global_grid.m_size[1];
   // const auto ngh = this->m_sim->m_global_grid.m_ngh;
@@ -86,7 +86,7 @@ void Plot2d<T>::scale() {
 
 template <class T>
 auto Pcolor2d<T>::draw() -> bool {
-  bool close;
+  bool close{false};
   float plot_size = this->m_plot_size * this->m_scale;
   float cmap_h = this->m_cmap_h * this->m_scale;
   const auto nx1 = this->m_sim->m_global_grid.m_size[0];
@@ -106,29 +106,20 @@ auto Pcolor2d<T>::draw() -> bool {
   // }
   // if (ImGui::Begin(("Pcolor2d [" + std::to_string(this->m_ID) + "]").c_str())) {
 
-  // {
-  //   this->scale();
-  //   ImGui::SameLine(ImGui::GetWindowWidth() - 3.0f * ImGui::GetFontSize());
-  //   close = this->close();
-  // }
-  // // Choose field component to display
-  std::string field_selected;
   {
-    const char** field_names;
-    field_names = new const char*[this->m_sim->fields.size()];
-    int i{0};
-    for (const auto& fld : this->m_sim->fields) {
-      field_names[i] = fld.first.c_str();
-      ++i;
-    }
-    // if (ImGui::Combo("field", &this->m_field_selected, field_names, this->m_sim->fields.size()))
-    // {
-    //   PLOGV_(VISPLOGID) << "Pcolor2d field changed to " << field_names[this->m_field_selected]
-    //                     << ".";
-    // }
-    field_selected = static_cast<std::string>(field_names[this->m_field_selected]);
+    // this->scale();
+    // ImGui::SameLine(ImGui::GetWindowWidth() - 3.0f * ImGui::GetFontSize());
   }
-  // // setup axes
+
+  const auto field_names = new const char*[this->m_sim->fields.size()];
+  int i{0};
+  for (const auto& fld : this->m_sim->fields) {
+    field_names[i] = fld.first.c_str();
+    ++i;
+  }
+  auto field_selected{static_cast<std::string>(field_names[this->m_field_selected])};
+
+  // setup axes
   ImPlot::PushColormap(this->m_cmap);
 
   if (ImPlot::BeginPlot("##", ImVec2(-1, -1), ImPlotFlags_Equal)) {
@@ -163,31 +154,27 @@ auto Pcolor2d<T>::draw() -> bool {
                           {x1min, x2min},
                           {x1max, x2max});
     }
-    // this->outlineDomain(field_selected);
-    // this->m_sim->customAnnotatePcolor2d();
+    this->outlineDomain();
+    this->m_sim->customAnnotatePcolor2d();
     ImPlot::EndPlot();
   }
-  if (ImGui::BeginPopupContextItem())
-  {
-    // decorations
-    // ImGui::SameLine();
-    ImGui::PushItemWidth(m_sidebar_w);
+  if (ImGui::BeginPopupContextItem()) {
+    ImGui::PushItemWidth(this->m_sidebar_w);
+    ImGui::Spacing();
     ImGui::BeginGroup();
     {
+      // choose field component to display
+      ImGui::Combo("##", &this->m_field_selected, field_names, this->m_sim->fields.size());
       if (ImPlot::ColormapButton(
               ImPlot::GetColormapName(this->m_cmap), ImVec2(this->m_sidebar_w, 0), this->m_cmap)) {
         this->m_cmap = (this->m_cmap + 1) % ImPlot::GetColormapCount();
-        PLOGV_(VISPLOGID) << "Changed colormap to " << ImPlot::GetColormapName(this->m_cmap) << ".";
       }
-      float vmin, vmax;
-      vmin = std::min(this->m_vmin, this->m_vmax);
-      vmax = std::max(this->m_vmin, this->m_vmax);
+      float vmin = std::min(this->m_vmin, this->m_vmax);
+      float vmax = std::max(this->m_vmin, this->m_vmax);
       if (vmin == vmax) { // hack
         vmax = vmin + 0.00001f;
       }
-      this->m_vmin = vmin;
-      this->m_vmax = vmax;
-      ImGui::DragFloatRange2("##", &vmin, &vmax, 0.01f, -FLT_MAX, +FLT_MAX, "%.1e");
+      ImGui::DragFloatRange2("##", &vmin, &vmax, 0.01f * std::fabs(vmax - vmin), -FLT_MAX, +FLT_MAX, "%.1e");
       this->m_vmax = (T)vmax;
       this->m_vmin = (T)vmin;
       ImPlot::ColormapScale("##", vmin, vmax, ImVec2(this->m_sidebar_w, cmap_h));
@@ -205,10 +192,10 @@ auto Pcolor2d<T>::draw() -> bool {
           this->m_vmax = max;
         }
       }
+      close = this->close();
     }
     ImGui::EndGroup();
     ImGui::PopItemWidth();
-    if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
     ImGui::EndPopup();
   }
 

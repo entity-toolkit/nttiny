@@ -73,7 +73,7 @@ struct Example1 : public nttiny::SimulationAPI<float, 2> {
       }
     }
   }
-  void customAnnotatePcolor2d() {}
+  void customAnnotatePcolor2d() override {}
 };
 
 auto main() -> int {

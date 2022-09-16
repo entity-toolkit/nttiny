@@ -57,7 +57,7 @@ Visualization<T, D>::Visualization(int win_width, int win_height, bool resizable
   try {
     ImGui::GetIO().Fonts->Clear();
     ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
-        Cousine_compressed_data, Cousine_compressed_size, 16.0f);
+        Cousine_compressed_data, Cousine_compressed_size, 12.0f);
     ImGui::GetIO().Fonts->Build();
   }
   catch (std::runtime_error& e) {
@@ -279,7 +279,29 @@ void Visualization<T, D>::loop() {
   PLOGD_(VISPLOGID) << "Starting Visualization loop.";
   double fps_limit{glfwGetTime()};
   double tps_limit{glfwGetTime()};
+
+  float prev_scale = 0.f;
+
   while (!this->m_window->windowShouldClose()) {
+    float xscale, yscale;
+    glfwGetWindowContentScale(this->m_window->get_window(), &xscale, &yscale);
+    if (xscale != prev_scale) {
+      prev_scale = xscale;
+      ImGui::GetIO().Fonts->Clear();
+      // ImGui::GetIO().Fonts->AddFontFromFileTTF("Roboto-Regular.ttf", xscale * 16.0f);
+      ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
+          Cousine_compressed_data, Cousine_compressed_size, xscale * 8.0f);
+      ImGui::GetIO().Fonts->Build();
+      ImGui_ImplOpenGL3_DestroyFontsTexture();
+      ImGui_ImplOpenGL3_CreateFontsTexture();
+
+      // ImGui::GetStyle().ScaleAllSizes(xscale);
+    }
+
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+
     if ((this->m_fps_limit <= 0.0f) || (glfwGetTime() >= fps_limit + 1.0f / this->m_fps_limit)) {
       this->m_window->processInput();
       this->processControllerInput();
@@ -329,13 +351,13 @@ void Visualization<T, D>::loop() {
         // }
       }
 
-      // for (std::size_t i{0}; i < close_plots.size(); ++i) {
-      //   if (close_plots[i]) {
-      //     this->m_plots.erase(this->m_plots.begin() + i);
-      //     close_plots.erase(close_plots.begin() + i);
-      //     --i;
-      //   }
-      // }
+      for (std::size_t i{0}; i < close_plots.size(); ++i) {
+        if (close_plots[i]) {
+          this->m_plots.erase(this->m_plots.begin() + i);
+          close_plots.erase(close_plots.begin() + i);
+          --i;
+        }
+      }
 
       ImGui::End();
       ImGui::Render();

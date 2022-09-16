@@ -27,7 +27,7 @@ public:
   void scale();
   auto close() -> bool;
   auto getId() -> int override { return this->m_ID; }
-  void outlineDomain(std::string field_selected = "");
+  void outlineDomain();
 };
 
 template <class T>

@@ -1,0 +1,11 @@
+[Plot.3]
+field_selected = 0
+cmap = ""
+vmax = 0.0
+log = false
+type = "Scatter2d"
+vmin = 0.0
+ID = 3
+
+[Plot]
+npanels = 1
