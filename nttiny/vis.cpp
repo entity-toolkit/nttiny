@@ -2,8 +2,7 @@
 #include "vis.h"
 
 #include "api.h"
-
-#include "cousine.h"
+#include "style.h"
 
 #include <plog/Log.h>
 #include <plog/Init.h>
@@ -34,7 +33,6 @@ namespace nttiny {
 template <class T, ushort D>
 Visualization<T, D>::Visualization(int win_width, int win_height, bool resizable)
     : m_win_width(win_width), m_win_height(win_height), m_resizable(resizable) {
-  // initialize plog
   plog::Severity max_severity;
 #ifdef VERBOSE
   max_severity = plog::verbose;
@@ -44,44 +42,26 @@ Visualization<T, D>::Visualization(int win_width, int win_height, bool resizable
   max_severity = plog::warning;
 #endif
   plog::init<VISPLOGID>(max_severity, &m_console_appender);
-  // initialize glfw
+
   glfwInit();
-  // open window
   m_window = std::make_unique<Window>(m_win_width, m_win_height, "Nttiny", 0, resizable);
-  // initialize imgui
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImPlot::CreateContext();
-  ImGuiIO& io = ImGui::GetIO();
-  io.ConfigFlags |= ImGuiConfigFlags_None;
-  try {
-    ImGui::GetIO().Fonts->Clear();
-    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
-        Cousine_compressed_data, Cousine_compressed_size, 12.0f);
-    ImGui::GetIO().Fonts->Build();
-  }
-  catch (std::runtime_error& e) {
-    PLOGW << "Warning: " << e.what();
-  }
-  ImGui::StyleColorsDark();
-  ImGui::GetStyle().AntiAliasedLines = true;
-  ImGui::GetStyle().AntiAliasedFill = true;
-  ImGui::GetStyle().FrameRounding = 3.0f;
-  ImGui::GetStyle().ChildRounding = 3.0f;
-  ImGui::GetStyle().WindowRounding = 3.0f;
+
+  SetupStyle();
+
   ImGui_ImplGlfw_InitForOpenGL(m_window->get_window(), true);
   ImGui_ImplOpenGL3_Init("#version 150");
 }
 
 template <class T, ushort D>
 Visualization<T, D>::~Visualization() {
-  // deinitialize imgui
   PLOGD_(VISPLOGID) << "Destroying Visualization.";
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImPlot::DestroyContext();
   ImGui::DestroyContext();
-  // deinitialize glfw
   glfwTerminate();
 }
 
@@ -120,121 +100,61 @@ void Visualization<T, D>::bindSimulation(SimulationAPI<T, D>* sim) {
 }
 
 template <class T, ushort D>
-void Visualization<T, D>::buildController() {
+void Visualization<T, D>::drawControls() {
   ImGui::BeginChild("simulation control");
-  ImGui::Text("timestep: %d", this->m_sim->get_timestep());
-  ImGui::Text("time: %f", this->m_sim->get_time());
+  ImGui::TextWrapped("t = %.3f [%d dt]", this->m_sim->get_time(), this->m_sim->get_timestep());
   {
+    /* ------------------------------ step backward ----------------------------- */
     ImGui::PushButtonRepeat(true);
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
+    if (ImGui::Button(ICON_FA_BACKWARD_STEP, ImVec2(20, 25))) {
       this->m_sim->stepBwd();
       if (!this->m_sim->is_paused()) { m_sim->playToggle(); }
     }
     ImGui::PopButtonRepeat();
-  }
-  // Toggle play/pause
-  {
+
+    /* ------------------------------- play/pause ------------------------------- */
     ImGui::SameLine();
-    if (ImGui::Button(this->m_sim->is_paused() ? "play" : "pause")) { this->m_sim->playToggle(); }
-  }
-  // Right step
-  {
+    if (ImGui::Button(this->m_sim->is_paused() ? ICON_FA_PLAY : ICON_FA_PAUSE, ImVec2(25, 25))) {
+      this->m_sim->playToggle();
+    }
+
+    /* ------------------------------ step forward ------------------------------ */
     ImGui::SameLine();
     ImGui::PushButtonRepeat(true);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
+    if (ImGui::Button(ICON_FA_FORWARD_STEP, ImVec2(20, 25))) {
       this->m_sim->stepFwd();
       if (!this->m_sim->is_paused()) { this->m_sim->playToggle(); }
     }
     ImGui::PopButtonRepeat();
-  }
 
-  // restart simulation
-  {
-    ImGui::SameLine(ImGui::GetWindowWidth() - 40);
-    if (ImGui::Button("rst")) {
+    /* --------------------------------- restart -------------------------------- */
+    ImGui::SameLine(ImGui::GetWindowWidth() - 25);
+    if (ImGui::Button(ICON_FA_ARROW_ROTATE_LEFT, ImVec2(25, 25))) {
       if (!this->m_sim->is_paused()) { m_sim->playToggle(); }
       this->m_sim->restart();
     }
-  }
 
-  // Simulation speed
-  {
-    ImGui::SetNextItemWidth(
-        std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 6));
-    ImGui::SliderFloat("TPS", &this->m_tps_limit, 1, 1000);
+    /* -------------------------------- direction ------------------------------- */
+    int dir = this->m_sim->is_forward() ? 1 : 0;
+    const char* directions[2] = {ICON_FA_BACKWARD, ICON_FA_FORWARD};
+    const char* direction = directions[dir];
+    ImGui::SetNextItemWidth(35);
+    ImGui::SliderInt("##direction", &dir, 0, 1, direction);
+    if (this->m_sim->is_forward() != static_cast<bool>(dir == 1)) { this->m_sim->reverse(); }
 
-    // ImGui::Text("Jump over timesteps:");
-    ImGui::SetNextItemWidth(
-        std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 3));
+    /* ----------------------------- skip timesteps ----------------------------- */
+    ImGui::SameLine();
     int jmp{this->m_sim->get_jumpover()};
-    ImGui::InputInt("skip", &jmp);
+    ImGui::DragInt("##skip", &jmp, 1, 1, 1000, "t += %d dt");
     this->m_sim->set_jumpover(jmp);
   }
-  // Simulation direction
-  {
-    int dir = this->m_sim->is_forward() ? 1 : 0;
-    const char* directions[2] = {"<<", ">>"};
-    const char* direction = directions[dir];
-    ImGui::SetNextItemWidth(
-        std::max(ImGui::GetContentRegionAvail().x * 0.2f, ImGui::GetFontSize() * 4));
-    ImGui::SliderInt(this->m_sim->is_forward() ? "fwd" : "bwd", &dir, 0, 1, direction);
-    if (this->m_sim->is_forward() != static_cast<bool>(dir == 1)) { this->m_sim->reverse(); }
-  }
-  // Add plots
-  {
-    if (ImGui::Button("add 2d plot")) { addPcolor2d(0, 1); }
-    if (ImGui::Button("add scatter plot")) { addScatter2d(); }
-  }
-  // Save state
-  {
-    if (ImGui::Button("save state")) {
-      auto rewrite{true};
-      auto cntr{0};
-      for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
-        ++cntr;
-        auto metadata = (*plot)->exportMetadata();
-        metadata.writeToFile(STATE_FILENAME, rewrite);
-        rewrite = false;
-      }
-      std::ofstream export_file;
-      export_file.open(STATE_FILENAME, std::fstream::app);
-      if (export_file.is_open()) {
-        export_file << "[Plot]\nnpanels = " << cntr << "\n";
-        export_file.close();
-      }
-    }
-  }
-  // Load state
-  {
-    if (ImGui::Button("load state")) {
-      this->m_plots.clear();
-      try {
-        auto input = toml::parse("nttiny.toml");
-        const auto& panels = toml::find(input, "Plot");
-        auto npanels = toml::find<int>(panels, "npanels");
-        for (int i{0}; i < npanels; ++i) {
-          const auto& plot = toml::find(panels, std::to_string(i));
-          PlotMetadata metadata;
-          metadata.m_field_selected = toml::find<int>(plot, "field_selected");
-          metadata.m_type = toml::find<std::string>(plot, "type");
-          metadata.m_cmap = toml::find<std::string>(plot, "cmap");
-          metadata.m_vmax = toml::find<float>(plot, "vmax");
-          metadata.m_vmin = toml::find<float>(plot, "vmin");
-          metadata.m_log = toml::find<bool>(plot, "log");
-          if (metadata.m_type == "Pcolor2d") {
-            addPcolor2d(metadata.m_vmin, metadata.m_vmax);
-            this->m_plots.back()->importMetadata(metadata);
-          } else if (metadata.m_type == "Scatter2d") {
-            addScatter2d();
-            this->m_plots.back()->importMetadata(metadata);
-          }
-        }
-      }
-      catch (std::exception& err) {
-        PLOGE_(VISPLOGID) << "Error loading state: " << err.what();
-      }
-    }
-  }
+
+  // // Simulation speed
+  // {
+  //   ImGui::SetNextItemWidth(
+  //       std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 6));
+  //   ImGui::SliderFloat("TPS", &this->m_tps_limit, 1, 1000);
+  // }
   ImGui::EndChild();
 }
 
@@ -275,28 +195,85 @@ void Visualization<T, D>::processControllerInput() {
 }
 
 template <class T, ushort D>
+void Visualization<T, D>::drawMainMenuBar() {
+  ImGui::BeginMainMenuBar();
+
+  if (ImGui::BeginMenu("add plot")) {
+    if (ImGui::MenuItem("pcolor")) { addPcolor2d(0, 1); }
+    if (ImGui::MenuItem("scatter")) { addScatter2d(); }
+    ImGui::EndMenu();
+  }
+
+  if (ImGui::BeginMenu("state")) {
+    if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " save")) {
+      auto rewrite{true};
+      auto cntr{0};
+      for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
+        ++cntr;
+        auto metadata = (*plot)->exportMetadata();
+        metadata.writeToFile(STATE_FILENAME, rewrite);
+        rewrite = false;
+      }
+      std::ofstream export_file;
+      export_file.open(STATE_FILENAME, std::fstream::app);
+      if (export_file.is_open()) {
+        export_file << "[Plot]\nnpanels = " << cntr << "\n";
+        export_file.close();
+      }
+    }
+    if (ImGui::MenuItem(ICON_FA_UPLOAD " load")) {
+      this->m_plots.clear();
+      try {
+        auto input = toml::parse("nttiny.toml");
+        const auto& panels = toml::find(input, "Plot");
+        auto npanels = toml::find<int>(panels, "npanels");
+        for (int i{0}; i < npanels; ++i) {
+          const auto& plot = toml::find(panels, std::to_string(i));
+          PlotMetadata metadata;
+          metadata.m_field_selected = toml::find<int>(plot, "field_selected");
+          metadata.m_type = toml::find<std::string>(plot, "type");
+          metadata.m_cmap = toml::find<std::string>(plot, "cmap");
+          metadata.m_vmax = toml::find<float>(plot, "vmax");
+          metadata.m_vmin = toml::find<float>(plot, "vmin");
+          metadata.m_log = toml::find<bool>(plot, "log");
+          if (metadata.m_type == "Pcolor2d") {
+            addPcolor2d(metadata.m_vmin, metadata.m_vmax);
+            this->m_plots.back()->importMetadata(metadata);
+          } else if (metadata.m_type == "Scatter2d") {
+            addScatter2d();
+            this->m_plots.back()->importMetadata(metadata);
+          }
+        }
+      }
+      catch (std::exception& err) {
+        PLOGE_(VISPLOGID) << "Error loading state: " << err.what();
+      }
+    }
+    ImGui::EndMenu();
+  }
+  ImGui::EndMainMenuBar();
+}
+
+template <class T, ushort D>
 void Visualization<T, D>::loop() {
   PLOGD_(VISPLOGID) << "Starting Visualization loop.";
   double fps_limit{glfwGetTime()};
   double tps_limit{glfwGetTime()};
 
-  float prev_scale = 0.f;
+  // float prev_scale = 0.f;
+  // float xscale, yscale;
+  // glfwGetWindowContentScale(this->m_window->get_window(), &xscale, &yscale);
+  // if (xscale != prev_scale) {
+  //   prev_scale = xscale;
+  //   ImGui::GetIO().Fonts->Clear();
+  //   ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
+  //       JetBrains_compressed_data, JetBrains_compressed_size, xscale * 16.0f);
+  //   ImGui::GetIO().Fonts->Build();
+  //   ImGui_ImplOpenGL3_DestroyFontsTexture();
+  //   ImGui_ImplOpenGL3_CreateFontsTexture();
+  // }
 
   while (!this->m_window->windowShouldClose()) {
-    float xscale, yscale;
-    glfwGetWindowContentScale(this->m_window->get_window(), &xscale, &yscale);
-    if (xscale != prev_scale) {
-      prev_scale = xscale;
-      ImGui::GetIO().Fonts->Clear();
-      // ImGui::GetIO().Fonts->AddFontFromFileTTF("Roboto-Regular.ttf", xscale * 16.0f);
-      ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
-          Cousine_compressed_data, Cousine_compressed_size, xscale * 8.0f);
-      ImGui::GetIO().Fonts->Build();
-      ImGui_ImplOpenGL3_DestroyFontsTexture();
-      ImGui_ImplOpenGL3_CreateFontsTexture();
-
-      // ImGui::GetStyle().ScaleAllSizes(xscale);
-    }
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -310,10 +287,11 @@ void Visualization<T, D>::loop() {
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
 
-      // render all the plots
+      this->drawMainMenuBar();
+
       std::vector<bool> close_plots;
 
-      static bool use_work_area = false;
+      static bool use_work_area = true;
       static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove
                                     | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
       const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -324,15 +302,10 @@ void Visualization<T, D>::loop() {
       if (ImGui::Begin("main dashboard", &open, flags)) {
         {
           ImGui::BeginChild("controls", ImVec2(150, 0), true);
-          buildController();
+          this->drawControls();
           ImGui::EndChild();
         }
         ImGui::SameLine();
-        // if (ImPlot::BeginSubplots("##Subplots",
-        //                                  this->m_plots.size(),
-        //                                  1,
-        //                                  ImVec2(-1, -1),
-        //                                  ImGuiWindowFlags_NoScrollbar)) {
         {
           ImGui::BeginGroup();
           ImPlot::BeginSubplots("##subplots",
@@ -348,7 +321,6 @@ void Visualization<T, D>::loop() {
           ImPlot::EndSubplots();
           ImGui::EndGroup();
         }
-        // }
       }
 
       for (std::size_t i{0}; i < close_plots.size(); ++i) {
@@ -371,6 +343,7 @@ void Visualization<T, D>::loop() {
 
       fps_limit = glfwGetTime();
     }
+    
     // advance the simulation
     if ((this->m_tps_limit <= 0.0f) || (glfwGetTime() >= tps_limit + 1.0f / this->m_tps_limit)) {
       this->m_sim->updateData();

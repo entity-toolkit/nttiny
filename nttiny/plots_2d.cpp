@@ -2,7 +2,8 @@
 #include "plots_2d.h"
 #include "api.h"
 
-#include "implot_extra.h"
+#include "implot_heatmap_cart.h"
+#include "implot_heatmap_polar.h"
 
 #include <plog/Log.h>
 #include <implot.h>
@@ -77,130 +78,123 @@ void Plot2d<T>::outlineDomain() {
 }
 
 template <class T>
-void Plot2d<T>::scale() {
-  ImGui::SetNextItemWidth(ImGui::GetFontSize() * 6.0f);
-  if (ImGui::SliderFloat("scale", &this->m_scale, 0.01f, 10.0f, "%.3f")) {
-    PLOGV_(VISPLOGID) << "Scale changed to " << this->m_scale << ".";
-  }
-}
-
-template <class T>
 auto Pcolor2d<T>::draw() -> bool {
-  bool close{false};
-  float plot_size = this->m_plot_size * this->m_scale;
-  float cmap_h = this->m_cmap_h * this->m_scale;
-  const auto nx1 = this->m_sim->m_global_grid.m_size[0];
-  const auto nx2 = this->m_sim->m_global_grid.m_size[1];
-  const auto ngh = this->m_sim->m_global_grid.m_ngh;
-  auto x1min = this->m_sim->m_global_grid.m_xi[0][0];
-  auto x1max = this->m_sim->m_global_grid.m_xi[0][nx1];
-  auto x2min = this->m_sim->m_global_grid.m_xi[1][0];
-  auto x2max = this->m_sim->m_global_grid.m_xi[1][nx2];
-  const auto coord = this->m_sim->m_global_grid.m_coord;
-  float aspect{1.0f};
-  // if (coord == Coord::Spherical) {
-  //   aspect = 1.0f;
-  //   plot_size *= 1.75f;
-  // } else {
-  //   aspect = (x2max - x2min) / (x1max - x1min);
-  // }
-  // if (ImGui::Begin(("Pcolor2d [" + std::to_string(this->m_ID) + "]").c_str())) {
+  bool CLOSE{false};
+  auto& Sim = this->m_sim;
+  auto& Grid = this->m_sim->m_global_grid;
+  const auto coord = Grid.m_coord;
 
-  {
-    // this->scale();
-    // ImGui::SameLine(ImGui::GetWindowWidth() - 3.0f * ImGui::GetFontSize());
-  }
+  const auto ngh = Grid.m_ngh;
+  const auto sx1 = Grid.m_size[0];
+  const auto sx2 = Grid.m_size[1];
+  auto dx1 = Grid.m_xi[0][1] - Grid.m_xi[0][0];
+  auto x1min = Grid.m_xi[0][0] - ngh * dx1;
+  auto x1max = Grid.m_xi[0][sx1] + ngh * dx1;
+  auto dx2 = Grid.m_xi[1][1] - Grid.m_xi[1][0];
+  auto x2min = Grid.m_xi[1][0] - ngh * dx2;
+  auto x2max = Grid.m_xi[1][sx2] + ngh * dx2;
 
-  const auto field_names = new const char*[this->m_sim->fields.size()];
-  int i{0};
-  for (const auto& fld : this->m_sim->fields) {
-    field_names[i] = fld.first.c_str();
-    ++i;
-  }
-  auto field_selected{static_cast<std::string>(field_names[this->m_field_selected])};
-
-  // setup axes
   ImPlot::PushColormap(this->m_cmap);
-
   if (ImPlot::BeginPlot("##", ImVec2(-1, -1), ImPlotFlags_Equal)) {
-    // if (ImPlot::BeginPlot("", ImVec2(-1, plot_size), ImPlotFlags_Equal)) {
     if (coord == Coord::Spherical) {
-      auto x1_grid = this->m_sim->m_global_grid.m_xi[0];
-      auto x2_grid = this->m_sim->m_global_grid.m_xi[1];
-      x1min = 0.0;
-      x1max = this->m_sim->m_global_grid.m_xi[0][nx1 - ngh];
-      x2min = -x1max;
-      x2max = x1max;
-      ImPlot::PlotPolarHeatmap("##",
-                               this->m_sim->fields[field_selected],
-                               nx1,
-                               nx2,
-                               this->m_vmin,
-                               this->m_vmax,
-                               x1_grid,
-                               x2_grid,
-                               this->m_log,
-                               nullptr,
-                               {x1min, x2min},
-                               {x1max, x2max});
+      //   auto x1_grid = Grid.m_xi[0];
+      //   auto x2_grid = Grid.m_xi[1];
+      //   x1min = 0.0;
+      //   x1max = Grid.m_xi[0][sx1 - ngh];
+      //   x2min = -x1max;
+      //   x2max = x1max;
+      //   ImPlot::PlotPolarHeatmap("##",
+      //                            Sim->fields[field_selected],
+      //                            sx1,
+      //                            sx2,
+      //                            this->m_vmin,
+      //                            this->m_vmax,
+      //                            x1_grid,
+      //                            x2_grid,
+      //                            this->m_log,
+      //                            nullptr,
+      //                            {x1min, x2min},
+      //                            {x1max, x2max});
     } else {
-      ImPlot::PlotHeatmap("##",
-                          this->m_sim->fields[field_selected],
-                          nx2,
-                          nx1,
-                          this->m_vmin,
-                          this->m_vmax,
-                          nullptr,
-                          {x1min, x2min},
-                          {x1max, x2max});
+      ImPlot::PlotHeatmapCart("##",
+                              Sim->get_selected_field(this->m_field_selected),
+                              sx2 + 2 * ngh,
+                              sx1 + 2 * ngh,
+                              this->m_vmin,
+                              this->m_vmax,
+                              this->m_log,
+                              nullptr,
+                              {x1min, x2min},
+                              {x1max, x2max});
     }
     this->outlineDomain();
-    this->m_sim->customAnnotatePcolor2d();
+    Sim->customAnnotatePcolor2d();
     ImPlot::EndPlot();
   }
   if (ImGui::BeginPopupContextItem()) {
-    ImGui::PushItemWidth(this->m_sidebar_w);
-    ImGui::Spacing();
+    ImGui::PushItemWidth(65);
     ImGui::BeginGroup();
     {
-      // choose field component to display
-      ImGui::Combo("##", &this->m_field_selected, field_names, this->m_sim->fields.size());
-      if (ImPlot::ColormapButton(
-              ImPlot::GetColormapName(this->m_cmap), ImVec2(this->m_sidebar_w, 0), this->m_cmap)) {
+      {
+        /* ----------------------------- field selector ----------------------------- */
+        ImGui::PushID("fld");
+        ImGui::Combo("##", &this->m_field_selected, Sim->get_field_names(), Sim->fields.size());
+        ImGui::PopID();
+      }
+
+      /* ---------------------------- colormap selector --------------------------- */
+      if (ImPlot::ColormapButton(ImPlot::GetColormapName(this->m_cmap),
+                                 ImVec2(5.0f * ImGui::GetFontSize(), 0),
+                                 this->m_cmap)) {
         this->m_cmap = (this->m_cmap + 1) % ImPlot::GetColormapCount();
       }
+
       float vmin = std::min(this->m_vmin, this->m_vmax);
       float vmax = std::max(this->m_vmin, this->m_vmax);
-      if (vmin == vmax) { // hack
-        vmax = vmin + 0.00001f;
+      if (vmin == vmax) {
+        // rescale if values too close
+        vmax = vmin + 1e-10;
       }
-      ImGui::DragFloatRange2("##", &vmin, &vmax, 0.01f * std::fabs(vmax - vmin), -FLT_MAX, +FLT_MAX, "%.1e");
+
+      {
+        /* -------------------------------- colorbar -------------------------------- */
+        ImGui::PushID("vmax");
+        ImGui::DragFloat("##", &vmax, 0.01f * std::fabs(vmax - vmin), vmin, +FLT_MAX, "%.3e");
+        ImGui::PopID();
+
+        ImPlot::ColormapScale("##", vmin, vmax, ImVec2(-1, 20.0f * ImGui::GetFontSize()));
+
+        ImGui::PushID("vmin");
+        ImGui::DragFloat("##", &vmin, 0.01f * std::fabs(vmax - vmin), -FLT_MAX, vmax, "%.3e");
+        ImGui::PopID();
+      }
+
+      // save rescaled values
       this->m_vmax = (T)vmax;
       this->m_vmin = (T)vmin;
-      ImPlot::ColormapScale("##", vmin, vmax, ImVec2(this->m_sidebar_w, cmap_h));
 
       ImGui::Checkbox("log", &this->m_log);
-      if (ImGui::Button("reset")) {
-        PLOGV_(VISPLOGID) << "Reseting vmin & vmax for Pcolor2d.";
-        auto n_elements{nx1 * nx2};
-        auto minmax = findMinMax(this->m_sim->fields[field_selected], n_elements, this->m_log);
-        this->m_vmin = minmax.first;
-        this->m_vmax = minmax.second;
-        if (this->m_vmin * this->m_vmax < 0) {
-          auto max = std::max(std::abs(this->m_vmax), std::abs(this->m_vmin));
-          this->m_vmin = -max;
-          this->m_vmax = max;
-        }
-      }
-      close = this->close();
+      // if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE)) {
+      //   PLOGV_(VISPLOGID) << "Reseting vmin & vmax for Pcolor2d.";
+      //   auto n_elements{sx1 * sx2};
+      //   auto minmax = findMinMax(this->m_sim->fields[field_selected], n_elements, this->m_log);
+      //   this->m_vmin = minmax.first;
+      //   this->m_vmax = minmax.second;
+      //   if (this->m_vmin * this->m_vmax < 0) {
+      //     auto max = std::max(std::abs(this->m_vmax), std::abs(this->m_vmin));
+      //     this->m_vmin = -max;
+      //     this->m_vmax = max;
+      //   }
+      // }
+      CLOSE = this->close();
     }
     ImGui::EndGroup();
     ImGui::PopItemWidth();
     ImGui::EndPopup();
   }
-
   ImPlot::PopColormap();
-  return close;
+
+  return CLOSE;
 }
 
 template <class T>

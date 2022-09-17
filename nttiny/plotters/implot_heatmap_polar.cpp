@@ -1,5 +1,5 @@
 #include "implot_utils.h"
-#include "implot_extra.h"
+#include "implot_heatmap_polar.h"
 
 #include <implot.h>
 #include <implot_internal.h>
@@ -88,8 +88,8 @@ struct ArcRenderer {
 #endif
 
 template <typename T>
-struct GetterPolarHeatmap {
-  GetterPolarHeatmap(const T* values,
+struct GetterHeatmapPolar {
+  GetterHeatmapPolar(const T* values,
                      int rows,
                      int cols,
                      T scale_min,
@@ -126,7 +126,8 @@ struct GetterPolarHeatmap {
     arc.Min.y = th1;
     arc.Max.x = rhigh;
     arc.Max.y = th2;
-    const float t = ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f);
+    const float t
+        = ImClamp((float)ImRemap01((float)val, (float)ScaleMin, (float)ScaleMax), 0.0f, 1.0f);
     arc.Color = GImPlot->ColormapData.LerpTable(GImPlot->Style.Colormap, t);
 
     return arc;
@@ -143,7 +144,7 @@ struct GetterPolarHeatmap {
 #undef QLOGSCALE
 
 template <typename T, typename Transformer>
-void RenderPolarHeatmap(Transformer transformer,
+void RenderHeatmapPolar(Transformer transformer,
                         ImDrawList& DrawList,
                         const T* values,
                         int rows,
@@ -173,33 +174,32 @@ void RenderPolarHeatmap(Transformer transformer,
   }
   const T yref = reverse_y ? bounds_max.y : bounds_min.y;
   const T ydir = reverse_y ? -1 : 1;
-  // @TODO: maybe pass an array of r_i and theta_i?
-  GetterPolarHeatmap<T> getter(
+  GetterHeatmapPolar<T> getter(
       values, rows, cols, scale_min, scale_max, r_array, theta_array, use_log_scale);
   switch (GetCurrentScale()) {
   case ImPlotScale_LinLin:
     RenderPrimitives(
-        ArcRenderer<GetterPolarHeatmap<T>, TransformerLinLin>(getter, TransformerLinLin()),
+        ArcRenderer<GetterHeatmapPolar<T>, TransformerLinLin>(getter, TransformerLinLin()),
         DrawList,
         gp.CurrentPlot->PlotRect);
     break;
   case ImPlotScale_LogLin:
     RenderPrimitives(
-        ArcRenderer<GetterPolarHeatmap<T>, TransformerLogLin>(getter, TransformerLogLin()),
+        ArcRenderer<GetterHeatmapPolar<T>, TransformerLogLin>(getter, TransformerLogLin()),
         DrawList,
         gp.CurrentPlot->PlotRect);
     break;
     ;
   case ImPlotScale_LinLog:
     RenderPrimitives(
-        ArcRenderer<GetterPolarHeatmap<T>, TransformerLinLog>(getter, TransformerLinLog()),
+        ArcRenderer<GetterHeatmapPolar<T>, TransformerLinLog>(getter, TransformerLinLog()),
         DrawList,
         gp.CurrentPlot->PlotRect);
     break;
     ;
   case ImPlotScale_LogLog:
     RenderPrimitives(
-        ArcRenderer<GetterPolarHeatmap<T>, TransformerLogLog>(getter, TransformerLogLog()),
+        ArcRenderer<GetterHeatmapPolar<T>, TransformerLogLog>(getter, TransformerLogLog()),
         DrawList,
         gp.CurrentPlot->PlotRect);
     break;
@@ -219,8 +219,9 @@ void RenderPolarHeatmap(Transformer transformer,
         char buff[32];
         sprintf(buff, fmt, values[i]);
         ImVec2 size = ImGui::CalcTextSize(buff);
-        T t = ImClamp(ImRemap01((double)values[i], (double)scale_min, (double)scale_max), 0.0, 1.0);
-        ImVec4 color = SampleColormap((float)t);
+        float t
+            = ImClamp(ImRemap01((float)values[i], (float)scale_min, (float)scale_max), 0.0f, 1.0f);
+        ImVec4 color = SampleColormap(t);
         ImU32 col = CalcTextColor(color);
         DrawList.AddText(px - size * 0.5f, col, buff);
         i++;
@@ -230,7 +231,7 @@ void RenderPolarHeatmap(Transformer transformer,
 }
 
 template <typename T>
-void PlotPolarHeatmap(const char* label_id,
+void PlotHeatmapPolar(const char* label_id,
                       const T* values,
                       int rows,
                       int cols,
@@ -248,7 +249,7 @@ void PlotPolarHeatmap(const char* label_id,
       FitPoint(bounds_max);
     }
     ImDrawList& DrawList = *GetPlotDrawList();
-    RenderPolarHeatmap(TransformerLinLin(),
+    RenderHeatmapPolar(TransformerLinLin(),
                        DrawList,
                        values,
                        rows,
@@ -266,7 +267,7 @@ void PlotPolarHeatmap(const char* label_id,
   }
 }
 
-template IMPLOT_API void PlotPolarHeatmap<float>(const char*,
+template IMPLOT_API void PlotHeatmapPolar<float>(const char*,
                                                  const float*,
                                                  int,
                                                  int,
@@ -278,7 +279,7 @@ template IMPLOT_API void PlotPolarHeatmap<float>(const char*,
                                                  const char*,
                                                  const ImPlotPoint&,
                                                  const ImPlotPoint&);
-template IMPLOT_API void PlotPolarHeatmap<double>(const char*,
+template IMPLOT_API void PlotHeatmapPolar<double>(const char*,
                                                   const double*,
                                                   int,
                                                   int,
@@ -291,4 +292,4 @@ template IMPLOT_API void PlotPolarHeatmap<double>(const char*,
                                                   const ImPlotPoint&,
                                                   const ImPlotPoint&);
 
-}
+} // namespace ImPlot

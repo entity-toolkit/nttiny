@@ -1,11 +1,20 @@
-[Plot.3]
+[Plot.0]
+field_selected = 0
+cmap = "Jet"
+vmax = 1.0
+vmin = 0.0
+log = false
+type = "Pcolor2d"
+ID = 0
+
+[Plot.2]
 field_selected = 0
 cmap = ""
-vmax = 0.0
+vmax = 1.0
+vmin = 0.0
 log = false
 type = "Scatter2d"
-vmin = 0.0
-ID = 3
+ID = 2
 
 [Plot]
-npanels = 1
+npanels = 2

@@ -16,15 +16,9 @@
 namespace nttiny {
 
 template <class T>
-class Plot2d : public Ax<T, 2> {
-protected:
-  float m_scale{1.0f};
-  float m_plot_size{20.0f * ImGui::GetFontSize()};
-
-public:
+struct Plot2d : public Ax<T, 2> {
   Plot2d(int id) : Ax<T, 2>(id) {}
   ~Plot2d() override = default;
-  void scale();
   auto close() -> bool;
   auto getId() -> int override { return this->m_ID; }
   void outlineDomain();
@@ -33,7 +27,6 @@ public:
 template <class T>
 class Pcolor2d : public Plot2d<T> {
 protected:
-  float m_sidebar_w{5.0f * ImGui::GetFontSize()}, m_cmap_h{20.0f * ImGui::GetFontSize()};
   bool m_log{false};
   T m_vmin, m_vmax;
   ImPlotColormap m_cmap{ImPlotColormap_Jet};

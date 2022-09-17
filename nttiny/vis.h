@@ -48,7 +48,10 @@ public:
   void bindSimulation(SimulationAPI<T, D>* sim);
   void setFPSLimit(float fps_limit) { m_fps_limit = fps_limit; }
   void setTPSLimit(float tps_limit) { m_tps_limit = tps_limit; }
-  void buildController();
+
+  void initStyle();
+  void drawMainMenuBar();
+  void drawControls();
   void processControllerInput();
   void loop();
   void addPcolor2d(float vmin, float vmax);

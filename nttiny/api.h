@@ -79,16 +79,15 @@ struct SimulationAPI {
   ~SimulationAPI() = default;
 
   auto Index(const int& i, const int& j) const -> int {
-    return i + (m_global_grid.m_size[1] - 1 - j) * m_global_grid.m_size[0];
+    const auto ngh{m_global_grid.m_ngh};
+    const auto nx1{m_global_grid.m_size[0] + 2 * ngh};
+    const auto nx2{m_global_grid.m_size[1] + 2 * ngh};
+    return (i + ngh) + (nx2 - 1 - (j + ngh)) * nx1;
   }
   auto Xi(const int& i, const ushort& d) const -> T { return m_global_grid.m_xi[d][i]; }
 
   // init
   virtual void setData() = 0;
-  // [[nodiscard]] auto get_x1min() const -> T { return m_x1x2_extent[0]; }
-  // [[nodiscard]] auto get_x1max() const -> T { return m_x1x2_extent[1]; }
-  // [[nodiscard]] auto get_x2min() const -> T { return m_x1x2_extent[2]; }
-  // [[nodiscard]] auto get_x2max() const -> T { return m_x1x2_extent[3]; }
 
   // updaters
   virtual void stepFwd() = 0;
@@ -106,10 +105,26 @@ struct SimulationAPI {
   void playToggle() { m_paused = !m_paused; }
   void reverse() { m_forward = !m_forward; }
 
+  // getters
+  auto get_field_names() const -> const char** {
+    auto field_names = new const char*[fields.size()];
+    int i{0};
+    for (const auto& fld : fields) {
+      field_names[i] = fld.first.c_str();
+      ++i;
+    }
+    return field_names;
+  }
+  auto get_selected_field(const int& field_selected_int) -> T* {
+    auto field_names = get_field_names();
+    auto field_selected = static_cast<std::string>(field_names[field_selected_int]);
+    return fields[field_selected];
+  }
+
+  // additional visuals
   virtual void customAnnotatePcolor2d() = 0;
 
 protected:
-  // float m_x1x2_extent[4];
   float m_time;
   int m_timestep;
   bool m_paused{true};

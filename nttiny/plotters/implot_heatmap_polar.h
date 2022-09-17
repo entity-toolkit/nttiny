@@ -1,5 +1,5 @@
-#ifndef IMPLOT_EXTRA_H
-#define IMPLOT_EXTRA_H
+#ifndef IMPLOT_HEATMAP_POLAR_H
+#define IMPLOT_HEATMAP_POLAR_H
 
 #include "implot_utils.h"
 
@@ -14,7 +14,7 @@ struct ArcInfo {
 };
 
 template <typename T>
-void PlotPolarHeatmap(const char*,
+void PlotHeatmapPolar(const char*,
                       const T*,
                       int,
                       int,
