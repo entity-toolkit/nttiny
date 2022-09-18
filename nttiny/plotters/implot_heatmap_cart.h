@@ -16,7 +16,6 @@ void PlotHeatmapCart(const char*,
                      double,
                      double,
                      bool,
-                     const char*,
                      const ImPlotPoint&,
                      const ImPlotPoint&,
                      ImPlotHeatmapFlags);

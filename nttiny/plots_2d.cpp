@@ -97,36 +97,40 @@ auto Pcolor2d<T>::draw() -> bool {
   ImPlot::PushColormap(this->m_cmap);
   if (ImPlot::BeginPlot("##", ImVec2(-1, -1), ImPlotFlags_Equal)) {
     if (coord == Coord::Spherical) {
-      //   auto x1_grid = Grid.m_xi[0];
-      //   auto x2_grid = Grid.m_xi[1];
-      //   x1min = 0.0;
-      //   x1max = Grid.m_xi[0][sx1 - ngh];
-      //   x2min = -x1max;
-      //   x2max = x1max;
-      //   ImPlot::PlotPolarHeatmap("##",
-      //                            Sim->fields[field_selected],
-      //                            sx1,
-      //                            sx2,
-      //                            this->m_vmin,
-      //                            this->m_vmax,
-      //                            x1_grid,
-      //                            x2_grid,
-      //                            this->m_log,
-      //                            nullptr,
-      //                            {x1min, x2min},
-      //                            {x1max, x2max});
+      // @TODO: maybe move this to initialization
+      T* x1_grid = new T[sx1 + 2 * ngh];
+      T* x2_grid = new T[sx2 + 2 * ngh + 1];
+      for (int i{0}; i <= sx1 + 2 * ngh; ++i) {
+        if (i < ngh) {
+          x1_grid[i] = Grid.m_xi[0][0] - (ngh - i) * dx1;
+        } else if (i >= ngh && i <= sx1 + ngh) {
+          x1_grid[i] = Grid.m_xi[0][i - ngh];
+        } else {
+          x1_grid[i] = Grid.m_xi[0][sx1 - 1] + (i - sx1 - ngh + 1) * dx1;
+        }
+      }
+      for (int i{0}; i <= sx2 + 2 * ngh; ++i) {
+        if (i < ngh) {
+          x2_grid[i] = Grid.m_xi[1][0] - (ngh - i) * dx2;
+        } else if (i >= ngh && i <= sx2 + ngh) {
+          x2_grid[i] = Grid.m_xi[1][i - ngh];
+        } else {
+          x2_grid[i] = Grid.m_xi[1][sx2 - 1] + (i - sx2 - ngh + 1) * dx2;
+        }
+      }
+      ImPlot::PlotHeatmapPolar("##",
+                               Sim->get_selected_field(this->m_field_selected),
+                               sx1 + 2 * ngh,
+                               sx2 + 2 * ngh,
+                               (double)this->m_vmin,
+                               (double)this->m_vmax,
+                               x1_grid,
+                               x2_grid,
+                               this->m_log,
+                               ImPlotPoint(0.0, -x1max),
+                               ImPlotPoint(x1max, x1max),
+                               ImPlotAxisFlags_NoGridLines);
     } else {
-      // template IMPLOT_API void PlotHeatmapCart<float>(const char* label_id,
-      //                                                 const float* values,
-      //                                                 int rows,
-      //                                                 int cols,
-      //                                                 double scale_min,
-      //                                                 double scale_max,
-      //                                                 const char* fmt,
-      //                                                 const ImPlotPoint& bounds_min,
-      //                                                 const ImPlotPoint& bounds_max,
-      //                                                 ImPlotHeatmapFlags flags);
-
       ImPlot::PlotHeatmapCart("##",
                               Sim->get_selected_field(this->m_field_selected),
                               sx2 + 2 * ngh,
@@ -134,7 +138,6 @@ auto Pcolor2d<T>::draw() -> bool {
                               (double)(this->m_vmin),
                               (double)(this->m_vmax),
                               this->m_log,
-                              nullptr,
                               ImPlotPoint(x1min, x2min),
                               ImPlotPoint(x1max, x2max),
                               ImPlotAxisFlags_NoGridLines);

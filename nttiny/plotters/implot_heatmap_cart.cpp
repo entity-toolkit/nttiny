@@ -121,7 +121,6 @@ void RenderHeatmapCart(ImDrawList& draw_list,
                        int cols,
                        double scale_min,
                        double scale_max,
-                       const char* fmt,
                        const ImPlotPoint& bounds_min,
                        const ImPlotPoint& bounds_max,
                        bool reverse_y,
@@ -171,48 +170,6 @@ void RenderHeatmapCart(ImDrawList& draw_list,
                                       use_log);
     RenderPrimitives1<RendererRectC>(getter);
   }
-  // labels
-  if (fmt != NULL) {
-    const double w = (bounds_max.x - bounds_min.x) / cols;
-    const double h = (bounds_max.y - bounds_min.y) / rows;
-    const ImPlotPoint half_size(w * 0.5, h * 0.5);
-    int i = 0;
-    if (col_maj) {
-      for (int c = 0; c < cols; ++c) {
-        for (int r = 0; r < rows; ++r) {
-          ImPlotPoint p;
-          p.x = bounds_min.x + 0.5 * w + c * w;
-          p.y = yref + ydir * (0.5 * h + r * h);
-          ImVec2 px = transformer(p);
-          char buff[32];
-          ImFormatString(buff, 32, fmt, values[i]);
-          ImVec2 size = ImGui::CalcTextSize(buff);
-          double t = ImClamp(ImRemap01((double)values[i], scale_min, scale_max), 0.0, 1.0);
-          ImVec4 color = SampleColormap((float)t);
-          ImU32 col = CalcTextColor(color);
-          draw_list.AddText(px - size * 0.5f, col, buff);
-          i++;
-        }
-      }
-    } else {
-      for (int r = 0; r < rows; ++r) {
-        for (int c = 0; c < cols; ++c) {
-          ImPlotPoint p;
-          p.x = bounds_min.x + 0.5 * w + c * w;
-          p.y = yref + ydir * (0.5 * h + r * h);
-          ImVec2 px = transformer(p);
-          char buff[32];
-          ImFormatString(buff, 32, fmt, values[i]);
-          ImVec2 size = ImGui::CalcTextSize(buff);
-          double t = ImClamp(ImRemap01((double)values[i], scale_min, scale_max), 0.0, 1.0);
-          ImVec4 color = SampleColormap((float)t);
-          ImU32 col = CalcTextColor(color);
-          draw_list.AddText(px - size * 0.5f, col, buff);
-          i++;
-        }
-      }
-    }
-  }
 }
 
 template <typename T>
@@ -223,7 +180,6 @@ void PlotHeatmapCart(const char* label_id,
                      double scale_min,
                      double scale_max,
                      bool use_log,
-                     const char* fmt,
                      const ImPlotPoint& bounds_min,
                      const ImPlotPoint& bounds_max,
                      ImPlotHeatmapFlags flags) {
@@ -236,7 +192,6 @@ void PlotHeatmapCart(const char* label_id,
                       cols,
                       scale_min,
                       scale_max,
-                      fmt,
                       bounds_min,
                       bounds_max,
                       true,
@@ -253,7 +208,6 @@ template IMPLOT_API void PlotHeatmapCart<float>(const char* label_id,
                                                 double scale_min,
                                                 double scale_max,
                                                 bool,
-                                                const char* fmt,
                                                 const ImPlotPoint& bounds_min,
                                                 const ImPlotPoint& bounds_max,
                                                 ImPlotHeatmapFlags flags);
@@ -265,7 +219,6 @@ template IMPLOT_API void PlotHeatmapCart<double>(const char* label_id,
                                                  double scale_min,
                                                  double scale_max,
                                                  bool,
-                                                 const char* fmt,
                                                  const ImPlotPoint& bounds_min,
                                                  const ImPlotPoint& bounds_max,
                                                  ImPlotHeatmapFlags flags);

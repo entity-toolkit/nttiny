@@ -43,6 +43,11 @@ struct RectC {
   ImU32 Color;
 };
 
+struct ArcC {
+  ImPlotPoint Min, Max;
+  ImU32 Color;
+};
+
 IMPLOT_INLINE void PrimRectFill(
     ImDrawList& draw_list, const ImVec2& Pmin, const ImVec2& Pmax, ImU32 col, const ImVec2& uv) {
   draw_list._VtxWritePtr[0].pos = Pmin;
@@ -68,6 +73,44 @@ IMPLOT_INLINE void PrimRectFill(
   draw_list._IdxWritePtr[5] = (ImDrawIdx)(draw_list._VtxCurrentIdx + 3);
   draw_list._IdxWritePtr += 6;
   draw_list._VtxCurrentIdx += 4;
+}
+
+IMPLOT_INLINE void PrimArcFill(ImDrawList& draw_list,
+                               const ImVec2 P_arcup[],
+                               const ImVec2 P_arcdown[],
+                               const int& ntheta,
+                               ImU32 col,
+                               const ImVec2& uv) {
+  // adding `2 * (ntheta + 1)` points
+  draw_list._VtxWritePtr[0].pos = P_arcdown[0];
+  for (int i{1}; i <= (ntheta + 1); ++i) {
+    draw_list._VtxWritePtr[i].pos = P_arcup[i - 1];
+  }
+  for (int i{ntheta + 2}; i < 2 * (ntheta + 1); ++i) {
+    draw_list._VtxWritePtr[i].pos = P_arcdown[2 * (ntheta + 1) - i];
+  }
+  for (int i{0}; i < 2 * (ntheta + 1); ++i) {
+    draw_list._VtxWritePtr[i].uv = uv;
+    draw_list._VtxWritePtr[i].col = col;
+  }
+  draw_list._VtxWritePtr += 2 * (ntheta + 1);
+
+  int n{0};
+  for (int i{0}; i < ntheta; ++i) {
+    draw_list._IdxWritePtr[n + 0] = (ImDrawIdx)(draw_list._VtxCurrentIdx) + (i + 1);
+    draw_list._IdxWritePtr[n + 1] = (ImDrawIdx)(draw_list._VtxCurrentIdx) + 2 * ntheta + 1 - i;
+    if (i == 0) {
+      draw_list._IdxWritePtr[n + 2] = (ImDrawIdx)(draw_list._VtxCurrentIdx);
+    } else {
+      draw_list._IdxWritePtr[n + 2] = (ImDrawIdx)(draw_list._VtxCurrentIdx) + 2 * ntheta + 2 - i;
+    }
+    draw_list._IdxWritePtr[n + 3] = (ImDrawIdx)(draw_list._VtxCurrentIdx) + (i + 1);
+    draw_list._IdxWritePtr[n + 4] = (ImDrawIdx)(draw_list._VtxCurrentIdx) + (i + 2);
+    draw_list._IdxWritePtr[n + 5] = (ImDrawIdx)(draw_list._VtxCurrentIdx) + 2 * ntheta + 1 - i;
+    n += 6;
+  }
+  draw_list._IdxWritePtr += 6 * ntheta;
+  draw_list._VtxCurrentIdx += 2 * (ntheta + 1);
 }
 
 struct FitterRect {
@@ -104,6 +147,39 @@ struct RendererRectC : RendererBase {
         || !cull_rect.Overlaps(ImRect(ImMin(P1, P2), ImMax(P1, P2))))
       return false;
     PrimRectFill(draw_list, P1, P2, rect.Color, UV);
+    return true;
+  }
+  const _Getter& Getter;
+  mutable ImVec2 UV;
+};
+
+template <typename _Getter>
+struct RendererArcC : RendererBase {
+  static const int NTheta{5};
+
+  RendererArcC(const _Getter& getter)
+      : RendererBase(getter.Count, 6 * NTheta, 2 * (NTheta + 1)), Getter(getter) {}
+  void Init(ImDrawList& draw_list) const { UV = draw_list._Data->TexUvWhitePixel; }
+  IMPLOT_INLINE bool Render(ImDrawList& draw_list, const ImRect&, int prim) const {
+    ArcC arc = Getter(prim);
+    ImVec2 P_arcup[NTheta + 1], P_arcdown[NTheta + 1];
+    double r_1, theta_1, r_2, theta_2;
+    r_1 = arc.Min.x;
+    r_2 = arc.Max.x;
+    theta_1 = arc.Min.y;
+    theta_2 = arc.Max.y;
+    for (int i{0}; i < NTheta + 1; ++i) {
+      double th{theta_1 + (theta_2 - theta_1) * (double)(i) / (double)(NTheta)};
+      P_arcup[i].x = r_2 * sin(th);
+      P_arcup[i].y = r_2 * cos(th);
+      P_arcdown[i].x = r_1 * sin(th);
+      P_arcdown[i].y = r_1 * cos(th);
+      P_arcup[i] = this->Transformer(P_arcup[i]);
+      P_arcdown[i] = this->Transformer(P_arcdown[i]);
+    }
+
+    if ((arc.Color & IM_COL32_A_MASK) == 0) return false;
+    PrimArcFill(draw_list, P_arcup, P_arcdown, NTheta, arc.Color, UV);
     return true;
   }
   const _Getter& Getter;

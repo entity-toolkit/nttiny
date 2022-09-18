@@ -29,43 +29,10 @@ struct Grid {
   Grid(const Coord& coord, const std::array<int, D>& size, const ushort& ngh = 2)
       : m_coord(coord), m_size(size), m_ngh(ngh) {
     for (ushort i{0}; i < D; ++i) {
-      m_xi[i] = new T[m_size[i]];
+      m_xi[i] = new T[m_size[i] + 1];
     }
   }
 };
-
-// template <class T>
-// struct Data {
-//   int m_size[2];
-//   T* m_data;
-//   double *grid_x1, *grid_x2;
-
-//   Data(int nx1, int nx2) : m_size{nx1, nx2} {
-//     grid_x1 = nullptr;
-//     grid_x2 = nullptr;
-//     allocate(nx1 * nx2);
-//   }
-//   ~Data() = default;
-//   void allocate(std::size_t n) { this->m_data = new T[n]; }
-//   [[nodiscard]] auto get_size(std::size_t i) const -> int { return this->m_size[i]; }
-//   [[nodiscard]] auto get_data() const -> T* { return this->m_data; }
-//   [[nodiscard]] auto get(std::size_t i, std::size_t j) const -> T {
-//     return this->m_data[j * this->m_size[0] + i];
-//   }
-
-//   void set_size(std::size_t i, int size) { this->m_size[i] = size; }
-//   void set(std::size_t i, std::size_t j, T value) { this->m_data[j * this->m_size[0] + i] =
-//   value; }
-// };
-
-// template <class T>
-// struct Data {
-//   T* m_data;
-//   Data() {}
-//   Data(int nx1, int nx2) { this->m_data = new T[nx1 * nx2]; }
-//   ~Data() = default;
-//   void allocate(std::size_t n) {  }
-// };
 
 template <class T, ushort D>
 struct SimulationAPI {
@@ -83,6 +50,10 @@ struct SimulationAPI {
     const auto nx1{m_global_grid.m_size[0] + 2 * ngh};
     const auto nx2{m_global_grid.m_size[1] + 2 * ngh};
     return (i + ngh) + (nx2 - 1 - (j + ngh)) * nx1;
+    // const auto ngh{m_global_grid.m_ngh};
+    // const auto nx1{m_global_grid.m_size[0] + 2 * ngh};
+    // const auto nx2{m_global_grid.m_size[1] + 2 * ngh};
+    // return (j + ngh) + (nx1 - 1 - (i + ngh)) * nx2;
   }
   auto Xi(const int& i, const ushort& d) const -> T { return m_global_grid.m_xi[d][i]; }
 

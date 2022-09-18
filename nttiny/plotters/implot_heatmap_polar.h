@@ -8,24 +8,19 @@
 
 namespace ImPlot {
 
-struct ArcInfo {
-  ImPlotPoint Min, Max;
-  ImU32 Color;
-};
-
 template <typename T>
 void PlotHeatmapPolar(const char*,
                       const T*,
                       int,
                       int,
-                      T,
-                      T,
-                      T*,
-                      T*,
+                      double,
+                      double,
+                      const T*,
+                      const T*,
                       bool,
-                      const char*,
                       const ImPlotPoint&,
-                      const ImPlotPoint&);
+                      const ImPlotPoint&,
+                      ImPlotHeatmapFlags);
 
 } // namespace ImPlot
 
