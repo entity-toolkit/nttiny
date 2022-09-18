@@ -26,10 +26,45 @@ struct Grid {
   std::array<int, D> m_size;
   ushort m_ngh;
   std::array<T*, D> m_xi;
+  std::array<T*, D> m_xi_gh;
+
   Grid(const Coord& coord, const std::array<int, D>& size, const ushort& ngh = 2)
       : m_coord(coord), m_size(size), m_ngh(ngh) {
     for (ushort i{0}; i < D; ++i) {
       m_xi[i] = new T[m_size[i] + 1];
+    }
+    if (m_coord == Coord::Spherical) {
+      for (ushort i{0}; i < D; ++i) {
+        m_xi_gh[i] = new T[m_size[i] + 1 + 2 * m_ngh];
+      }
+    }
+  }
+
+  ~Grid() {
+    for (ushort i{0}; i < D; ++i) {
+      delete[] m_xi[i];
+    }
+    if (m_coord == Coord::Spherical) {
+      for (ushort i{0}; i < D; ++i) {
+        delete[] m_xi_gh[i];
+      }
+    }
+  }
+
+  void ExtendGridWithGhosts() {
+    const auto ngh = m_ngh;
+    for (ushort d{0}; d < D; ++d) {
+      auto dx = m_xi[d][1] - m_xi[d][0];
+      auto sx = m_size[d];
+      for (int i{0}; i <= sx + 2 * ngh; ++i) {
+        if (i < ngh) {
+          m_xi_gh[d][i] = m_xi[d][0] - (ngh - i) * dx;
+        } else if (i >= ngh && i <= sx + ngh) {
+          m_xi_gh[d][i] = m_xi[d][i - ngh];
+        } else {
+          m_xi_gh[d][i] = m_xi[d][sx - 1] + (i - sx - ngh + 1) * dx;
+        }
+      }
     }
   }
 };
@@ -50,10 +85,6 @@ struct SimulationAPI {
     const auto nx1{m_global_grid.m_size[0] + 2 * ngh};
     const auto nx2{m_global_grid.m_size[1] + 2 * ngh};
     return (i + ngh) + (nx2 - 1 - (j + ngh)) * nx1;
-    // const auto ngh{m_global_grid.m_ngh};
-    // const auto nx1{m_global_grid.m_size[0] + 2 * ngh};
-    // const auto nx2{m_global_grid.m_size[1] + 2 * ngh};
-    // return (j + ngh) + (nx1 - 1 - (i + ngh)) * nx2;
   }
   auto Xi(const int& i, const ushort& d) const -> T { return m_global_grid.m_xi[d][i]; }
 

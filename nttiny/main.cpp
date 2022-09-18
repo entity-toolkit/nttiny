@@ -99,6 +99,7 @@ struct Example2 : public nttiny::SimulationAPI<float, 2> {
     for (int j{0}; j <= sx2; ++j) {
       this->m_global_grid.m_xi[1][j] = 0.0f + M_PI * (float)(j) / (float)(sx2);
     }
+    this->m_global_grid.ExtendGridWithGhosts();
     this->fields.insert({"er", new float[nx1 * nx2]});
     this->fields.insert({"bphi", new float[nx1 * nx2]});
     this->fields.insert({"r", new float[nx1 * nx2]});

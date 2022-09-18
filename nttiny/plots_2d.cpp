@@ -97,35 +97,14 @@ auto Pcolor2d<T>::draw() -> bool {
   ImPlot::PushColormap(this->m_cmap);
   if (ImPlot::BeginPlot("##", ImVec2(-1, -1), ImPlotFlags_Equal)) {
     if (coord == Coord::Spherical) {
-      // @TODO: maybe move this to initialization
-      T* x1_grid = new T[sx1 + 2 * ngh];
-      T* x2_grid = new T[sx2 + 2 * ngh + 1];
-      for (int i{0}; i <= sx1 + 2 * ngh; ++i) {
-        if (i < ngh) {
-          x1_grid[i] = Grid.m_xi[0][0] - (ngh - i) * dx1;
-        } else if (i >= ngh && i <= sx1 + ngh) {
-          x1_grid[i] = Grid.m_xi[0][i - ngh];
-        } else {
-          x1_grid[i] = Grid.m_xi[0][sx1 - 1] + (i - sx1 - ngh + 1) * dx1;
-        }
-      }
-      for (int i{0}; i <= sx2 + 2 * ngh; ++i) {
-        if (i < ngh) {
-          x2_grid[i] = Grid.m_xi[1][0] - (ngh - i) * dx2;
-        } else if (i >= ngh && i <= sx2 + ngh) {
-          x2_grid[i] = Grid.m_xi[1][i - ngh];
-        } else {
-          x2_grid[i] = Grid.m_xi[1][sx2 - 1] + (i - sx2 - ngh + 1) * dx2;
-        }
-      }
       ImPlot::PlotHeatmapPolar("##",
                                Sim->get_selected_field(this->m_field_selected),
                                sx1 + 2 * ngh,
                                sx2 + 2 * ngh,
                                (double)this->m_vmin,
                                (double)this->m_vmax,
-                               x1_grid,
-                               x2_grid,
+                               Grid.m_xi_gh[0],
+                               Grid.m_xi_gh[1],
                                this->m_log,
                                ImPlotPoint(0.0, -x1max),
                                ImPlotPoint(x1max, x1max),
