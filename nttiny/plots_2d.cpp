@@ -28,54 +28,48 @@ auto Plot2d<T>::close() -> bool {
 
 template <class T>
 void Plot2d<T>::outlineDomain() {
-  // const auto nx1 = this->m_sim->m_global_grid.m_size[0];
-  // const auto nx2 = this->m_sim->m_global_grid.m_size[1];
-  // const auto ngh = this->m_sim->m_global_grid.m_ngh;
-  // const auto x1min = this->m_sim->m_global_grid.m_xi[0][ngh];
-  // const auto x1max = this->m_sim->m_global_grid.m_xi[0][nx1 - ngh];
-  // const auto x2min = this->m_sim->m_global_grid.m_xi[1][ngh];
-  // const auto x2max = this->m_sim->m_global_grid.m_xi[1][nx2 - ngh];
-  // const auto coord = this->m_sim->m_global_grid.m_coord;
+  const auto sx1 = this->m_sim->m_global_grid.m_size[0];
+  const auto sx2 = this->m_sim->m_global_grid.m_size[1];
+  const auto x1min = this->m_sim->m_global_grid.m_xi[0][0];
+  const auto x1max = this->m_sim->m_global_grid.m_xi[0][sx1];
+  const auto x2min = this->m_sim->m_global_grid.m_xi[1][0];
+  const auto x2max = this->m_sim->m_global_grid.m_xi[1][sx2];
+  const auto coord = this->m_sim->m_global_grid.m_coord;
 
-  // ImPlot::PushPlotClipRect();
-  // if (coord == Coord::Spherical) {
-  //   auto rmin = x1min;
-  //   auto rmax = x1max;
+  auto thickness = 2.5f;
+  auto color = IM_COL32(255, 255, 255, 255);
+  auto thres = 32;
 
-  //   auto p1 = ImPlot::PlotToPixels(ImPlotPoint(0, rmin));
-  //   auto p2 = ImPlot::PlotToPixels(ImPlotPoint(0, rmax));
-  //   ImPlot::GetPlotDrawList()->AddLine(p1, p2, IM_COL32(250, 250, 240, 255), 0.2);
-  //   for (int i{0}; i < 100; ++i) {
-  //     float phi_min = M_PI * (float)(i) / (float)(100);
-  //     float phi_max = M_PI * (float)(i + 1) / (float)(100);
-  //     auto p01
-  //         = ImPlot::PlotToPixels(ImPlotPoint(rmin * std::sin(phi_min), rmin *
-  //         std::cos(phi_min)));
-  //     auto p02
-  //         = ImPlot::PlotToPixels(ImPlotPoint(rmin * std::sin(phi_max), rmin *
-  //         std::cos(phi_max)));
-  //     ImPlot::GetPlotDrawList()->AddLine(p01, p02, IM_COL32(250, 250, 240, 255), 0.2);
-  //     auto p11
-  //         = ImPlot::PlotToPixels(ImPlotPoint(rmax * std::sin(phi_min), rmax *
-  //         std::cos(phi_min)));
-  //     auto p12
-  //         = ImPlot::PlotToPixels(ImPlotPoint(rmax * std::sin(phi_max), rmax *
-  //         std::cos(phi_max)));
-  //     ImPlot::GetPlotDrawList()->AddLine(p11, p12, IM_COL32(250, 250, 240, 255), 0.2);
-  //   }
-  //   auto p3 = ImPlot::PlotToPixels(ImPlotPoint(0, -rmin));
-  //   auto p4 = ImPlot::PlotToPixels(ImPlotPoint(0, -rmax));
-  //   ImPlot::GetPlotDrawList()->AddLine(p3, p4, IM_COL32(250, 250, 240, 255), 0.2);
-  // } else {
-  //   ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(x1min, x2min));
-  //   ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(x2max, x1max));
-  //   ImPlot::PushPlotClipRect();
-  //   ImPlot::GetPlotDrawList()->AddRect(rmin, rmax, IM_COL32(250, 250, 240, 255));
-  //   ImPlot::PopPlotClipRect();
-
-  //   // add cartesian here
-  // }
-  // ImPlot::PopPlotClipRect();
+  ImPlot::PushPlotClipRect();
+  if (coord == Coord::Spherical) {
+    auto rmin = x1min;
+    auto rmax = x1max;
+    auto p1 = ImPlot::PlotToPixels(ImPlotPoint(0, rmin));
+    auto p2 = ImPlot::PlotToPixels(ImPlotPoint(0, rmax));
+    ImPlot::GetPlotDrawList()->AddLine(p1, p2, color, thickness);
+    for (int i{0}; i < thres; ++i) {
+      float phi_min = M_PI * (float)(i) / (float)(thres);
+      float phi_max = M_PI * (float)(i + 1) / (float)(thres);
+      auto p01
+          = ImPlot::PlotToPixels(ImPlotPoint(rmin * std::sin(phi_min), rmin * std::cos(phi_min)));
+      auto p02
+          = ImPlot::PlotToPixels(ImPlotPoint(rmin * std::sin(phi_max), rmin * std::cos(phi_max)));
+      ImPlot::GetPlotDrawList()->AddLine(p01, p02, color, thickness);
+      auto p11
+          = ImPlot::PlotToPixels(ImPlotPoint(rmax * std::sin(phi_min), rmax * std::cos(phi_min)));
+      auto p12
+          = ImPlot::PlotToPixels(ImPlotPoint(rmax * std::sin(phi_max), rmax * std::cos(phi_max)));
+      ImPlot::GetPlotDrawList()->AddLine(p11, p12, color, thickness);
+    }
+    auto p3 = ImPlot::PlotToPixels(ImPlotPoint(0, -rmin));
+    auto p4 = ImPlot::PlotToPixels(ImPlotPoint(0, -rmax));
+    ImPlot::GetPlotDrawList()->AddLine(p3, p4, color, thickness);
+  } else {
+    ImVec2 rmin = ImPlot::PlotToPixels(ImPlotPoint(x1min, x2min));
+    ImVec2 rmax = ImPlot::PlotToPixels(ImPlotPoint(x1max, x2max));
+    ImPlot::GetPlotDrawList()->AddRect(rmin, rmax, color, 0.0f, 0, thickness);
+  }
+  ImPlot::PopPlotClipRect();
 }
 
 template <class T>
@@ -138,9 +132,8 @@ auto Pcolor2d<T>::draw() -> bool {
       }
 
       /* ---------------------------- colormap selector --------------------------- */
-      if (ImPlot::ColormapButton(ImPlot::GetColormapName(this->m_cmap),
-                                 ImVec2(-1, 0),
-                                 this->m_cmap)) {
+      if (ImPlot::ColormapButton(
+              ImPlot::GetColormapName(this->m_cmap), ImVec2(-1, 0), this->m_cmap)) {
         this->m_cmap = (this->m_cmap + 1) % ImPlot::GetColormapCount();
       }
 
