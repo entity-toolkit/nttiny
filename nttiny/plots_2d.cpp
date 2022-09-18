@@ -116,16 +116,28 @@ auto Pcolor2d<T>::draw() -> bool {
       //                            {x1min, x2min},
       //                            {x1max, x2max});
     } else {
+      // template IMPLOT_API void PlotHeatmapCart<float>(const char* label_id,
+      //                                                 const float* values,
+      //                                                 int rows,
+      //                                                 int cols,
+      //                                                 double scale_min,
+      //                                                 double scale_max,
+      //                                                 const char* fmt,
+      //                                                 const ImPlotPoint& bounds_min,
+      //                                                 const ImPlotPoint& bounds_max,
+      //                                                 ImPlotHeatmapFlags flags);
+
       ImPlot::PlotHeatmapCart("##",
                               Sim->get_selected_field(this->m_field_selected),
                               sx2 + 2 * ngh,
                               sx1 + 2 * ngh,
-                              this->m_vmin,
-                              this->m_vmax,
+                              (double)(this->m_vmin),
+                              (double)(this->m_vmax),
                               this->m_log,
                               nullptr,
-                              {x1min, x2min},
-                              {x1max, x2max});
+                              ImPlotPoint(x1min, x2min),
+                              ImPlotPoint(x1max, x2max),
+                              ImPlotAxisFlags_NoGridLines);
     }
     this->outlineDomain();
     Sim->customAnnotatePcolor2d();

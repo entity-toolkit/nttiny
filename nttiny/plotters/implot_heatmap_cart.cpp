@@ -6,57 +6,6 @@
 
 namespace ImPlot {
 
-struct RectInfo {
-  ImPlotPoint Min, Max;
-  ImU32 Color;
-};
-
-template <typename TGetter, typename TTransformer>
-struct RectRenderer {
-  IMPLOT_INLINE RectRenderer(const TGetter& getter, const TTransformer& transformer)
-      : Getter(getter), Transformer(transformer), Prims(Getter.Count) {}
-  IMPLOT_INLINE bool
-  operator()(ImDrawList& DrawList, const ImRect& cull_rect, const ImVec2& uv, int prim) const {
-    RectInfo rect = Getter(prim);
-    ImVec2 P1 = Transformer(rect.Min);
-    ImVec2 P2 = Transformer(rect.Max);
-
-    if ((rect.Color & IM_COL32_A_MASK) == 0
-        || !cull_rect.Overlaps(ImRect(ImMin(P1, P2), ImMax(P1, P2))))
-      return false;
-
-    DrawList._VtxWritePtr[0].pos = P1;
-    DrawList._VtxWritePtr[0].uv = uv;
-    DrawList._VtxWritePtr[0].col = rect.Color;
-    DrawList._VtxWritePtr[1].pos.x = P1.x;
-    DrawList._VtxWritePtr[1].pos.y = P2.y;
-    DrawList._VtxWritePtr[1].uv = uv;
-    DrawList._VtxWritePtr[1].col = rect.Color;
-    DrawList._VtxWritePtr[2].pos = P2;
-    DrawList._VtxWritePtr[2].uv = uv;
-    DrawList._VtxWritePtr[2].col = rect.Color;
-    DrawList._VtxWritePtr[3].pos.x = P2.x;
-    DrawList._VtxWritePtr[3].pos.y = P1.y;
-    DrawList._VtxWritePtr[3].uv = uv;
-    DrawList._VtxWritePtr[3].col = rect.Color;
-    DrawList._VtxWritePtr += 4;
-    DrawList._IdxWritePtr[0] = (ImDrawIdx)(DrawList._VtxCurrentIdx);
-    DrawList._IdxWritePtr[1] = (ImDrawIdx)(DrawList._VtxCurrentIdx + 1);
-    DrawList._IdxWritePtr[2] = (ImDrawIdx)(DrawList._VtxCurrentIdx + 3);
-    DrawList._IdxWritePtr[3] = (ImDrawIdx)(DrawList._VtxCurrentIdx + 1);
-    DrawList._IdxWritePtr[4] = (ImDrawIdx)(DrawList._VtxCurrentIdx + 2);
-    DrawList._IdxWritePtr[5] = (ImDrawIdx)(DrawList._VtxCurrentIdx + 3);
-    DrawList._IdxWritePtr += 6;
-    DrawList._VtxCurrentIdx += 4;
-    return true;
-  }
-  const TGetter& Getter;
-  const TTransformer& Transformer;
-  const int Prims;
-  static const int IdxConsumed = 6;
-  static const int VtxConsumed = 4;
-};
-
 #ifndef SIGN
 #  define SIGN(x) (((x) < 0.0) ? -1.0 : 1.0)
 #endif
@@ -70,18 +19,18 @@ struct RectRenderer {
 #endif
 
 template <typename T>
-struct GetterHeatmapCart {
-  GetterHeatmapCart(const T* values,
-                    int rows,
-                    int cols,
-                    T scale_min,
-                    T scale_max,
-                    T width,
-                    T height,
-                    T xref,
-                    T yref,
-                    T ydir,
-                    const bool use_log_scale)
+struct GetterHeatmapCartRowMaj {
+  GetterHeatmapCartRowMaj(const T* values,
+                          int rows,
+                          int cols,
+                          double scale_min,
+                          double scale_max,
+                          double width,
+                          double height,
+                          double xref,
+                          double yref,
+                          double ydir,
+                          bool use_log)
       : Values(values),
         Count(rows * cols),
         Rows(rows),
@@ -94,128 +43,173 @@ struct GetterHeatmapCart {
         YRef(yref),
         YDir(ydir),
         HalfSize(Width * 0.5, Height * 0.5),
-        UseLogScale(use_log_scale) {}
-
+        UseLog(use_log) {}
   template <typename I>
-  IMPLOT_INLINE RectInfo operator()(I idx) const {
-    T val;
-    if (UseLogScale) {
-      val = (T)(QLOGSCALE(Values[idx]));
-    } else {
-      val = (T)Values[idx];
-    }
+  IMPLOT_INLINE RectC operator()(I idx) const {
+    double val = UseLog ? (double)Values[idx] : (double)(QLOGSCALE(Values[idx]));
     const int r = idx / Cols;
     const int c = idx % Cols;
     const ImPlotPoint p(XRef + HalfSize.x + c * Width, YRef + YDir * (HalfSize.y + r * Height));
-    RectInfo rect;
-    rect.Min.x = p.x - HalfSize.x;
-    rect.Min.y = p.y - HalfSize.y;
-    rect.Max.x = p.x + HalfSize.x;
-    rect.Max.y = p.y + HalfSize.y;
-    const float t = ImClamp(ImRemap01((float)val, (float)ScaleMin, (float)ScaleMax), 0.0f, 1.0f);
+    RectC rect;
+    rect.Pos = p;
+    rect.HalfSize = HalfSize;
+    const float t = ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f);
     rect.Color = GImPlot->ColormapData.LerpTable(GImPlot->Style.Colormap, t);
     return rect;
   }
   const T* const Values;
   const int Count, Rows, Cols;
-  const T ScaleMin, ScaleMax, Width, Height, XRef, YRef, YDir;
+  const double ScaleMin, ScaleMax, Width, Height, XRef, YRef, YDir;
   const ImPlotPoint HalfSize;
-  const bool UseLogScale;
+  const bool UseLog;
+};
+
+template <typename T>
+struct GetterHeatmapCartColMaj {
+  GetterHeatmapCartColMaj(const T* values,
+                          int rows,
+                          int cols,
+                          double scale_min,
+                          double scale_max,
+                          double width,
+                          double height,
+                          double xref,
+                          double yref,
+                          double ydir,
+                          bool use_log)
+      : Values(values),
+        Count(rows * cols),
+        Rows(rows),
+        Cols(cols),
+        ScaleMin(scale_min),
+        ScaleMax(scale_max),
+        Width(width),
+        Height(height),
+        XRef(xref),
+        YRef(yref),
+        YDir(ydir),
+        HalfSize(Width * 0.5, Height * 0.5),
+        UseLog(use_log) {}
+  template <typename I>
+  IMPLOT_INLINE RectC operator()(I idx) const {
+    double val = UseLog ? (double)Values[idx] : (double)(QLOGSCALE(Values[idx]));
+    const int r = idx % Cols;
+    const int c = idx / Cols;
+    const ImPlotPoint p(XRef + HalfSize.x + c * Width, YRef + YDir * (HalfSize.y + r * Height));
+    RectC rect;
+    rect.Pos = p;
+    rect.HalfSize = HalfSize;
+    const float t = ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f);
+    rect.Color = GImPlot->ColormapData.LerpTable(GImPlot->Style.Colormap, t);
+    return rect;
+  }
+  const T* const Values;
+  const int Count, Rows, Cols;
+  const double ScaleMin, ScaleMax, Width, Height, XRef, YRef, YDir;
+  const ImPlotPoint HalfSize;
+  const bool UseLog;
 };
 
 #undef SIGN
 #undef ABS
 #undef QLOGSCALE
 
-template <typename T, typename Transformer>
-void RenderHeatmapCart(Transformer transformer,
-                       ImDrawList& DrawList,
+template <typename T>
+void RenderHeatmapCart(ImDrawList& draw_list,
                        const T* values,
                        int rows,
                        int cols,
-                       T scale_min,
-                       T scale_max,
-                       bool use_log_scale,
+                       double scale_min,
+                       double scale_max,
                        const char* fmt,
                        const ImPlotPoint& bounds_min,
                        const ImPlotPoint& bounds_max,
-                       bool reverse_y) {
+                       bool reverse_y,
+                       bool col_maj,
+                       bool use_log) {
   ImPlotContext& gp = *GImPlot;
+  Transformer2 transformer;
   if (scale_min == 0 && scale_max == 0) {
     T temp_min, temp_max;
     ImMinMaxArray(values, rows * cols, &temp_min, &temp_max);
-    scale_min = (T)temp_min;
-    scale_max = (T)temp_max;
+    scale_min = (double)temp_min;
+    scale_max = (double)temp_max;
   }
   if (scale_min == scale_max) {
     ImVec2 a = transformer(bounds_min);
     ImVec2 b = transformer(bounds_max);
     ImU32 col = GetColormapColorU32(0, gp.Style.Colormap);
-    DrawList.AddRectFilled(a, b, col);
+    draw_list.AddRectFilled(a, b, col);
     return;
   }
   const double yref = reverse_y ? bounds_max.y : bounds_min.y;
   const double ydir = reverse_y ? -1 : 1;
-  GetterHeatmapCart<T> getter(values,
-                              rows,
-                              cols,
-                              scale_min,
-                              scale_max,
-                              (bounds_max.x - bounds_min.x) / cols,
-                              (bounds_max.y - bounds_min.y) / rows,
-                              bounds_min.x,
-                              yref,
-                              ydir,
-                              use_log_scale);
-  switch (GetCurrentScale()) {
-  case ImPlotScale_LinLin:
-    RenderPrimitives(
-        RectRenderer<GetterHeatmapCart<T>, TransformerLinLin>(getter, TransformerLinLin()),
-        DrawList,
-        gp.CurrentPlot->PlotRect);
-    break;
-  case ImPlotScale_LogLin:
-    RenderPrimitives(
-        RectRenderer<GetterHeatmapCart<T>, TransformerLogLin>(getter, TransformerLogLin()),
-        DrawList,
-        gp.CurrentPlot->PlotRect);
-    break;
-    ;
-  case ImPlotScale_LinLog:
-    RenderPrimitives(
-        RectRenderer<GetterHeatmapCart<T>, TransformerLinLog>(getter, TransformerLinLog()),
-        DrawList,
-        gp.CurrentPlot->PlotRect);
-    break;
-    ;
-  case ImPlotScale_LogLog:
-    RenderPrimitives(
-        RectRenderer<GetterHeatmapCart<T>, TransformerLogLog>(getter, TransformerLogLog()),
-        DrawList,
-        gp.CurrentPlot->PlotRect);
-    break;
-    ;
+  if (col_maj) {
+    GetterHeatmapCartColMaj<T> getter(values,
+                                      rows,
+                                      cols,
+                                      scale_min,
+                                      scale_max,
+                                      (bounds_max.x - bounds_min.x) / cols,
+                                      (bounds_max.y - bounds_min.y) / rows,
+                                      bounds_min.x,
+                                      yref,
+                                      ydir,
+                                      use_log);
+    RenderPrimitives1<RendererRectC>(getter);
+  } else {
+    GetterHeatmapCartRowMaj<T> getter(values,
+                                      rows,
+                                      cols,
+                                      scale_min,
+                                      scale_max,
+                                      (bounds_max.x - bounds_min.x) / cols,
+                                      (bounds_max.y - bounds_min.y) / rows,
+                                      bounds_min.x,
+                                      yref,
+                                      ydir,
+                                      use_log);
+    RenderPrimitives1<RendererRectC>(getter);
   }
+  // labels
   if (fmt != NULL) {
     const double w = (bounds_max.x - bounds_min.x) / cols;
     const double h = (bounds_max.y - bounds_min.y) / rows;
     const ImPlotPoint half_size(w * 0.5, h * 0.5);
     int i = 0;
-    for (int r = 0; r < rows; ++r) {
+    if (col_maj) {
       for (int c = 0; c < cols; ++c) {
-        ImPlotPoint p;
-        p.x = bounds_min.x + 0.5 * w + c * w;
-        p.y = yref + ydir * (0.5 * h + r * h);
-        ImVec2 px = transformer(p);
-        char buff[32];
-        sprintf(buff, fmt, values[i]);
-        ImVec2 size = ImGui::CalcTextSize(buff);
-        float t
-            = ImClamp(ImRemap01((float)values[i], (float)scale_min, (float)scale_max), 0.0f, 1.0f);
-        ImVec4 color = SampleColormap(t);
-        ImU32 col = CalcTextColor(color);
-        DrawList.AddText(px - size * 0.5f, col, buff);
-        i++;
+        for (int r = 0; r < rows; ++r) {
+          ImPlotPoint p;
+          p.x = bounds_min.x + 0.5 * w + c * w;
+          p.y = yref + ydir * (0.5 * h + r * h);
+          ImVec2 px = transformer(p);
+          char buff[32];
+          ImFormatString(buff, 32, fmt, values[i]);
+          ImVec2 size = ImGui::CalcTextSize(buff);
+          double t = ImClamp(ImRemap01((double)values[i], scale_min, scale_max), 0.0, 1.0);
+          ImVec4 color = SampleColormap((float)t);
+          ImU32 col = CalcTextColor(color);
+          draw_list.AddText(px - size * 0.5f, col, buff);
+          i++;
+        }
+      }
+    } else {
+      for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+          ImPlotPoint p;
+          p.x = bounds_min.x + 0.5 * w + c * w;
+          p.y = yref + ydir * (0.5 * h + r * h);
+          ImVec2 px = transformer(p);
+          char buff[32];
+          ImFormatString(buff, 32, fmt, values[i]);
+          ImVec2 size = ImGui::CalcTextSize(buff);
+          double t = ImClamp(ImRemap01((double)values[i], scale_min, scale_max), 0.0, 1.0);
+          ImVec4 color = SampleColormap((float)t);
+          ImU32 col = CalcTextColor(color);
+          draw_list.AddText(px - size * 0.5f, col, buff);
+          i++;
+        }
       }
     }
   }
@@ -226,52 +220,54 @@ void PlotHeatmapCart(const char* label_id,
                      const T* values,
                      int rows,
                      int cols,
-                     T scale_min,
-                     T scale_max,
-                     bool use_log_scale,
+                     double scale_min,
+                     double scale_max,
+                     bool use_log,
                      const char* fmt,
                      const ImPlotPoint& bounds_min,
-                     const ImPlotPoint& bounds_max) {
-  if (BeginItem(label_id)) {
-    if (FitThisFrame()) {
-      FitPoint(bounds_min);
-      FitPoint(bounds_max);
-    }
-    ImDrawList& DrawList = *GetPlotDrawList();
-    RenderHeatmapCart(TransformerLinLin(),
-                      DrawList,
+                     const ImPlotPoint& bounds_max,
+                     ImPlotHeatmapFlags flags) {
+  if (BeginItemEx(label_id, FitterRect(bounds_min, bounds_max))) {
+    ImDrawList& draw_list = *GetPlotDrawList();
+    const bool col_maj = ImHasFlag(flags, ImPlotHeatmapFlags_ColMajor);
+    RenderHeatmapCart(draw_list,
                       values,
                       rows,
                       cols,
                       scale_min,
                       scale_max,
-                      use_log_scale,
                       fmt,
                       bounds_min,
                       bounds_max,
-                      true);
+                      true,
+                      col_maj,
+                      use_log);
     EndItem();
   }
 }
-template IMPLOT_API void PlotHeatmapCart<float>(const char*,
-                                                const float*,
-                                                int,
-                                                int,
-                                                float,
-                                                float,
+
+template IMPLOT_API void PlotHeatmapCart<float>(const char* label_id,
+                                                const float* values,
+                                                int rows,
+                                                int cols,
+                                                double scale_min,
+                                                double scale_max,
                                                 bool,
-                                                const char*,
-                                                const ImPlotPoint&,
-                                                const ImPlotPoint&);
-template IMPLOT_API void PlotHeatmapCart<double>(const char*,
-                                                 const double*,
-                                                 int,
-                                                 int,
-                                                 double,
-                                                 double,
+                                                const char* fmt,
+                                                const ImPlotPoint& bounds_min,
+                                                const ImPlotPoint& bounds_max,
+                                                ImPlotHeatmapFlags flags);
+
+template IMPLOT_API void PlotHeatmapCart<double>(const char* label_id,
+                                                 const double* values,
+                                                 int rows,
+                                                 int cols,
+                                                 double scale_min,
+                                                 double scale_max,
                                                  bool,
-                                                 const char*,
-                                                 const ImPlotPoint&,
-                                                 const ImPlotPoint&);
+                                                 const char* fmt,
+                                                 const ImPlotPoint& bounds_min,
+                                                 const ImPlotPoint& bounds_max,
+                                                 ImPlotHeatmapFlags flags);
 
 } // namespace ImPlot

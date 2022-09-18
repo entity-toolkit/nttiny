@@ -1,0 +1,18 @@
+[submodule "extern/glfw"]
+	path = extern/glfw
+	url = git@github.com:glfw/glfw.git
+[submodule "extern/imgui"]
+	path = extern/imgui
+	url = git@github.com:ocornut/imgui.git
+[submodule "extern/plog"]
+	path = extern/plog
+	url = git@github.com:SergiusTheBest/plog.git
+[submodule "extern/toml11"]
+	path = extern/toml11
+	url = git@github.com:ToruNiina/toml11.git
+[submodule "extern/implot"]
+	path = extern/implot
+	url = git@github.com:epezent/implot.git
+[submodule "extern/freetype"]
+	path = extern/freetype
+	url = https://gitlab.freedesktop.org/freetype/freetype.git

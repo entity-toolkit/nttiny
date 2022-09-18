@@ -13,13 +13,13 @@ void PlotHeatmapCart(const char*,
                      const T*,
                      int,
                      int,
-                     T,
-                     T,
+                     double,
+                     double,
                      bool,
                      const char*,
                      const ImPlotPoint&,
-                     const ImPlotPoint&);
-
+                     const ImPlotPoint&,
+                     ImPlotHeatmapFlags);
 } // namespace ImPlot
 
 #endif
