@@ -40,6 +40,7 @@ protected:
   float m_fps_limit{0.0f};
   float m_tps_limit{0.0f};
   std::vector<std::unique_ptr<Ax<T, D>>> m_plots;
+  ImPlotRect m_shared_axes{0, 1, 0, 1};
 
 public:
   Visualization(int win_width = 1280, int win_height = 720, bool resizable = true);

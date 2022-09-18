@@ -18,8 +18,8 @@
 namespace nttiny {
 
 template <class T>
-auto Plot2d<T>::close() -> bool {
-  if (ImGui::Button("delete", ImVec2(-1, 0))) {
+auto Plot2d<T>::close(const int& w) -> bool {
+  if (ImGui::Button("delete", ImVec2(w, 0))) {
     return true;
   } else {
     return false;
@@ -73,7 +73,7 @@ void Plot2d<T>::outlineDomain() {
 }
 
 template <class T>
-auto Pcolor2d<T>::draw() -> bool {
+auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
   auto& Sim = this->m_sim;
   auto& Grid = this->m_sim->m_global_grid;
   const auto coord = Grid.m_coord;
@@ -90,6 +90,12 @@ auto Pcolor2d<T>::draw() -> bool {
 
   ImPlot::PushColormap(this->m_cmap);
   if (ImPlot::BeginPlot("##", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+    ImPlot::SetupAxisLinks(ImAxis_X1,
+                           this->m_share_axes ? &shared_axes.X.Min : NULL,
+                           this->m_share_axes ? &shared_axes.X.Max : NULL);
+    ImPlot::SetupAxisLinks(ImAxis_Y1,
+                           this->m_share_axes ? &shared_axes.Y.Min : NULL,
+                           this->m_share_axes ? &shared_axes.Y.Max : NULL);
     if (coord == Coord::Spherical) {
       ImPlot::PlotHeatmapPolar("##",
                                Sim->get_selected_field(this->m_field_selected),
@@ -174,6 +180,7 @@ auto Pcolor2d<T>::draw() -> bool {
           this->m_vmax = max;
         }
       }
+      ImGui::Checkbox("link axes", &this->m_share_axes);
       ImGui::Separator();
       if (this->close()) { return true; }
     }
@@ -187,83 +194,53 @@ auto Pcolor2d<T>::draw() -> bool {
 }
 
 template <class T>
-auto Scatter2d<T>::draw() -> bool {
-  bool close{false};
-  // float plot_size = this->m_plot_size * this->m_scale;
-  // const auto nx1 = this->m_sim->m_global_grid.m_size[0];
-  // const auto nx2 = this->m_sim->m_global_grid.m_size[1];
-  // const auto x1min = this->m_sim->m_global_grid.m_xi[0][0];
-  // const auto x1max = this->m_sim->m_global_grid.m_xi[0][nx1 - 1];
-  // const auto x2min = this->m_sim->m_global_grid.m_xi[1][0];
-  // const auto x2max = this->m_sim->m_global_grid.m_xi[1][nx2 - 1];
-  // const auto coord = this->m_sim->m_global_grid.m_coord;
-  // float aspect;
-  // if (coord == Coord::Spherical) {
-  //   aspect = 1.0f;
-  //   plot_size *= 1.75f;
-  // } else {
-  //   aspect = (x2max - x2min) / (x1max - x1min);
-  // }
+auto Scatter2d<T>::draw(ImPlotRect& shared_axes) -> bool {
+  auto& Sim = this->m_sim;
+  auto& Grid = this->m_sim->m_global_grid;
+  const auto coord = Grid.m_coord;
 
-  // ImGui::Begin(("Scatter2d [" + std::to_string(this->m_ID) + "]").c_str());
-  // {
-  //   this->scale();
-  //   ImGui::SameLine(ImGui::GetWindowWidth() - 40);
-  //   close = this->close();
-  // }
+  const auto ngh = Grid.m_ngh;
+  const auto sx1 = Grid.m_size[0];
+  const auto sx2 = Grid.m_size[1];
+  auto dx1 = Grid.m_xi[0][1] - Grid.m_xi[0][0];
+  auto x1min = Grid.m_xi[0][0] - ngh * dx1;
+  auto x1max = Grid.m_xi[0][sx1] + ngh * dx1;
+  auto dx2 = Grid.m_xi[1][1] - Grid.m_xi[1][0];
+  auto x2min = Grid.m_xi[1][0] - ngh * dx2;
+  auto x2max = Grid.m_xi[1][sx2] + ngh * dx2;
 
-  // // Choose particles to display
-  // std::size_t nspec{this->m_sim->particles.size()};
-  // {
-  //   if ((this->m_prtl_enabled == nullptr) && (nspec != 0)) {
-  //     this->m_prtl_names = new const char*[nspec];
-  //     this->m_prtl_enabled = new bool[nspec];
-  //     std::size_t i{0};
-  //     for (const auto& prtl : this->m_sim->particles) {
-  //       this->m_prtl_enabled[i] = true;
-  //       this->m_prtl_names[i] = prtl.first.c_str();
-  //       ++i;
-  //     }
-  //   } else {
-  //     ImGui::BeginGroup();
-  //     for (std::size_t i{0}; i < nspec; ++i) {
-  //       ImGui::Checkbox(this->m_prtl_names[i], &(this->m_prtl_enabled[i]));
-  //       if (i < nspec - 1) { ImGui::SameLine(); }
-  //     }
-  //     ImGui::EndGroup();
-  //   }
-  // }
-  // // // display scatter plots
-  // // {
-  // //   if (this->m_sim->m_coords == Coord::Spherical) {
-  // //     // x1min = 0.0;
-  // //     // x1max = this->m_sim->fields["Ex1"]->grid_x1[this->m_sim->fields["Ex1"]->get_size(0)];
-  // //     // x2min = -x1max;
-  // //     // x2max = x1max;
-  // //     // ImPlot::SetNextAxesLimits(x1min, x1max, x2min, x2max, true);
-  // //   }
-  // //   if (ImPlot::BeginPlot("##", ImVec2(plot_size, plot_size * aspect), ImPlotFlags_Equal)) {
-  // //     for (std::size_t i{0}; i < nspec; ++i) {
-  // //       if (this->m_prtl_enabled[i]) {
-  // //         auto spec{this->m_prtl_names[i]};
-  // //         auto npart{this->m_sim->particles[spec].first->get_size(0)};
-  // //         if (i == 1) {
-  // //           ImPlot::SetNextMarkerStyle(
-  // //               IMPLOT_AUTO, IMPLOT_AUTO, BELYASH_PINK, IMPLOT_AUTO, BELYASH_PINK);
-  // //         }
-  // //         ImPlot::PlotScatter(spec,
-  // //                             this->m_sim->particles[spec].first,
-  // //                             this->m_sim->particles[spec].second,
-  // //                             npart);
-  // //       }
-  // //     }
-  // //     // TODO: fix this
-  // //     this->outlineDomain();
-  // //     ImPlot::EndPlot();
-  // //   }
-  // // }
-  // ImGui::End();
-  return close;
+  if (coord == Coord::Spherical) {
+    ImPlot::SetNextAxesLimits(0.0f, (float)x1max, -(float)x1max, (float)x1max);
+  } else {
+    ImPlot::SetNextAxesLimits((float)x1min, (float)x1max, (float)x2min, (float)x2max);
+  }
+  if (ImPlot::BeginPlot("##", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+    ImPlot::SetupAxisLinks(ImAxis_X1,
+                           this->m_share_axes ? &shared_axes.X.Min : NULL,
+                           this->m_share_axes ? &shared_axes.X.Max : NULL);
+    ImPlot::SetupAxisLinks(ImAxis_Y1,
+                           this->m_share_axes ? &shared_axes.Y.Min : NULL,
+                           this->m_share_axes ? &shared_axes.Y.Max : NULL);
+    for (auto species : Sim->particles) {
+      auto nprtl = species.second.first;
+      auto x1 = species.second.second[0];
+      auto x2 = species.second.second[1];
+      ImPlot::PlotScatter(species.first.c_str(), x1, x2, nprtl);
+    }
+    this->outlineDomain();
+    ImPlot::EndPlot();
+  }
+  if (ImGui::BeginPopupContextItem("popup")) {
+    ImGui::BeginGroup();
+    {
+      ImGui::Checkbox("link axes", &this->m_share_axes);
+      ImGui::Separator();
+      if (this->close(65)) { return true; }
+    }
+    ImGui::EndGroup();
+    ImGui::EndPopup();
+  }
+  return false;
 }
 
 template <class T>
@@ -306,26 +283,3 @@ template class nttiny::Pcolor2d<double>;
 
 template class nttiny::Scatter2d<float>;
 template class nttiny::Scatter2d<double>;
-
-// ! LEGACY code
-// template <typename T>
-// void Plot::draw(T *x_values, T *y_values, int n, const std::string &label) {
-//   float plot_size = m_plot_size * m_scale;
-//   ImGui::Begin(fmt::format("Plot [{}]", m_ID).c_str());
-//   m_xlabel = "x";
-//   m_ylabel = "y";
-//   scale();
-//   if (ImPlot::BeginPlot("Line Plot", m_xlabel.c_str(), m_ylabel.c_str(),
-//                         ImVec2(plot_size * m_ratio, plot_size))) {
-//     ImPlot::PlotLine(label.c_str(), x_values, y_values, n);
-//     ImPlot::EndPlot();
-//   }
-//   ImGui::End();
-// }
-//
-// template void Plot::draw<int>(int *x_values, int *y_values, int n,
-//                               const std::string &label = std::string());
-// template void Plot::draw<float>(float *x_values, float *y_values, int n,
-//                                 const std::string &label = std::string());
-// template void Plot::draw<double>(double *x_values, double *y_values, int n,
-//                                  const std::string &label = std::string());

@@ -56,7 +56,7 @@ protected:
 public:
   Ax(int id) : m_ID(id) {}
   virtual ~Ax() = default;
-  virtual auto draw() -> bool { return false; }
+  virtual auto draw(ImPlotRect&) -> bool { return false; }
   virtual auto getId() -> int { return -1; }
   virtual auto exportMetadata() -> PlotMetadata { return PlotMetadata(); }
   virtual void importMetadata(const PlotMetadata&){};

@@ -19,9 +19,11 @@ template <class T>
 struct Plot2d : public Ax<T, 2> {
   Plot2d(int id) : Ax<T, 2>(id) {}
   ~Plot2d() override = default;
-  auto close() -> bool;
+  auto close(const int& w = -1) -> bool;
   auto getId() -> int override { return this->m_ID; }
   void outlineDomain();
+
+  bool m_share_axes{true};
 };
 
 template <class T>
@@ -35,7 +37,7 @@ protected:
 public:
   Pcolor2d(int id, T vmin, T vmax) : Plot2d<T>(id), m_vmin(vmin), m_vmax(vmax) {}
   ~Pcolor2d() override = default;
-  auto draw() -> bool override;
+  auto draw(ImPlotRect&) -> bool override;
   auto exportMetadata() -> PlotMetadata override;
   void importMetadata(const PlotMetadata&) override;
 };
@@ -49,7 +51,7 @@ protected:
 public:
   Scatter2d(int id) : Plot2d<T>(id) {}
   ~Scatter2d() override = default;
-  auto draw() -> bool override;
+  auto draw(ImPlotRect&) -> bool override;
   auto exportMetadata() -> PlotMetadata override;
   void importMetadata(const PlotMetadata&) override;
 };

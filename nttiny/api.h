@@ -84,9 +84,8 @@ struct Grid {
 
 template <class T, ushort D>
 struct SimulationAPI {
-  // ui
   std::map<std::string, T*> fields;
-  std::map<std::string, std::array<T*, D>> particles;
+  std::map<std::string, std::pair<int, std::array<T*, D>>> particles;
   Grid<T, D> m_global_grid;
 
   SimulationAPI(const Coord& coord, const std::array<int, D>& size, const ushort& ngh = 2)

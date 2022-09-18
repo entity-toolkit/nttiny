@@ -273,8 +273,32 @@ void Visualization<T, D>::loop() {
   //   ImGui_ImplOpenGL3_CreateFontsTexture();
   // }
 
-  while (!this->m_window->windowShouldClose()) {
+  auto& Sim = this->m_sim;
+  auto& Grid = this->m_sim->m_global_grid;
+  const auto coord = Grid.m_coord;
+  const auto ngh = Grid.m_ngh;
+  const auto sx1 = Grid.m_size[0];
+  const auto sx2 = Grid.m_size[1];
+  auto dx1 = Grid.m_xi[0][1] - Grid.m_xi[0][0];
+  auto x1min = Grid.m_xi[0][0] - ngh * dx1;
+  auto x1max = Grid.m_xi[0][sx1] + ngh * dx1;
+  auto dx2 = Grid.m_xi[1][1] - Grid.m_xi[1][0];
+  auto x2min = Grid.m_xi[1][0] - ngh * dx2;
+  auto x2max = Grid.m_xi[1][sx2] + ngh * dx2;
 
+  if (coord == Coord::Spherical) {
+    this->m_shared_axes.X.Min = 0.0f;
+    this->m_shared_axes.X.Max = (float)x1max;
+    this->m_shared_axes.Y.Min = -(float)x1max;
+    this->m_shared_axes.Y.Max = (float)x1max;
+  } else {
+    this->m_shared_axes.X.Min = (float)x1min;
+    this->m_shared_axes.X.Max = (float)x1max;
+    this->m_shared_axes.Y.Min = (float)x2min;
+    this->m_shared_axes.Y.Max = (float)x2max;
+  }
+
+  while (!this->m_window->windowShouldClose()) {
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -313,9 +337,8 @@ void Visualization<T, D>::loop() {
                                 std::fmin(this->m_plots.size(), 3),
                                 ImVec2(-1, -1));
           for (std::size_t i{0}; i < this->m_plots.size(); ++i) {
-            // auto plot = ;
             ImGui::PushID(i);
-            close_plots.push_back(this->m_plots[i]->draw());
+            close_plots.push_back(this->m_plots[i]->draw(this->m_shared_axes));
             ImGui::PopID();
           }
           ImPlot::EndSubplots();
@@ -343,10 +366,10 @@ void Visualization<T, D>::loop() {
 
       fps_limit = glfwGetTime();
     }
-    
+
     // advance the simulation
     if ((this->m_tps_limit <= 0.0f) || (glfwGetTime() >= tps_limit + 1.0f / this->m_tps_limit)) {
-      this->m_sim->updateData();
+      Sim->updateData();
       tps_limit = glfwGetTime();
     }
   }
