@@ -19,7 +19,7 @@ namespace nttiny {
 
 template <class T>
 auto Plot2d<T>::close() -> bool {
-  if (ImGui::Button("close")) {
+  if (ImGui::Button("delete", ImVec2(-1, 0))) {
     return true;
   } else {
     return false;
@@ -80,7 +80,6 @@ void Plot2d<T>::outlineDomain() {
 
 template <class T>
 auto Pcolor2d<T>::draw() -> bool {
-  bool CLOSE{false};
   auto& Sim = this->m_sim;
   auto& Grid = this->m_sim->m_global_grid;
   const auto coord = Grid.m_coord;
@@ -126,10 +125,11 @@ auto Pcolor2d<T>::draw() -> bool {
     Sim->customAnnotatePcolor2d();
     ImPlot::EndPlot();
   }
-  if (ImGui::BeginPopupContextItem()) {
+  if (ImGui::BeginPopupContextItem("popup")) {
     ImGui::PushItemWidth(65);
     ImGui::BeginGroup();
     {
+      ImGui::PushItemWidth(-1);
       {
         /* ----------------------------- field selector ----------------------------- */
         ImGui::PushID("fld");
@@ -139,7 +139,7 @@ auto Pcolor2d<T>::draw() -> bool {
 
       /* ---------------------------- colormap selector --------------------------- */
       if (ImPlot::ColormapButton(ImPlot::GetColormapName(this->m_cmap),
-                                 ImVec2(5.0f * ImGui::GetFontSize(), 0),
+                                 ImVec2(-1, 0),
                                  this->m_cmap)) {
         this->m_cmap = (this->m_cmap + 1) % ImPlot::GetColormapCount();
       }
@@ -163,6 +163,7 @@ auto Pcolor2d<T>::draw() -> bool {
         ImGui::DragFloat("##", &vmin, 0.01f * std::fabs(vmax - vmin), -FLT_MAX, vmax, "%.3e");
         ImGui::PopID();
       }
+      ImGui::PopItemWidth();
 
       // save rescaled values
       this->m_vmax = (T)vmax;
@@ -180,7 +181,8 @@ auto Pcolor2d<T>::draw() -> bool {
           this->m_vmax = max;
         }
       }
-      CLOSE = this->close();
+      ImGui::Separator();
+      if (this->close()) { return true; }
     }
     ImGui::EndGroup();
     ImGui::PopItemWidth();
@@ -188,7 +190,7 @@ auto Pcolor2d<T>::draw() -> bool {
   }
   ImPlot::PopColormap();
 
-  return CLOSE;
+  return false;
 }
 
 template <class T>
