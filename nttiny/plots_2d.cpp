@@ -4,6 +4,7 @@
 
 #include "implot_heatmap_cart.h"
 #include "implot_heatmap_polar.h"
+#include "icons.h"
 
 #include <plog/Log.h>
 #include <implot.h>
@@ -168,18 +169,17 @@ auto Pcolor2d<T>::draw() -> bool {
       this->m_vmin = (T)vmin;
 
       ImGui::Checkbox("log", &this->m_log);
-      // if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE)) {
-      //   PLOGV_(VISPLOGID) << "Reseting vmin & vmax for Pcolor2d.";
-      //   auto n_elements{sx1 * sx2};
-      //   auto minmax = findMinMax(this->m_sim->fields[field_selected], n_elements, this->m_log);
-      //   this->m_vmin = minmax.first;
-      //   this->m_vmax = minmax.second;
-      //   if (this->m_vmin * this->m_vmax < 0) {
-      //     auto max = std::max(std::abs(this->m_vmax), std::abs(this->m_vmin));
-      //     this->m_vmin = -max;
-      //     this->m_vmax = max;
-      //   }
-      // }
+      ImGui::SameLine();
+      if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE)) {
+        auto minmax = Sim->get_min_max(this->m_field_selected, this->m_log);
+        this->m_vmin = minmax.first;
+        this->m_vmax = minmax.second;
+        if (this->m_vmin * this->m_vmax < 0) {
+          auto max = std::max(std::abs(this->m_vmax), std::abs(this->m_vmin));
+          this->m_vmin = -max;
+          this->m_vmax = max;
+        }
+      }
       CLOSE = this->close();
     }
     ImGui::EndGroup();

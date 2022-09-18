@@ -167,8 +167,8 @@ struct Example2 : public nttiny::SimulationAPI<float, 2> {
 
 auto main() -> int {
   try {
-    // Example1 sim(32, 16);
-    Example2 sim(32, 16, 1.0f, 10.0f);
+    Example1 sim(32, 16);
+    // Example2 sim(32, 16, 1.0f, 10.0f);
     sim.setData();
 
     nttiny::Visualization<float, 2> vis;

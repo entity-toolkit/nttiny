@@ -44,7 +44,7 @@ struct GetterHeatmapPolarRowMaj {
     const int r = idx / Cols;
     const int c = idx % Cols;
     const int idx1 = (Cols - c - 1) * Rows + r;
-    double val = UseLog ? (double)Values[idx1] : (double)(QLOGSCALE(Values[idx1]));
+    double val = !UseLog ? (double)Values[idx1] : (double)(QLOGSCALE(Values[idx1]));
     T rlow{RGrid[r]}, rhigh{RGrid[r + 1]};
     T th1{ThGrid[c]}, th2{ThGrid[c + 1]};
     ArcC arc;
@@ -87,7 +87,7 @@ struct GetterHeatmapPolarColMaj {
     const int r = idx % Cols;
     const int c = idx / Cols;
     const int idx1 = (Rows - r - 1) * Cols + c;
-    double val = UseLog ? (double)Values[idx1] : (double)(QLOGSCALE(Values[idx1]));
+    double val = !UseLog ? (double)Values[idx1] : (double)(QLOGSCALE(Values[idx1]));
     T rlow{RGrid[r]}, rhigh{RGrid[r + 1]};
     T th1{ThGrid[c]}, th2{ThGrid[c + 1]};
     ArcC arc;

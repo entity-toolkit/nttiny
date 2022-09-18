@@ -46,7 +46,7 @@ struct GetterHeatmapCartRowMaj {
         UseLog(use_log) {}
   template <typename I>
   IMPLOT_INLINE RectC operator()(I idx) const {
-    double val = UseLog ? (double)Values[idx] : (double)(QLOGSCALE(Values[idx]));
+    double val = !UseLog ? (double)Values[idx] : (double)(QLOGSCALE(Values[idx]));
     const int r = idx / Cols;
     const int c = idx % Cols;
     const ImPlotPoint p(XRef + HalfSize.x + c * Width, YRef + YDir * (HalfSize.y + r * Height));
@@ -92,7 +92,7 @@ struct GetterHeatmapCartColMaj {
         UseLog(use_log) {}
   template <typename I>
   IMPLOT_INLINE RectC operator()(I idx) const {
-    double val = UseLog ? (double)Values[idx] : (double)(QLOGSCALE(Values[idx]));
+    double val = !UseLog ? (double)Values[idx] : (double)(QLOGSCALE(Values[idx]));
     const int r = idx % Cols;
     const int c = idx / Cols;
     const ImPlotPoint p(XRef + HalfSize.x + c * Width, YRef + YDir * (HalfSize.y + r * Height));

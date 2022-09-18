@@ -4,6 +4,7 @@
 #include "defs.h"
 
 #include <map>
+#include <cmath>
 #include <vector>
 #include <array>
 #include <string>
@@ -69,6 +70,18 @@ struct Grid {
   }
 };
 
+#ifndef SIGN
+#  define SIGN(x) (((x) < 0.0) ? -1.0 : 1.0)
+#endif
+
+#ifndef ABS
+#  define ABS(x) (((x) < 0.0) ? -(x) : (x))
+#endif
+
+#ifndef QLOGSCALE
+#  define QLOGSCALE(x) ((SIGN(x) * powf(ABS(x), 0.25f)))
+#endif
+
 template <class T, ushort D>
 struct SimulationAPI {
   // ui
@@ -122,6 +135,32 @@ struct SimulationAPI {
     auto field_selected = static_cast<std::string>(field_names[field_selected_int]);
     return fields[field_selected];
   }
+  auto get_min_max(const int& field_selected_int, const bool& use_log) -> std::pair<T, T> {
+    auto array = get_selected_field(field_selected_int);
+    T min, max;
+    const auto sx1{m_global_grid.m_size[0]};
+    const auto sx2{m_global_grid.m_size[1]};
+    if (use_log) {
+      min = QLOGSCALE(array[Index(0, 0)]);
+      max = QLOGSCALE(array[Index(0, 0)]);
+    } else {
+      min = array[Index(0, 0)];
+      max = array[Index(0, 0)];
+    }
+    for (int j{0}; j < sx2; ++j) {
+      for (int i{0}; i < sx1; ++i) {
+        T val;
+        if (use_log) {
+          val = QLOGSCALE(array[Index(i, j)]);
+        } else {
+          val = array[Index(i, j)];
+        }
+        if (val < min) { min = val; }
+        if (val > max) { max = val; }
+      }
+    }
+    return {min, max};
+  }
 
   // additional visuals
   virtual void customAnnotatePcolor2d() = 0;
@@ -133,6 +172,11 @@ protected:
   bool m_forward{true};
   int m_jumpover{1};
 };
+
+#undef SIGN
+#undef ABS
+#undef QLOGSCALE
+
 } // namespace nttiny
 
 #endif
