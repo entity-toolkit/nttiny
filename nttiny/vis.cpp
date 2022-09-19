@@ -265,8 +265,8 @@ void Visualization<T, D>::drawMainMenuBar() {
 template <class T, ushort D>
 void Visualization<T, D>::loop() {
   PLOGD_(VISPLOGID) << "Starting Visualization loop.";
-  double fps_limit{glfwGetTime()};
-  double tps_limit{glfwGetTime()};
+  // double global_time{glfwGetTime()};
+  int jumpover_counter{-1};
 
   // float prev_scale = 0.f;
   // float xscale, yscale;
@@ -311,78 +311,74 @@ void Visualization<T, D>::loop() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
 
-    if ((this->m_fps_limit <= 0.0f) || (glfwGetTime() >= fps_limit + 1.0f / this->m_fps_limit)) {
-      this->m_window->processInput();
-      this->processControllerInput();
+    this->m_window->processInput();
+    this->processControllerInput();
 
-      ImGui_ImplOpenGL3_NewFrame();
-      ImGui_ImplGlfw_NewFrame();
-      ImGui::NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 
-      this->drawMainMenuBar();
+    this->drawMainMenuBar();
 
-      std::vector<bool> close_plots;
+    std::vector<bool> close_plots;
 
-      static bool use_work_area = true;
-      static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove
-                                    | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
-      const ImGuiViewport* viewport = ImGui::GetMainViewport();
-      ImGui::SetNextWindowPos(use_work_area ? viewport->WorkPos : viewport->Pos);
-      ImGui::SetNextWindowSize(use_work_area ? viewport->WorkSize : viewport->Size);
-      bool open = true;
+    static bool use_work_area = true;
+    static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove
+                                  | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(use_work_area ? viewport->WorkPos : viewport->Pos);
+    ImGui::SetNextWindowSize(use_work_area ? viewport->WorkSize : viewport->Size);
+    bool open = true;
 
-      if (ImGui::Begin("main dashboard", &open, flags)) {
-        {
-          ImGui::BeginChild("controls", ImVec2(15 * ImGui::GetFontSize(), 0), true);
-          this->drawControls();
-          ImGui::EndChild();
-        }
-        ImGui::SameLine();
-        {
-          ImGui::BeginChild("plots", ImVec2(-1, -1), false);
-          auto rows = std::fmax((int)std::ceil(this->m_plots.size() / 3.0f), 1);
-          auto cols = std::fmin(std::fmax(this->m_plots.size(), 1), 3);
-          if (ImPlot::BeginSubplots(
-                  "##subplots", rows, cols, ImVec2(-1, -1), ImPlotSubplotFlags_None)) {
-            for (std::size_t i{0}; i < this->m_plots.size(); ++i) {
-              ImGui::PushID(i);
-              close_plots.push_back(this->m_plots[i]->draw(this->m_shared_axes));
-              ImGui::PopID();
-            }
-            ImPlot::EndSubplots();
+    if (ImGui::Begin("main dashboard", &open, flags)) {
+      {
+        ImGui::BeginChild("controls", ImVec2(15 * ImGui::GetFontSize(), 0), true);
+        this->drawControls();
+        ImGui::EndChild();
+      }
+      ImGui::SameLine();
+      {
+        ImGui::BeginChild("plots", ImVec2(-1, -1), false);
+        auto rows = std::fmax((int)std::ceil(this->m_plots.size() / 3.0f), 1);
+        auto cols = std::fmin(std::fmax(this->m_plots.size(), 1), 3);
+        if (ImPlot::BeginSubplots(
+                "##subplots", rows, cols, ImVec2(-1, -1), ImPlotSubplotFlags_None)) {
+          for (std::size_t i{0}; i < this->m_plots.size(); ++i) {
+            ImGui::PushID(i);
+            close_plots.push_back(this->m_plots[i]->draw(this->m_shared_axes));
+            ImGui::PopID();
           }
-          ImGui::EndChild();
+          ImPlot::EndSubplots();
         }
+        ImGui::EndChild();
       }
-
-      for (std::size_t i{0}; i < close_plots.size(); ++i) {
-        if (close_plots[i]) {
-          this->m_plots.erase(this->m_plots.begin() + i);
-          close_plots.erase(close_plots.begin() + i);
-          --i;
-        }
-      }
-
-      ImGui::End();
-      ImGui::Render();
-
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
-
-      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-      this->m_window->unuse();
-
-      fps_limit = glfwGetTime();
     }
+
+    for (std::size_t i{0}; i < close_plots.size(); ++i) {
+      if (close_plots[i]) {
+        this->m_plots.erase(this->m_plots.begin() + i);
+        close_plots.erase(close_plots.begin() + i);
+        --i;
+      }
+    }
+
+    ImGui::End();
+    ImGui::Render();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    this->m_window->unuse();
 
     // advance the simulation
-    if ((this->m_tps_limit <= 0.0f) || (glfwGetTime() >= tps_limit + 1.0f / this->m_tps_limit)) {
-      for (int s{0}; s < Sim->get_jumpover(); ++s) {
-        Sim->updateData();
-      }
-      tps_limit = glfwGetTime();
-    }
+    // if ((this->m_tps_limit <= 0.0f) || (glfwGetTime() - global_time >= 1.0f / this->m_tps_limit))
+    // {
+    ++jumpover_counter;
+    Sim->updateData(jumpover_counter < 0 || (jumpover_counter % (Sim->get_jumpover()) == 0));
+    //   global_time = glfwGetTime();
+    // }
   }
 }
 } // namespace nttiny

@@ -85,11 +85,11 @@ ifeq ($(strip ${DEBUG}), y)
 else
 	NTTINY_CFLAGS += $(NTTINY_PREPFLAGS) -O3 -Ofast -DNDEBUG -fPIE
 endif
-NTTINY_WARNFLAGS := -Wall -Wextra -pedantic
+NTTINY_WARNFLAGS := -Wall -Wextra
 NTTINY_CFLAGS := $(NTTINY_WARNFLAGS) $(NTTINY_CFLAGS)
 
 NTTINY_EXTERNAL_INCLUDES := glfw/include implot imgui imgui/backends plog/include KHR toml11 freetype/include
-NTTINY_INC_DIRS := ${NTTINY_ROOT_DIR} $(wildcard ${__SRC_DIR}/**/) ${__EXTERN_DIR} $(addprefix ${__EXTERN_DIR}/,${NTTINY_EXTERNAL_INCLUDES})
+NTTINY_INC_DIRS := ${NTTINY_ROOT_DIR} $(filter %/, $(wildcard ${__SRC_DIR}/**/)) ${__EXTERN_DIR} $(addprefix ${__EXTERN_DIR}/,${NTTINY_EXTERNAL_INCLUDES})
 NTTINY_INCFLAGS := $(addprefix -I,$(NTTINY_INC_DIRS))
 
 NTTINY_LDFLAGS := $(addprefix -L, $(__BUILD_DIR)/lib)

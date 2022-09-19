@@ -41,7 +41,7 @@ struct Example1 : public nttiny::SimulationAPI<float, 2> {
     this->m_time = 0.0;
   }
 
-  void setData() override {
+  void initData() {
     const auto sx1{this->m_global_grid.m_size[0]};
     const auto sx2{this->m_global_grid.m_size[1]};
     const auto ngh{m_global_grid.m_ngh};
@@ -66,8 +66,9 @@ struct Example1 : public nttiny::SimulationAPI<float, 2> {
       }
     }
   }
+  void setData() override {}
   void restart() override {
-    setData();
+    initData();
     this->m_time = 0.0;
     this->m_timestep = 0;
   }
@@ -121,7 +122,7 @@ struct Example2 : public nttiny::SimulationAPI<float, 2> {
     this->m_time = 0.0;
   }
 
-  void setData() override {
+  void initData() {
     const auto sx1{this->m_global_grid.m_size[0]};
     const auto sx2{this->m_global_grid.m_size[1]};
     const auto ngh{m_global_grid.m_ngh};
@@ -146,8 +147,9 @@ struct Example2 : public nttiny::SimulationAPI<float, 2> {
       }
     }
   }
+  void setData() override {}
   void restart() override {
-    setData();
+    initData();
     this->m_time = 0.0;
     this->m_timestep = 0;
   }
@@ -213,7 +215,7 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
     this->m_time = 0.0;
   }
 
-  void setData() override {
+  void initData() {
     const auto sx1{this->m_global_grid.m_size[0]};
     const auto sx2{this->m_global_grid.m_size[1]};
     const auto ngh{m_global_grid.m_ngh};
@@ -250,8 +252,9 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
       }
     }
   }
+  void setData() override {}
   void restart() override {
-    setData();
+    initData();
     this->m_time = 0.0;
     this->m_timestep = 0;
   }
@@ -310,7 +313,7 @@ struct Example4 : public nttiny::SimulationAPI<double, 2> {
     this->m_time = 0.0;
   }
 
-  void setData() override {
+  void initData() {
     const auto sx1{this->m_global_grid.m_size[0]};
     const auto sx2{this->m_global_grid.m_size[1]};
     const auto ngh{m_global_grid.m_ngh};
@@ -349,8 +352,9 @@ struct Example4 : public nttiny::SimulationAPI<double, 2> {
       }
     }
   }
+  void setData() override {}
   void restart() override {
-    setData();
+    initData();
     this->m_time = 0.0;
     this->m_timestep = 0;
   }
@@ -388,7 +392,8 @@ auto main(int argc, char** argv) -> int {
       scale = std::stof(argv[2]);
       std::cout << "Using UI scale: " << scale << std::endl;
     } else {
-      std::cout << "Using default UI scale: " << scale << "\nTo override this setting rerun with `-scale <float>` or `-s <float>`\n";
+      std::cout << "Using default UI scale: " << scale
+                << "\nTo override this setting rerun with `-scale <float>` or `-s <float>`\n";
     }
   }
   try {

@@ -37,7 +37,6 @@ protected:
   std::unique_ptr<Window> m_window;
   int m_win_width, m_win_height;
   bool m_resizable;
-  float m_fps_limit{0.0f};
   float m_tps_limit{0.0f};
   std::vector<std::unique_ptr<Ax<T, D>>> m_plots;
   ImPlotRect m_shared_axes{0, 1, 0, 1};
@@ -47,7 +46,6 @@ public:
   ~Visualization();
   void bindSimulation();
   void bindSimulation(SimulationAPI<T, D>* sim);
-  void setFPSLimit(float fps_limit) { m_fps_limit = fps_limit; }
   void setTPSLimit(float tps_limit) { m_tps_limit = tps_limit; }
 
   void drawMainMenuBar();

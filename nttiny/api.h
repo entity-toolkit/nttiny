@@ -107,7 +107,10 @@ struct SimulationAPI {
   virtual void stepFwd() = 0;
   virtual void stepBwd() = 0;
   virtual void restart() = 0;
-  void updateData() { (!m_paused) ? (m_forward ? stepFwd() : stepBwd()) : void(); }
+  void updateData(const bool& also_set) {
+    (!m_paused) ? (m_forward ? stepFwd() : stepBwd()) : void();
+    (also_set) ? setData() : void();
+  }
 
   // controls
   [[nodiscard]] auto is_paused() const -> bool { return m_paused; }
