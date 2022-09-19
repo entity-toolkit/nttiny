@@ -44,8 +44,11 @@ Visualization<T, D>::Visualization(float scale, int win_width, int win_height, b
   plog::init<VISPLOGID>(max_severity, &m_console_appender);
 
   glfwInit();
-  m_window = std::make_unique<Window>(
-      m_win_width * (int)(scale / 2.0f), m_win_height * (int)(scale / 2.0f), "Nttiny", 0, resizable);
+  m_window = std::make_unique<Window>(m_win_width * (int)(scale / 2.0f),
+                                      m_win_height * (int)(scale / 2.0f),
+                                      "Nttiny",
+                                      0,
+                                      resizable);
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImPlot::CreateContext();
@@ -337,11 +340,10 @@ void Visualization<T, D>::loop() {
         ImGui::SameLine();
         {
           ImGui::BeginChild("plots", ImVec2(-1, -1), false);
-          if (ImPlot::BeginSubplots("##subplots",
-                                    (int)std::ceil(this->m_plots.size() / 3.0f),
-                                    std::fmin(this->m_plots.size(), 3),
-                                    ImVec2(-1, -1),
-                                    ImPlotSubplotFlags_None)) {
+          auto rows = std::fmax((int)std::ceil(this->m_plots.size() / 3.0f), 1);
+          auto cols = std::fmin(std::fmax(this->m_plots.size(), 1), 3);
+          if (ImPlot::BeginSubplots(
+                  "##subplots", rows, cols, ImVec2(-1, -1), ImPlotSubplotFlags_None)) {
             for (std::size_t i{0}; i < this->m_plots.size(); ++i) {
               ImGui::PushID(i);
               close_plots.push_back(this->m_plots[i]->draw(this->m_shared_axes));
