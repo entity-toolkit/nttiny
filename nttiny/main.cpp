@@ -39,6 +39,7 @@ struct Example1 : public nttiny::SimulationAPI<float, 2> {
     this->fields.insert({"yy", new float[nx1 * nx2]});
     this->m_timestep = 0;
     this->m_time = 0.0;
+    initData();
   }
 
   void initData() {
@@ -120,6 +121,7 @@ struct Example2 : public nttiny::SimulationAPI<float, 2> {
     this->fields.insert({"theta", new float[nx1 * nx2]});
     this->m_timestep = 0;
     this->m_time = 0.0;
+    initData();
   }
 
   void initData() {
@@ -213,6 +215,7 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
 
     this->m_timestep = 0;
     this->m_time = 0.0;
+    initData();
   }
 
   void initData() {
@@ -311,6 +314,7 @@ struct Example4 : public nttiny::SimulationAPI<double, 2> {
 
     this->m_timestep = 0;
     this->m_time = 0.0;
+    initData();
   }
 
   void initData() {

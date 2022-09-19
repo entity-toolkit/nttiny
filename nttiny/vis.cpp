@@ -36,7 +36,7 @@ Visualization<T, D>::Visualization(float scale, int win_width, int win_height, b
   plog::Severity max_severity;
 #ifdef VERBOSE
   max_severity = plog::verbose;
-#elif DEBUG
+#elif defined(DEBUG)
   max_severity = plog::debug;
 #else
   max_severity = plog::warning;
@@ -47,7 +47,7 @@ Visualization<T, D>::Visualization(float scale, int win_width, int win_height, b
   m_window = std::make_unique<Window>(m_win_width * (int)(scale / 2.0f),
                                       m_win_height * (int)(scale / 2.0f),
                                       "Nttiny",
-                                      0,
+                                      1,
                                       resizable);
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -56,7 +56,7 @@ Visualization<T, D>::Visualization(float scale, int win_width, int win_height, b
   SetupStyle(scale);
 
   ImGui_ImplGlfw_InitForOpenGL(m_window->get_window(), true);
-  ImGui_ImplOpenGL3_Init("#version 300 es");
+  ImGui_ImplOpenGL3_Init(m_window->get_glsl_version());
 }
 
 template <class T, ushort D>
@@ -66,6 +66,7 @@ Visualization<T, D>::~Visualization() {
   ImGui_ImplGlfw_Shutdown();
   ImPlot::DestroyContext();
   ImGui::DestroyContext();
+  glfwDestroyWindow(m_window->get_window());
   glfwTerminate();
 }
 
@@ -265,7 +266,6 @@ void Visualization<T, D>::drawMainMenuBar() {
 template <class T, ushort D>
 void Visualization<T, D>::loop() {
   PLOGD_(VISPLOGID) << "Starting Visualization loop.";
-  // double global_time{glfwGetTime()};
   int jumpover_counter{-1};
 
   // float prev_scale = 0.f;
@@ -307,12 +307,9 @@ void Visualization<T, D>::loop() {
   }
 
   while (!this->m_window->windowShouldClose()) {
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-
     this->m_window->processInput();
     this->processControllerInput();
+    glfwPollEvents();
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -372,13 +369,8 @@ void Visualization<T, D>::loop() {
 
     this->m_window->unuse();
 
-    // advance the simulation
-    // if ((this->m_tps_limit <= 0.0f) || (glfwGetTime() - global_time >= 1.0f / this->m_tps_limit))
-    // {
     ++jumpover_counter;
     Sim->updateData(jumpover_counter < 0 || (jumpover_counter % (Sim->get_jumpover()) == 0));
-    //   global_time = glfwGetTime();
-    // }
   }
 }
 } // namespace nttiny
