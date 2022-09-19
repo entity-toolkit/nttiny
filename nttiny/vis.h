@@ -50,7 +50,6 @@ public:
   void setFPSLimit(float fps_limit) { m_fps_limit = fps_limit; }
   void setTPSLimit(float tps_limit) { m_tps_limit = tps_limit; }
 
-  void initStyle();
   void drawMainMenuBar();
   void drawControls();
   void processControllerInput();

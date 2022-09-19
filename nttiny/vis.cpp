@@ -331,18 +331,20 @@ void Visualization<T, D>::loop() {
         }
         ImGui::SameLine();
         {
-          ImGui::BeginGroup();
-          ImPlot::BeginSubplots("##subplots",
-                                (int)std::ceil(this->m_plots.size() / 3.0f),
-                                std::fmin(this->m_plots.size(), 3),
-                                ImVec2(-1, -1));
-          for (std::size_t i{0}; i < this->m_plots.size(); ++i) {
-            ImGui::PushID(i);
-            close_plots.push_back(this->m_plots[i]->draw(this->m_shared_axes));
-            ImGui::PopID();
+          ImGui::BeginChild("plots", ImVec2(-1, -1), false);
+          if (ImPlot::BeginSubplots("##subplots",
+                                    (int)std::ceil(this->m_plots.size() / 3.0f),
+                                    std::fmin(this->m_plots.size(), 3),
+                                    ImVec2(-1, -1),
+                                    ImPlotSubplotFlags_None)) {
+            for (std::size_t i{0}; i < this->m_plots.size(); ++i) {
+              ImGui::PushID(i);
+              close_plots.push_back(this->m_plots[i]->draw(this->m_shared_axes));
+              ImGui::PopID();
+            }
+            ImPlot::EndSubplots();
           }
-          ImPlot::EndSubplots();
-          ImGui::EndGroup();
+          ImGui::EndChild();
         }
       }
 
@@ -369,7 +371,9 @@ void Visualization<T, D>::loop() {
 
     // advance the simulation
     if ((this->m_tps_limit <= 0.0f) || (glfwGetTime() >= tps_limit + 1.0f / this->m_tps_limit)) {
-      Sim->updateData();
+      for (int s{0}; s < Sim->get_jumpover(); ++s) {
+        Sim->updateData();
+      }
       tps_limit = glfwGetTime();
     }
   }
