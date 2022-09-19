@@ -8,6 +8,7 @@ bin/
 lib/
 run.sh
 imgui.ini
+nttiny.toml
 
 *.ipynb
 __pycache__
@@ -15,4 +16,3 @@ __pycache__
 *.cson
 
 *.swp
-*.toml

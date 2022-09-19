@@ -114,13 +114,20 @@ nttiny_help:
 	@echo "   DEBUG={y|n}             : enable/disable debug mode [default: n]"
 	@echo "   VERBOSE={y|n}           : enable/disable verbose compilation/run mode [default: n]"
 	@echo "   COMPILER={g++|clang++}  : choose the compiler [default: g++]"
-	@echo "   COMPILE_GLFW={y|n}" 	  : compile glfw3 or use system default"
-	@echo "   COMPILE_FREETYPE={y|n}" : use freetype for font rasterization"
+	@echo "   COMPILE_GLFW={y|n}      : compile glfw3 or use system default [default: y]"
+	@echo "   COMPILE_FREETYPE={y|n}  : use freetype for font rasterization [default: y]"
 	@echo
-	@echo "cleanup: \`make nttiny_clean\` or \`make nttiny_cleanlib\`"
+	@echo "cleanup: \`make nttiny_cleanall\`"
+	@echo "   also: \`make nttiny_clean\` to clean just the \`nttiny\`"
+	@echo "         \`make nttiny_cleanlib\` to clean just the compiled libraries"
 	@echo
 	@echo "to build a static library:"
 	@echo "   \`make nttiny_static\`"
+	@echo 
+	@echo "exported variables to use when including nttiny:"
+	@echo '    $${NTTINY_INCFLAGS}'
+	@echo '    $${NTTINY_LINKFLAGS}'
+	@echo '    $${NTTINY_LIBS}'
 
 nttiny : ${FREETYPE_TARGET} ${GLFW_TARGET} ${__TARGET}
 
@@ -178,6 +185,8 @@ nttiny_cleanlib:
 	rm -rf ${__BUILD_DIR}/lib
 	rm -rf ${__EXTERN_DIR}/freetype/build
 
+nttiny_cleanall : nttiny_clean nttiny_cleanlib
+
 -include $(NTTINY_DEPS_CXX) $(NTTINY_DLIBS_CXX)
 
 NTTINY_LINKFLAGS := $(NTTINY_LDFLAGS) $(addprefix -L, ${__BUILD_DIR}) $(addprefix -l, nttiny)
@@ -189,6 +198,8 @@ endif
 ifeq (${COMPILE_FREETYPE}, y)
 	NTTINY_LIBS += ${__BUILD_DIR}/lib/libfreetype.a
 endif
+
+.PHONY: nttiny nttiny_static nttiny_clean nttiny_cleanall nttiny_cleanlib glfw3 freetype
 
 # exported variables to use in the upstream:
 # . . . ${NTTINY_INCFLAGS}

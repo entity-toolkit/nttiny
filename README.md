@@ -1,6 +1,6 @@
-# `nttiny v0.5.2`
+# `nttiny`
 
-OpenGL-based interactive plotting library.
+OpenGL-based interactive plotting library for scientific computing.
 
 ```shell
 git clone --recursive git@github.com:haykh/nttiny.git
@@ -10,13 +10,15 @@ git submodule update --remote
 
 ## Compilation
 
-Compile an example code as a standalone application with the `make nttiny [OPTIONS]` command. To see the help menu with all the options type `make`.
+Compile an example code as a standalone application with the `make nttiny -j [OPTIONS]` command. To see the help menu with all the options type `make`.
 
 To build a static library simply run `make nttiny_static [OPTIONS]`.
 
 ## Usage
 
-File `src/main.cpp` contains an example usage of the `nttiny` as a standalone app. In most of the scenarios, however, you would need to build and use `nttiny` as a static library. To do that simply include `nttiny/Makefile` in your project's Makefile, add a dependency of your desired target on `nttiny_static`, and use `NTTINY_LINKFLAGS` and `NTTINY_INCFLAGS` for linking/compilation. A typical Makefile would look something like this:
+File `src/main.cpp` contains the most comprehensive examples on how to address the `nttiny`. To compile the examples simply run `make nttiny -j`. Provided that all the dependencies are satisfied, the executable `nttiny.example` will be created in the `bin` directory.
+
+To use `nttiny` as a plotting tool for your code you would need to build and use `nttiny` as a static library. To do that simply include `nttiny/Makefile` in your project's Makefile, add a dependency of your desired target on `nttiny_static`, and use `NTTINY_LINKFLAGS` and `NTTINY_INCFLAGS` for linking/compilation. A typical Makefile would look something like this:
 
 ```Makefile
 all: nttiny_static myapp
@@ -31,8 +33,19 @@ myapp : $(OBJS)
 include extern/nttiny/Makefile
 ```
 
+> Alternatively you could simply compile `nttiny` as a static library (`make nttiny_static -j`) and link the generated file to your project.
+
 ## Releases
 
+* `v0.6.0` [Sep 2022]:
+  - better plot layouts
+  - linked axes
+  - easier API access (see `main.cpp` for usage examples)
+  - ghost cell support
+  - icons + custom font support
+  - now using implot main branch
+  - bump implot version to v0.14
+  - minor bugs + code restructure
 * `v0.5.2` [Apr 2022]:
   - timestep jumpover to skip rendering certain number of steps (faster)
 * `v0.5.1` [Mar 2022]:
@@ -42,12 +55,41 @@ include extern/nttiny/Makefile
 
 ## To-do
 
+- [ ] particle selection
+- [ ] custom colormaps
 - [x] save/load states
 - [x] timestep jumpover
 - [ ] hidpi support
 - [ ] user-specific outlining
-- [ ] subplots & linked axes
-- [ ] resizing of plots
+- [x] subplots & linked axes
+- [x] resizing of plots
+
+## Compile commands
+
+Type `nttiny_help` to see the list of available commands.
+
+```shell
+usage: `make nttiny [OPTIONS]`
+
+options:
+   DEBUG={y|n}             : enable/disable debug mode [default: n]
+   VERBOSE={y|n}           : enable/disable verbose compilation/run mode [default: n]
+   COMPILER={g++|clang++}  : choose the compiler [default: g++]
+   COMPILE_GLFW={y|n}      : compile glfw3 or use system default [default: y]
+   COMPILE_FREETYPE={y|n}  : use freetype for font rasterization [default: y]
+
+cleanup: `make nttiny_cleanall`
+   also: `make nttiny_clean` to clean just the `nttiny`
+         `make nttiny_cleanlib` to clean just the compiled libraries
+
+to build a static library:
+   `make nttiny_static`
+
+exported variables to use when including nttiny:
+    ${NTTINY_INCFLAGS}
+    ${NTTINY_LINKFLAGS}
+    ${NTTINY_LIBS}
+```
 
 ---
 
