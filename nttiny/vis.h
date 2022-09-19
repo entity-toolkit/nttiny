@@ -43,7 +43,7 @@ protected:
   ImPlotRect m_shared_axes{0, 1, 0, 1};
 
 public:
-  Visualization(int win_width = 1280, int win_height = 720, bool resizable = true);
+  Visualization(float scale, int win_width = 1280, int win_height = 720, bool resizable = true);
   ~Visualization();
   void bindSimulation();
   void bindSimulation(SimulationAPI<T, D>* sim);

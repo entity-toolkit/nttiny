@@ -31,7 +31,7 @@
 namespace nttiny {
 
 template <class T, ushort D>
-Visualization<T, D>::Visualization(int win_width, int win_height, bool resizable)
+Visualization<T, D>::Visualization(float scale, int win_width, int win_height, bool resizable)
     : m_win_width(win_width), m_win_height(win_height), m_resizable(resizable) {
   plog::Severity max_severity;
 #ifdef VERBOSE
@@ -44,15 +44,16 @@ Visualization<T, D>::Visualization(int win_width, int win_height, bool resizable
   plog::init<VISPLOGID>(max_severity, &m_console_appender);
 
   glfwInit();
-  m_window = std::make_unique<Window>(m_win_width, m_win_height, "Nttiny", 0, resizable);
+  m_window = std::make_unique<Window>(
+      m_win_width * (int)(scale / 2.0f), m_win_height * (int)(scale / 2.0f), "Nttiny", 0, resizable);
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImPlot::CreateContext();
 
-  SetupStyle();
+  SetupStyle(scale);
 
   ImGui_ImplGlfw_InitForOpenGL(m_window->get_window(), true);
-  ImGui_ImplOpenGL3_Init("#version 150");
+  ImGui_ImplOpenGL3_Init("#version 300 es");
 }
 
 template <class T, ushort D>
@@ -106,7 +107,8 @@ void Visualization<T, D>::drawControls() {
   {
     /* ------------------------------ step backward ----------------------------- */
     ImGui::PushButtonRepeat(true);
-    if (ImGui::Button(ICON_FA_BACKWARD_STEP, ImVec2(20, 25))) {
+    if (ImGui::Button(ICON_FA_BACKWARD_STEP,
+                      ImVec2(1 * ImGui::GetFontSize(), 2 * ImGui::GetFontSize()))) {
       this->m_sim->stepBwd();
       if (!this->m_sim->is_paused()) { m_sim->playToggle(); }
     }
@@ -114,22 +116,25 @@ void Visualization<T, D>::drawControls() {
 
     /* ------------------------------- play/pause ------------------------------- */
     ImGui::SameLine();
-    if (ImGui::Button(this->m_sim->is_paused() ? ICON_FA_PLAY : ICON_FA_PAUSE, ImVec2(25, 25))) {
+    if (ImGui::Button(this->m_sim->is_paused() ? ICON_FA_PLAY : ICON_FA_PAUSE,
+                      ImVec2(2 * ImGui::GetFontSize(), 2 * ImGui::GetFontSize()))) {
       this->m_sim->playToggle();
     }
 
     /* ------------------------------ step forward ------------------------------ */
     ImGui::SameLine();
     ImGui::PushButtonRepeat(true);
-    if (ImGui::Button(ICON_FA_FORWARD_STEP, ImVec2(20, 25))) {
+    if (ImGui::Button(ICON_FA_FORWARD_STEP,
+                      ImVec2(1 * ImGui::GetFontSize(), 2 * ImGui::GetFontSize()))) {
       this->m_sim->stepFwd();
       if (!this->m_sim->is_paused()) { this->m_sim->playToggle(); }
     }
     ImGui::PopButtonRepeat();
 
     /* --------------------------------- restart -------------------------------- */
-    ImGui::SameLine(ImGui::GetWindowWidth() - 25);
-    if (ImGui::Button(ICON_FA_ARROW_ROTATE_LEFT, ImVec2(25, 25))) {
+    ImGui::SameLine(ImGui::GetWindowWidth() - 2 * ImGui::GetFontSize());
+    if (ImGui::Button(ICON_FA_ARROW_ROTATE_LEFT,
+                      ImVec2(2 * ImGui::GetFontSize(), 2 * ImGui::GetFontSize()))) {
       if (!this->m_sim->is_paused()) { m_sim->playToggle(); }
       this->m_sim->restart();
     }
@@ -138,7 +143,7 @@ void Visualization<T, D>::drawControls() {
     int dir = this->m_sim->is_forward() ? 1 : 0;
     const char* directions[2] = {ICON_FA_BACKWARD, ICON_FA_FORWARD};
     const char* direction = directions[dir];
-    ImGui::SetNextItemWidth(35);
+    ImGui::SetNextItemWidth(4 * ImGui::GetFontSize());
     ImGui::SliderInt("##direction", &dir, 0, 1, direction);
     if (this->m_sim->is_forward() != static_cast<bool>(dir == 1)) { this->m_sim->reverse(); }
 
@@ -325,7 +330,7 @@ void Visualization<T, D>::loop() {
 
       if (ImGui::Begin("main dashboard", &open, flags)) {
         {
-          ImGui::BeginChild("controls", ImVec2(150, 0), true);
+          ImGui::BeginChild("controls", ImVec2(15 * ImGui::GetFontSize(), 0), true);
           this->drawControls();
           ImGui::EndChild();
         }

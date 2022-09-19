@@ -65,10 +65,36 @@ void Colors_Dark() {
   style.GrabRounding = style.FrameRounding = 2.3f;
 }
 
-void SetupStyle() {
+void SetupStyle(const float& scale) {
   ImGuiIO& io = ImGui::GetIO();
   io.ConfigFlags |= ImGuiConfigFlags_None;
 
+  try {
+    ImFontConfig icons_config;
+    ImGui::GetIO().Fonts->Clear();
+    // ImFontConfig font_config;
+    // font_config.SizePixels = 8.0f * scale;
+    // ImGui::GetIO().Fonts->AddFontDefault(&font_config);
+    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
+        JetBrains_compressed_data, JetBrains_compressed_size, 8.0f * scale);
+    icons_config.MergeMode = true;
+    icons_config.PixelSnapH = true;
+    static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(faRegular_compressed_data,
+                                                         faRegular_compressed_size,
+                                                         6.0f * scale,
+                                                         &icons_config,
+                                                         icons_ranges);
+    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(faSolid_compressed_data,
+                                                         faSolid_compressed_size,
+                                                         6.0f * scale,
+                                                         &icons_config,
+                                                         icons_ranges);
+    ImGui::GetIO().Fonts->Build();
+  }
+  catch (std::runtime_error& e) {
+    PLOGW << "Warning: " << e.what();
+  }
   Colors_Dark();
   auto& style = ImGui::GetStyle();
   style.WindowRounding = 0.0f;
@@ -83,25 +109,7 @@ void SetupStyle() {
   style.AntiAliasedLines = true;
   style.AntiAliasedFill = true;
 
-  try {
-    ImFontConfig icons_config;
-    ImGui::GetIO().Fonts->Clear();
-    ImGui::GetIO().Fonts->AddFontDefault();
-    // ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
-    //     JetBrains_compressed_data, JetBrains_compressed_size, 14.0f);
-    icons_config.MergeMode = true;
-    icons_config.PixelSnapH = true;
-    static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
-    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
-        faRegular_compressed_data, faRegular_compressed_size, 8.0f, &icons_config, icons_ranges);
-    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
-        faSolid_compressed_data, faSolid_compressed_size, 8.0f, &icons_config, icons_ranges);
-    ImGui::GetIO().FontGlobalScale = 1.0f;
-    ImGui::GetIO().Fonts->Build();
-  }
-  catch (std::runtime_error& e) {
-    PLOGW << "Warning: " << e.what();
-  }
+  style.ScaleAllSizes(scale / 2.0f);
 }
 
 #endif

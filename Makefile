@@ -49,9 +49,16 @@ NTTINY_OS := $(shell uname -s | tr A-Z a-z)
 ifeq (${NTTINY_OS}, darwin)
 	NTTINY_FRAMEWORKS := Cocoa OpenGL IOKit
 else ifeq (${NTTINY_OS}, linux)
-	NTTINY_LIBRARIES := $(NTTINY_LIBRARIES) GL X11 pthread Xrandr Xi dl
+	NTTINY_LIBRARIES += GL X11 pthread Xrandr Xi dl
 else
-	$(error Unrecognized operating system. Unable to set frameworks.)
+	COMPILE_GLFW := n
+	COMPILE_FREETYPE := n
+	NTTINY_OS := windows
+	NTTINY_LIBRARIES := glfw3 gdi32 opengl32 imm32
+	NTTINY_CFLAGS := `pkg-config --cflags glfw3`
+	IMGUI_FREETYPE_FLAG :=
+	GLFW_TARGET :=
+	FREETYPE_TARGET :=
 endif
 
 VERBOSE ?= n
@@ -74,15 +81,15 @@ NTTINY_LINK := ${NTTINY_CXX}
 NTTINY_CXXSTANDARD := -std=c++17
 NTTINY_CXX := ${NTTINY_CXX} ${NTTINY_CXXSTANDARD}
 ifeq ($(strip ${DEBUG}), y)
-	NTTINY_CFLAGS := $(NTTINY_PREPFLAGS) -O0 -g -DDEBUG -fPIE
+	NTTINY_CFLAGS += $(NTTINY_PREPFLAGS) -O0 -g -DDEBUG -fPIE
 else
-	NTTINY_CFLAGS := $(NTTINY_PREPFLAGS) -O3 -Ofast -DNDEBUG -fPIE
+	NTTINY_CFLAGS += $(NTTINY_PREPFLAGS) -O3 -Ofast -DNDEBUG -fPIE
 endif
 NTTINY_WARNFLAGS := -Wall -Wextra -pedantic
 NTTINY_CFLAGS := $(NTTINY_WARNFLAGS) $(NTTINY_CFLAGS)
 
 NTTINY_EXTERNAL_INCLUDES := glfw/include implot imgui imgui/backends plog/include KHR toml11 freetype/include
-NTTINY_INC_DIRS := ${NTTINY_ROOT_DIR} $(shell find ${__SRC_DIR} -type d) ${__EXTERN_DIR} $(addprefix ${__EXTERN_DIR}/,${NTTINY_EXTERNAL_INCLUDES})
+NTTINY_INC_DIRS := ${NTTINY_ROOT_DIR} $(wildcard ${__SRC_DIR}/**/) ${__EXTERN_DIR} $(addprefix ${__EXTERN_DIR}/,${NTTINY_EXTERNAL_INCLUDES})
 NTTINY_INCFLAGS := $(addprefix -I,$(NTTINY_INC_DIRS))
 
 NTTINY_LDFLAGS := $(addprefix -L, $(__BUILD_DIR)/lib)
@@ -91,7 +98,10 @@ NTTINY_LDFLAGS := $(NTTINY_LDFLAGS) $(addprefix -framework , $(NTTINY_FRAMEWORKS
 
 # # # # # File collection # # # # # # # # # # #
 #
-NTTINY_SRCS_CXX := $(shell find ${__SRC_DIR} -name \*.cpp -or -name \*.c)
+NTTINY_SRCS_CXX := $(wildcard ${__SRC_DIR}/*.cpp) $(wildcard ${__SRC_DIR}/**/*.cpp)
+ifeq (${COMPILE_FREETYPE},n)
+	NTTINY_SRCS_CXX := $(filter-out ${__SRC_DIR}/assets/imgui_freetype.cpp, ${NTTINY_SRCS_CXX})
+endif
 NTTINY_OBJS_CXX := $(subst ${__SRC_DIR},${__BUILD_DIR},$(NTTINY_SRCS_CXX:%=%.o))
 NTTINY_DEPS_CXX := $(NTTINY_OBJS_CXX:.o=.d)
 
@@ -116,6 +126,8 @@ nttiny_help:
 	@echo "   COMPILER={g++|clang++}  : choose the compiler [default: g++]"
 	@echo "   COMPILE_GLFW={y|n}      : compile glfw3 or use system default [default: y]"
 	@echo "   COMPILE_FREETYPE={y|n}  : use freetype for font rasterization [default: y]"
+	@echo
+	@echo "note: windows compilation disables COMPILE_GLFW and COMPILE_FREETYPE"
 	@echo
 	@echo "cleanup: \`make nttiny_cleanall\`"
 	@echo "   also: \`make nttiny_clean\` to clean just the \`nttiny\`"
@@ -176,9 +188,8 @@ ${__EXTERN_DIR}/freetype/build/libfreetype.a :
 	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/freetype && cmake -B build $(FREETYPE_SETTINGS) && cd build && $(MAKE) -j `ncores`
 
 nttiny_clean:
-	find ${__BUILD_DIR} -mindepth 1 -name lib -prune -o -exec rm -rf {} +
+	rm -rf ${__BUILD_DIR}/*.o ${__BUILD_DIR}/*.d $(filter-out ${__BUILD_DIR}/lib/, $(wildcard ${__BUILD_DIR}/**/))
 	rm -rf ${__BIN_DIR}
-
 
 nttiny_cleanlib:
 	rm -rf ${__EXTERN_DIR}/glfw/build

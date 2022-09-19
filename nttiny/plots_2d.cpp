@@ -126,7 +126,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
     ImPlot::EndPlot();
   }
   if (ImGui::BeginPopupContextItem("popup")) {
-    ImGui::PushItemWidth(65);
+    ImGui::PushItemWidth(8 * ImGui::GetFontSize());
     ImGui::BeginGroup();
     {
       ImGui::PushItemWidth(-1);
@@ -235,7 +235,7 @@ auto Scatter2d<T>::draw(ImPlotRect& shared_axes) -> bool {
     {
       ImGui::Checkbox("link axes", &this->m_share_axes);
       ImGui::Separator();
-      if (this->close(65)) { return true; }
+      if (this->close(8 * ImGui::GetFontSize())) { return true; }
     }
     ImGui::EndGroup();
     ImGui::EndPopup();

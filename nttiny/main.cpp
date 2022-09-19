@@ -381,7 +381,16 @@ struct Example4 : public nttiny::SimulationAPI<double, 2> {
   void customAnnotatePcolor2d() override {}
 };
 
-auto main() -> int {
+auto main(int argc, char** argv) -> int {
+  float scale = 4.0f;
+  if (argc == 3) {
+    if (std::string(argv[1]) == "-scale" || std::string(argv[1]) == "-s") {
+      scale = std::stof(argv[2]);
+      std::cout << "Using UI scale: " << scale << std::endl;
+    } else {
+      std::cout << "Using default UI scale: " << scale << "\nTo override this setting rerun with `-scale <float>` or `-s <float>`\n";
+    }
+  }
   try {
     // Example1 sim(32, 16);
     // Example2 sim(32, 16, 1.0f, 10.0f);
@@ -389,7 +398,7 @@ auto main() -> int {
     Example4 sim(256, 128);
     sim.setData();
 
-    nttiny::Visualization<double, 2> vis;
+    nttiny::Visualization<double, 2> vis{scale};
     vis.setTPSLimit(30.0f);
     vis.bindSimulation(&sim);
     vis.loop();

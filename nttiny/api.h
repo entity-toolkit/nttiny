@@ -16,10 +16,10 @@ namespace nttiny {
 
 enum class Coord { Cartesian, Spherical };
 
-void drawCircle(const point_t& center,
-                const float& radius,
-                const point_t& phi_range = {0.0f, 2.0f * M_PI},
-                const int& resolution = 128);
+// void drawCircle(const point_t& center,
+//                 const float& radius,
+//                 const point_t& phi_range = {0.0f, 2.0f * M_PI},
+//                 const int& resolution = 128);
 
 template <class T, ushort D>
 struct Grid {

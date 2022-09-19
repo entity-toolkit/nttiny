@@ -37,6 +37,10 @@ include extern/nttiny/Makefile
 
 ## Releases
 
+* `v0.6.1` [Sep 2022]:
+  - windows support
+  - hidpi support using scales (see `main.cpp` for usage)
+  - minor bug fixes in Makefile
 * `v0.6.0` [Sep 2022]:
   - better plot layouts
   - linked axes
@@ -57,10 +61,10 @@ include extern/nttiny/Makefile
 
 - [ ] particle selection
 - [ ] custom colormaps
+- [ ] user-specific outlining
 - [x] save/load states
 - [x] timestep jumpover
-- [ ] hidpi support
-- [ ] user-specific outlining
+- [x] hidpi support
 - [x] subplots & linked axes
 - [x] resizing of plots
 
