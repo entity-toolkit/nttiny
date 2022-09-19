@@ -1,8 +1,8 @@
 version: "3"
 services:
-  entity:
-    image: entity
-    container_name: nt2
+  nttiny:
+    image: nttiny
+    container_name: nttiny
     build:
       context: .
       args:
@@ -10,4 +10,4 @@ services:
     volumes:
       - type: bind
         source: ../
-        target: /home/$USER/entity
+        target: /home/$USER/nttiny
