@@ -114,6 +114,7 @@ void Visualization<T, D>::drawControls() {
     if (ImGui::Button(ICON_FA_BACKWARD_STEP,
                       ImVec2(1 * ImGui::GetFontSize(), 2 * ImGui::GetFontSize()))) {
       this->m_sim->stepBwd();
+      this->m_sim->m_set_after_update = true;
       if (!this->m_sim->is_paused()) { m_sim->playToggle(); }
     }
     ImGui::PopButtonRepeat();
@@ -131,6 +132,7 @@ void Visualization<T, D>::drawControls() {
     if (ImGui::Button(ICON_FA_FORWARD_STEP,
                       ImVec2(1 * ImGui::GetFontSize(), 2 * ImGui::GetFontSize()))) {
       this->m_sim->stepFwd();
+      this->m_sim->m_set_after_update = true;
       if (!this->m_sim->is_paused()) { this->m_sim->playToggle(); }
     }
     ImGui::PopButtonRepeat();
@@ -181,9 +183,11 @@ void Visualization<T, D>::processControllerInput() {
 
   if (glfwGetKey(this->m_window->get_window(), GLFW_KEY_LEFT) == GLFW_PRESS) {
     this->m_sim->stepBwd();
+    this->m_sim->m_set_after_update = true;
   }
   if (glfwGetKey(this->m_window->get_window(), GLFW_KEY_RIGHT) == GLFW_PRESS) {
     this->m_sim->stepFwd();
+    this->m_sim->m_set_after_update = true;
   }
 
   static bool pressing_left = false;
@@ -191,6 +195,7 @@ void Visualization<T, D>::processControllerInput() {
   if (glfwGetKey(this->m_window->get_window(), GLFW_KEY_COMMA) == GLFW_RELEASE && (pressing_left)) {
     pressing_left = false;
     this->m_sim->stepBwd();
+    this->m_sim->m_set_after_update = true;
   }
   static bool pressing_right = false;
   if (glfwGetKey(this->m_window->get_window(), GLFW_KEY_PERIOD) == GLFW_PRESS) {
@@ -200,6 +205,7 @@ void Visualization<T, D>::processControllerInput() {
       && (pressing_right)) {
     pressing_right = false;
     this->m_sim->stepFwd();
+    this->m_sim->m_set_after_update = true;
   }
 }
 
