@@ -313,9 +313,6 @@ void Visualization<T, D>::loop() {
   }
 
   while (!this->m_window->windowShouldClose()) {
-    ++jumpover_counter;
-    Sim->updateData(jumpover_counter < 0 || (jumpover_counter % (Sim->get_jumpover()) == 0));
-
     this->m_window->processInput();
     this->processControllerInput();
     glfwPollEvents();
@@ -323,6 +320,9 @@ void Visualization<T, D>::loop() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    ++jumpover_counter;
+    Sim->updateData(jumpover_counter < 0 || (jumpover_counter % (Sim->get_jumpover()) == 0));
 
     this->drawMainMenuBar();
 
