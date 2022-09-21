@@ -10,8 +10,6 @@
 #include <string>
 #include <utility>
 
-#include <iostream>
-
 namespace nttiny {
 
 enum class Coord { Cartesian, Spherical };

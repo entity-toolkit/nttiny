@@ -4,8 +4,6 @@
 #include <implot.h>
 #include <implot_internal.h>
 
-#include <iostream>
-
 namespace ImPlot {
 
 #ifndef SIGN

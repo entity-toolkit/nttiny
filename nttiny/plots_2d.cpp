@@ -12,7 +12,6 @@
 
 #include <cmath>
 #include <string>
-#include <iostream>
 #include <type_traits>
 
 namespace nttiny {
@@ -82,7 +81,6 @@ void Pcolor2d<T>::rescaleMinMax() {
     this->m_vmin = -max;
     this->m_vmax = max;
   }
-  std::cout << "minmax: " << this->m_vmin << " " << this->m_vmax << std::endl;
 }
 
 template <class T>
