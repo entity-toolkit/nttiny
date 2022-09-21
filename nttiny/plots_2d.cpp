@@ -193,7 +193,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
     ImGui::PopItemWidth();
     ImGui::EndPopup();
   }
-  if (this->m_autoscale && this->m_set_after_update) { this->rescaleMinMax(); }
+  if (this->m_autoscale && Sim->m_set_after_update) { this->rescaleMinMax(); }
   ImPlot::PopColormap();
 
   return false;
