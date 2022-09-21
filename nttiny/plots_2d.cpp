@@ -155,12 +155,13 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
         this->m_cmap = (this->m_cmap + 1) % ImPlot::GetColormapCount();
       }
 
-      float vmin = std::min(this->m_vmin, this->m_vmax);
-      float vmax = std::max(this->m_vmin, this->m_vmax);
-      if (vmin == vmax) {
-        // rescale if values too close
-        vmax = vmin + 1e-10;
-      }
+      // float vmin = std::min(this->m_vmin, this->m_vmax);
+      // float vmax = std::max(this->m_vmin, this->m_vmax);
+      // if (vmin == vmax) {
+      //   // rescale if values too close
+      //   vmax = vmin + 1e-10;
+      // }
+      float vmax, vmin;
 
       {
         /* -------------------------------- colorbar -------------------------------- */
@@ -192,7 +193,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
     ImGui::PopItemWidth();
     ImGui::EndPopup();
   }
-  if (this->m_autoscale) { this->rescaleMinMax(); }
+  if (this->m_autoscale && this->m_set_after_update) { this->rescaleMinMax(); }
   ImPlot::PopColormap();
 
   return false;
