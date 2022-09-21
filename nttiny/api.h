@@ -105,9 +105,7 @@ struct SimulationAPI {
       }
       m_data_changed = true;
     }
-    if (jumpover_set && m_data_changed) {
-      setData();
-    }
+    if (jumpover_set && m_data_changed) { setData(); }
   }
 
   // controls
@@ -144,8 +142,13 @@ struct SimulationAPI {
       for (int i{0}; i < sx1; ++i) {
         T val = array[Index(i, j)];
         if (use_log) { val = (signum(val) * std::pow(std::fabs(val), 0.25f)); }
-        if (val < min) { min = val; }
-        if (val > max) { max = val; }
+        if (i == 0 && j == 0) {
+          min = val;
+          max = val;
+        } else {
+          min = std::min(min, val);
+          max = std::max(max, val);
+        }
       }
     }
     return {min, max};

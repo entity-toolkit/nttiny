@@ -30,7 +30,7 @@ template <class T>
 class Pcolor2d : public Plot2d<T> {
 protected:
   bool m_log{false};
-  bool m_autoscale{true};
+  bool m_autoscale{false};
   T m_vmin, m_vmax;
   ImPlotColormap m_cmap{ImPlotColormap_Jet};
   int m_field_selected{0};
