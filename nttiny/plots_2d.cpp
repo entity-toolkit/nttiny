@@ -73,6 +73,18 @@ void Plot2d<T>::outlineDomain() {
 }
 
 template <class T>
+void Pcolor2d<T>::rescaleMinMax() {
+  auto minmax = this->m_sim->get_min_max(this->m_field_selected, this->m_log);
+  this->m_vmin = minmax.first;
+  this->m_vmax = minmax.second;
+  if (this->m_vmin * this->m_vmax < 0) {
+    auto max = std::max(std::abs(this->m_vmax), std::abs(this->m_vmin));
+    this->m_vmin = -max;
+    this->m_vmax = max;
+  }
+}
+
+template <class T>
 auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
   auto& Sim = this->m_sim;
   auto& Grid = this->m_sim->m_global_grid;
@@ -170,17 +182,9 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
 
       ImGui::Checkbox("log", &this->m_log);
       ImGui::SameLine();
-      if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE)) {
-        auto minmax = Sim->get_min_max(this->m_field_selected, this->m_log);
-        this->m_vmin = minmax.first;
-        this->m_vmax = minmax.second;
-        if (this->m_vmin * this->m_vmax < 0) {
-          auto max = std::max(std::abs(this->m_vmax), std::abs(this->m_vmin));
-          this->m_vmin = -max;
-          this->m_vmax = max;
-        }
-      }
+      if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE)) { this->rescaleMinMax(); }
       ImGui::Checkbox("link axes", &this->m_share_axes);
+      ImGui::Checkbox("autoscale", &this->m_autoscale);
       ImGui::Separator();
       if (this->close()) { return true; }
     }
@@ -188,6 +192,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
     ImGui::PopItemWidth();
     ImGui::EndPopup();
   }
+  if (this->m_autoscale) { this->rescaleMinMax(); }
   ImPlot::PopColormap();
 
   return false;

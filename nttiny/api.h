@@ -150,24 +150,12 @@ struct SimulationAPI {
   }
   auto get_min_max(const int& field_selected_int, const bool& use_log) -> std::pair<T, T> {
     auto array = get_selected_field(field_selected_int);
-    T min, max;
+    T min = (T)(1e20), max = -(T)(1e20);
     const auto sx1{m_global_grid.m_size[0]};
     const auto sx2{m_global_grid.m_size[1]};
-    if (use_log) {
-      min = QLOGSCALE(array[Index(0, 0)]);
-      max = QLOGSCALE(array[Index(0, 0)]);
-    } else {
-      min = array[Index(0, 0)];
-      max = array[Index(0, 0)];
-    }
     for (int j{0}; j < sx2; ++j) {
       for (int i{0}; i < sx1; ++i) {
-        T val;
-        if (use_log) {
-          val = QLOGSCALE(array[Index(i, j)]);
-        } else {
-          val = array[Index(i, j)];
-        }
+        T val = (use_log) ? QLOGSCALE(array[Index(i, j)]) : array[Index(i, j)];
         if (val < min) { min = val; }
         if (val > max) { max = val; }
       }
