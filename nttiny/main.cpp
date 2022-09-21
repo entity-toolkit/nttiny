@@ -403,11 +403,11 @@ auto main(int argc, char** argv) -> int {
   try {
     // Example1 sim(32, 16);
     // Example2 sim(32, 16, 1.0f, 10.0f);
-    // Example3 sim(32, 16, 1.0f, 50.0f);
-    Example4 sim(256, 128);
+    Example3 sim(256, 256, 1.0f, 50.0f);
+    // Example4 sim(256, 128);
     sim.setData();
 
-    nttiny::Visualization<double, 2> vis{scale};
+    nttiny::Visualization<float, 2> vis{scale};
     vis.setTPSLimit(30.0f);
     vis.bindSimulation(&sim);
     vis.loop();

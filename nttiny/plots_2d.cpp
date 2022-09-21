@@ -78,10 +78,11 @@ void Pcolor2d<T>::rescaleMinMax() {
   this->m_vmin = minmax.first;
   this->m_vmax = minmax.second;
   if (this->m_vmin * this->m_vmax < 0) {
-    auto max = std::max(std::abs(this->m_vmax), std::abs(this->m_vmin));
+    auto max = std::max(std::fabs(this->m_vmax), std::fabs(this->m_vmin));
     this->m_vmin = -max;
     this->m_vmax = max;
   }
+  std::cout << "minmax: " << this->m_vmin << " " << this->m_vmax << std::endl;
 }
 
 template <class T>
@@ -155,13 +156,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
         this->m_cmap = (this->m_cmap + 1) % ImPlot::GetColormapCount();
       }
 
-      // float vmin = std::min(this->m_vmin, this->m_vmax);
-      // float vmax = std::max(this->m_vmin, this->m_vmax);
-      // if (vmin == vmax) {
-      //   // rescale if values too close
-      //   vmax = vmin + 1e-10;
-      // }
-      float vmax, vmin;
+      float vmax = this->m_vmax, vmin = this->m_vmin;
 
       {
         /* -------------------------------- colorbar -------------------------------- */
@@ -193,7 +188,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
     ImGui::PopItemWidth();
     ImGui::EndPopup();
   }
-  if (this->m_autoscale && Sim->m_set_after_update) { this->rescaleMinMax(); }
+  if (this->m_autoscale && Sim->m_data_changed) { this->rescaleMinMax(); }
   ImPlot::PopColormap();
 
   return false;

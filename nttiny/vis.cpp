@@ -114,7 +114,7 @@ void Visualization<T, D>::drawControls() {
     if (ImGui::Button(ICON_FA_BACKWARD_STEP,
                       ImVec2(1 * ImGui::GetFontSize(), 2 * ImGui::GetFontSize()))) {
       this->m_sim->stepBwd();
-      this->m_sim->m_set_after_update = true;
+      this->m_sim->m_data_changed = true;
       if (!this->m_sim->is_paused()) { m_sim->playToggle(); }
     }
     ImGui::PopButtonRepeat();
@@ -132,7 +132,7 @@ void Visualization<T, D>::drawControls() {
     if (ImGui::Button(ICON_FA_FORWARD_STEP,
                       ImVec2(1 * ImGui::GetFontSize(), 2 * ImGui::GetFontSize()))) {
       this->m_sim->stepFwd();
-      this->m_sim->m_set_after_update = true;
+      this->m_sim->m_data_changed = true;
       if (!this->m_sim->is_paused()) { this->m_sim->playToggle(); }
     }
     ImGui::PopButtonRepeat();
@@ -183,11 +183,11 @@ void Visualization<T, D>::processControllerInput() {
 
   if (glfwGetKey(this->m_window->get_window(), GLFW_KEY_LEFT) == GLFW_PRESS) {
     this->m_sim->stepBwd();
-    this->m_sim->m_set_after_update = true;
+    this->m_sim->m_data_changed = true;
   }
   if (glfwGetKey(this->m_window->get_window(), GLFW_KEY_RIGHT) == GLFW_PRESS) {
     this->m_sim->stepFwd();
-    this->m_sim->m_set_after_update = true;
+    this->m_sim->m_data_changed = true;
   }
 
   static bool pressing_left = false;
@@ -195,7 +195,7 @@ void Visualization<T, D>::processControllerInput() {
   if (glfwGetKey(this->m_window->get_window(), GLFW_KEY_COMMA) == GLFW_RELEASE && (pressing_left)) {
     pressing_left = false;
     this->m_sim->stepBwd();
-    this->m_sim->m_set_after_update = true;
+    this->m_sim->m_data_changed = true;
   }
   static bool pressing_right = false;
   if (glfwGetKey(this->m_window->get_window(), GLFW_KEY_PERIOD) == GLFW_PRESS) {
@@ -205,7 +205,7 @@ void Visualization<T, D>::processControllerInput() {
       && (pressing_right)) {
     pressing_right = false;
     this->m_sim->stepFwd();
-    this->m_sim->m_set_after_update = true;
+    this->m_sim->m_data_changed = true;
   }
 }
 
@@ -313,6 +313,9 @@ void Visualization<T, D>::loop() {
   }
 
   while (!this->m_window->windowShouldClose()) {
+    ++jumpover_counter;
+    Sim->updateData(jumpover_counter < 0 || (jumpover_counter % (Sim->get_jumpover()) == 0));
+
     this->m_window->processInput();
     this->processControllerInput();
     glfwPollEvents();
@@ -374,9 +377,7 @@ void Visualization<T, D>::loop() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     this->m_window->unuse();
-
-    ++jumpover_counter;
-    Sim->updateData(jumpover_counter < 0 || (jumpover_counter % (Sim->get_jumpover()) == 0));
+    this->m_sim->m_data_changed = false;
   }
 }
 } // namespace nttiny

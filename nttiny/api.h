@@ -75,7 +75,7 @@ struct SimulationAPI {
   std::map<std::string, T*> fields;
   std::map<std::string, std::pair<int, std::array<T*, D>>> particles;
   Grid<T, D> m_global_grid;
-  bool m_set_after_update{true};
+  bool m_data_changed{true};
 
   SimulationAPI(const Coord& coord, const std::array<int, D>& size, const ushort& ngh = 2)
       : m_global_grid{coord, size, ngh} {}
@@ -103,11 +103,10 @@ struct SimulationAPI {
       } else {
         stepBwd();
       }
-      m_set_after_update = true;
+      m_data_changed = true;
     }
-    if (jumpover_set && m_set_after_update) {
+    if (jumpover_set && m_data_changed) {
       setData();
-      m_set_after_update = false;
     }
   }
 
