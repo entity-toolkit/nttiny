@@ -222,7 +222,7 @@ auto Scatter2d<T>::draw(ImPlotRect& shared_axes) -> bool {
                            this->m_share_axes ? &shared_axes.Y.Min : NULL,
                            this->m_share_axes ? &shared_axes.Y.Max : NULL);
     for (auto species : Sim->particles) {
-      auto nprtl = species.second.first;
+      const std::size_t nprtl = species.second.first;
       auto x1 = species.second.second[0];
       auto x2 = species.second.second[1];
       ImPlot::PlotScatter(species.first.c_str(), x1, x2, nprtl);
