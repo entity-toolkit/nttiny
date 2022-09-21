@@ -70,18 +70,6 @@ struct Grid {
   }
 };
 
-#ifndef SIGN
-#  define SIGN(x) (((x) < 0.0) ? -1.0 : 1.0)
-#endif
-
-#ifndef ABS
-#  define ABS(x) (((x) < 0.0) ? -(x) : (x))
-#endif
-
-#ifndef QLOGSCALE
-#  define QLOGSCALE(x) ((SIGN(x) * powf(ABS(x), 0.25f)))
-#endif
-
 template <class T, ushort D>
 struct SimulationAPI {
   std::map<std::string, T*> fields;
@@ -155,7 +143,8 @@ struct SimulationAPI {
     const auto sx2{m_global_grid.m_size[1]};
     for (int j{0}; j < sx2; ++j) {
       for (int i{0}; i < sx1; ++i) {
-        T val = (use_log) ? QLOGSCALE(array[Index(i, j)]) : array[Index(i, j)];
+        T val = array[Index(i, j)];
+        if (use_log) { val = (signum(val) * std::pow(std::fabs(val), 0.25f)); }
         if (val < min) { min = val; }
         if (val > max) { max = val; }
       }
@@ -173,10 +162,6 @@ protected:
   bool m_forward{true};
   int m_jumpover{1};
 };
-
-#undef SIGN
-#undef ABS
-#undef QLOGSCALE
 
 } // namespace nttiny
 
