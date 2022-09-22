@@ -21,7 +21,7 @@ struct Plot2d : public Ax<T, 2> {
   ~Plot2d() override = default;
   auto close(const int& w = -1) -> bool;
   auto getId() -> int override { return this->m_ID; }
-  void outlineDomain();
+  void outlineDomain(UISettings&);
 
   bool m_share_axes{true};
 };
@@ -39,7 +39,7 @@ protected:
 public:
   Pcolor2d(int id, T vmin, T vmax) : Plot2d<T>(id), m_vmin(vmin), m_vmax(vmax) {}
   ~Pcolor2d() override = default;
-  auto draw(ImPlotRect&) -> bool override;
+  auto draw(ImPlotRect&, UISettings&) -> bool override;
   auto exportMetadata() -> PlotMetadata override;
   void importMetadata(const PlotMetadata&) override;
 };
@@ -53,7 +53,7 @@ protected:
 public:
   Scatter2d(int id) : Plot2d<T>(id) {}
   ~Scatter2d() override = default;
-  auto draw(ImPlotRect&) -> bool override;
+  auto draw(ImPlotRect&, UISettings&) -> bool override;
   auto exportMetadata() -> PlotMetadata override;
   void importMetadata(const PlotMetadata&) override;
 };

@@ -26,7 +26,7 @@ auto Plot2d<T>::close(const int& w) -> bool {
 }
 
 template <class T>
-void Plot2d<T>::outlineDomain() {
+void Plot2d<T>::outlineDomain(UISettings& ui_settings) {
   const auto sx1 = this->m_sim->m_global_grid.m_size[0];
   const auto sx2 = this->m_sim->m_global_grid.m_size[1];
   const auto x1min = this->m_sim->m_global_grid.m_xi[0][0];
@@ -36,8 +36,8 @@ void Plot2d<T>::outlineDomain() {
   const auto coord = this->m_sim->m_global_grid.m_coord;
 
   auto thickness = 2.5f;
-  auto color = IM_COL32(255, 255, 255, 255);
-  auto thres = 32;
+  auto color = ImGui::ColorConvertFloat4ToU32(ui_settings.OutlineColor);
+  auto thres = 128;
 
   ImPlot::PushPlotClipRect();
   if (coord == Coord::Spherical) {
@@ -84,7 +84,7 @@ void Pcolor2d<T>::rescaleMinMax() {
 }
 
 template <class T>
-auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
+auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool {
   auto& Sim = this->m_sim;
   auto& Grid = this->m_sim->m_global_grid;
   const auto coord = Grid.m_coord;
@@ -132,7 +132,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
                               ImPlotPoint(x1max, x2max),
                               ImPlotAxisFlags_NoGridLines);
     }
-    this->outlineDomain();
+    this->outlineDomain(ui_settings);
     Sim->customAnnotatePcolor2d();
     ImPlot::EndPlot();
   }
@@ -193,7 +193,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes) -> bool {
 }
 
 template <class T>
-auto Scatter2d<T>::draw(ImPlotRect& shared_axes) -> bool {
+auto Scatter2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool {
   auto& Sim = this->m_sim;
   auto& Grid = this->m_sim->m_global_grid;
   const auto coord = Grid.m_coord;
@@ -226,7 +226,7 @@ auto Scatter2d<T>::draw(ImPlotRect& shared_axes) -> bool {
       auto x2 = species.second.second[1];
       ImPlot::PlotScatter(species.first.c_str(), x1, x2, nprtl);
     }
-    this->outlineDomain();
+    this->outlineDomain(ui_settings);
     ImPlot::EndPlot();
   }
   if (ImGui::BeginPopupContextItem("popup")) {

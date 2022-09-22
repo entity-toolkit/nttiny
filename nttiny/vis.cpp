@@ -160,12 +160,6 @@ void Visualization<T, D>::drawControls() {
     this->m_sim->set_jumpover(jmp);
   }
 
-  // // Simulation speed
-  // {
-  //   ImGui::SetNextItemWidth(
-  //       std::max(ImGui::GetContentRegionAvail().x * 0.5f, ImGui::GetFontSize() * 6));
-  //   ImGui::SliderFloat("TPS", &this->m_tps_limit, 1, 1000);
-  // }
   ImGui::EndChild();
 }
 
@@ -213,13 +207,13 @@ template <class T, ushort D>
 void Visualization<T, D>::drawMainMenuBar() {
   ImGui::BeginMainMenuBar();
 
-  if (ImGui::BeginMenu("add plot")) {
-    if (ImGui::MenuItem("pcolor")) { addPcolor2d(0, 1); }
-    if (ImGui::MenuItem("scatter")) { addScatter2d(); }
+  if (ImGui::BeginMenu("Add plot")) {
+    if (ImGui::MenuItem("Pcolor")) { addPcolor2d(0, 1); }
+    if (ImGui::MenuItem("Scatter")) { addScatter2d(); }
     ImGui::EndMenu();
   }
 
-  if (ImGui::BeginMenu("state")) {
+  if (ImGui::BeginMenu("State")) {
     if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " save")) {
       auto rewrite{true};
       auto cntr{0};
@@ -266,6 +260,49 @@ void Visualization<T, D>::drawMainMenuBar() {
     }
     ImGui::EndMenu();
   }
+  static bool config_window{false};
+
+  // if (ImGui::BeginMenu("Configure ui")) {
+  //   // ImGui::OpenPopup("Configure ui");
+  //   config_window = true;
+  //   ImGui::EndMenu();
+  // }
+  // ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+  // ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+  // ImGui::Begin("Configure ui", &config_window);
+  // if (ImGui::BeginPopupContextItem()) // <-- This is using IsItemHovered()
+  // {
+  //   if (ImGui::MenuItem("Close")) { config_window = false; }
+  //   ImGui::Text("outline color");
+  //   ImGui::SameLine();
+  //   float outline_color[4]{UI_Settings.OutlineColor.x,
+  //                          UI_Settings.OutlineColor.y,
+  //                          UI_Settings.OutlineColor.z,
+  //                          UI_Settings.OutlineColor.w};
+  //   ImGui::ColorEdit4("OutlineColorPicker##",
+  //                     outline_color,
+  //                     ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+  //   UI_Settings.OutlineColor
+  //       = ImVec4(outline_color[0], outline_color[1], outline_color[2], outline_color[3]);
+  //   ImGui::EndPopup();
+  // }
+  // ImGui::End();
+
+  // static bool test_window = false;
+  // ImGui::Checkbox("Hovered/Active tests after Begin() for title bar testing", &test_window);
+  // if (test_window) {
+  //   ImGui::Begin("Title bar Hovered/Active tests", &test_window);
+  //   if (ImGui::BeginPopupContextItem()) // <-- This is using IsItemHovered()
+  //   {
+  //     if (ImGui::MenuItem("Close")) { test_window = false; }
+  //     ImGui::EndPopup();
+  //   }
+  //   ImGui::Text("IsItemHovered() after begin = %d (== is title bar hovered)\n"
+  //               "IsItemActive() after begin = %d (== is window being clicked/moved)\n",
+  //               ImGui::IsItemHovered(),
+  //               ImGui::IsItemActive());
+  //   ImGui::End();
+  // }
   ImGui::EndMainMenuBar();
 }
 
@@ -301,15 +338,15 @@ void Visualization<T, D>::loop() {
   auto x2max = Grid.m_xi[1][sx2] + ngh * dx2;
 
   if (coord == Coord::Spherical) {
-    this->m_shared_axes.X.Min = 0.0f;
-    this->m_shared_axes.X.Max = (float)x1max;
-    this->m_shared_axes.Y.Min = -(float)x1max;
-    this->m_shared_axes.Y.Max = (float)x1max;
+    this->SharedAxes.X.Min = 0.0f;
+    this->SharedAxes.X.Max = (float)x1max;
+    this->SharedAxes.Y.Min = -(float)x1max;
+    this->SharedAxes.Y.Max = (float)x1max;
   } else {
-    this->m_shared_axes.X.Min = (float)x1min;
-    this->m_shared_axes.X.Max = (float)x1max;
-    this->m_shared_axes.Y.Min = (float)x2min;
-    this->m_shared_axes.Y.Max = (float)x2max;
+    this->SharedAxes.X.Min = (float)x1min;
+    this->SharedAxes.X.Max = (float)x1max;
+    this->SharedAxes.Y.Min = (float)x2min;
+    this->SharedAxes.Y.Max = (float)x2max;
   }
 
   while (!this->m_window->windowShouldClose()) {
@@ -351,7 +388,7 @@ void Visualization<T, D>::loop() {
                 "##subplots", rows, cols, ImVec2(-1, -1), ImPlotSubplotFlags_None)) {
           for (std::size_t i{0}; i < this->m_plots.size(); ++i) {
             ImGui::PushID(i);
-            close_plots.push_back(this->m_plots[i]->draw(this->m_shared_axes));
+            close_plots.push_back(this->m_plots[i]->draw(this->SharedAxes, this->UI_Settings));
             ImGui::PopID();
           }
           ImPlot::EndSubplots();

@@ -76,18 +76,18 @@ void SetupStyle(const float& scale) {
     // font_config.SizePixels = 8.0f * scale;
     // ImGui::GetIO().Fonts->AddFontDefault(&font_config);
     ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
-        JetBrains_compressed_data, JetBrains_compressed_size, 8.0f * scale);
+        JetBrains_compressed_data, JetBrains_compressed_size, 4.0f * scale);
     icons_config.MergeMode = true;
     icons_config.PixelSnapH = true;
     static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
     ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(faRegular_compressed_data,
                                                          faRegular_compressed_size,
-                                                         6.0f * scale,
+                                                         3.0f * scale,
                                                          &icons_config,
                                                          icons_ranges);
     ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(faSolid_compressed_data,
                                                          faSolid_compressed_size,
-                                                         6.0f * scale,
+                                                         3.0f * scale,
                                                          &icons_config,
                                                          icons_ranges);
     ImGui::GetIO().Fonts->Build();

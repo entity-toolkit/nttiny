@@ -3,6 +3,8 @@
 
 #include "defs.h"
 
+#include <imgui.h>
+
 #include <map>
 #include <cmath>
 #include <vector>
@@ -18,6 +20,10 @@ enum class Coord { Cartesian, Spherical };
 //                 const float& radius,
 //                 const point_t& phi_range = {0.0f, 2.0f * M_PI},
 //                 const int& resolution = 128);
+
+struct UISettings {
+  ImVec4 OutlineColor{1.0f, 1.0f, 1.0f, 1.0f};
+};
 
 template <class T, ushort D>
 struct Grid {
@@ -53,14 +59,15 @@ struct Grid {
   void ExtendGridWithGhosts() {
     const auto ngh = m_ngh;
     for (ushort d{0}; d < D; ++d) {
-      auto dx = m_xi[d][1] - m_xi[d][0];
       auto sx = m_size[d];
       for (int i{0}; i <= sx + 2 * ngh; ++i) {
         if (i < ngh) {
+          auto dx = m_xi[d][1] - m_xi[d][0];
           m_xi_gh[d][i] = m_xi[d][0] - (ngh - i) * dx;
         } else if (i >= ngh && i <= sx + ngh) {
           m_xi_gh[d][i] = m_xi[d][i - ngh];
         } else {
+          auto dx = m_xi[d][sx - 1] - m_xi[d][sx - 2];
           m_xi_gh[d][i] = m_xi[d][sx - 1] + (i - sx - ngh + 1) * dx;
         }
       }

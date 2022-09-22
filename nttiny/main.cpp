@@ -408,7 +408,6 @@ auto main(int argc, char** argv) -> int {
     sim.setData();
 
     nttiny::Visualization<float, 2> vis{scale};
-    vis.setTPSLimit(30.0f);
     vis.bindSimulation(&sim);
     vis.loop();
   }
