@@ -159,7 +159,7 @@ void Visualization<T, D>::drawControls() {
     ImGui::DragInt("##skip", &jmp, 1, 1, 1000, "t += %d dt");
     this->m_sim->set_jumpover(jmp);
   }
-
+  ImGui::Separator();
   ImGui::EndChild();
 }
 
@@ -213,7 +213,6 @@ void Visualization<T, D>::drawMainMenuBar() {
     if (ImGui::MenuItem("add scatter")) { addScatter2d(); }
     ImGui::Separator();
     ImGui::MenuItem("(state)", NULL, false, false);
-    // if (ImGui::BeginMenu("State")) {
     if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " save")) {
       auto rewrite{true};
       auto cntr{0};
@@ -260,7 +259,7 @@ void Visualization<T, D>::drawMainMenuBar() {
     }
     ImGui::Separator();
     if (ImGui::BeginMenu("configure ui")) {
-      ImGui::Text("domain color");
+      ImGui::Text("domain outline");
       ImGui::SameLine();
       float outline_color[4]{UI_Settings.OutlineColor.x,
                              UI_Settings.OutlineColor.y,
@@ -273,6 +272,14 @@ void Visualization<T, D>::drawMainMenuBar() {
       ImGui::EndMenu();
     }
     ImGui::EndMenu();
+  }
+  ImGui::TextDisabled("(?)");
+  if (ImGui::IsItemHovered()) {
+    ImGui::BeginTooltip();
+    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    ImGui::TextUnformatted("Right click the plot legends to open plot controller.");
+    ImGui::PopTextWrapPos();
+    ImGui::EndTooltip();
   }
   ImGui::EndMainMenuBar();
 }

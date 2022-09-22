@@ -37,6 +37,12 @@ include extern/nttiny/Makefile
 
 ## Releases
 
+* `v0.6.2` [Sep 2022]:
+  - better menu ui
+  - better legends (cmap selector) + plot control
+  - global ui settings
+  - optimized data loading/updating
+  - minor bug fixes with rescaling
 * `v0.6.1` [Sep 2022]:
   - windows support
   - hidpi support using scales (see `main.cpp` for usage)
@@ -61,7 +67,7 @@ include extern/nttiny/Makefile
 
 - [ ] particle selection
 - [ ] custom colormaps
-- [ ] user-specific outlining
+- [x] user-specific outlining
 - [x] save/load states
 - [x] timestep jumpover
 - [x] hidpi support

@@ -83,12 +83,6 @@ void Pcolor2d<T>::rescaleMinMax() {
   }
 }
 
-bool ShowColormapSelector(const char* label) {
-  ImPlotContext& gp = *GImPlot;
-  bool set = false;
-  return set;
-}
-
 template <class T>
 auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool {
   auto& Sim = this->m_sim;
@@ -107,6 +101,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
 
   ImPlot::PushColormap(this->m_cmap);
   if (ImPlot::BeginPlot("##", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+    ImPlot::SetupLegend(ImPlotLocation_North | ImPlotLocation_West);
     ImPlot::SetupAxisLinks(ImAxis_X1,
                            this->m_share_axes ? &shared_axes.X.Min : NULL,
                            this->m_share_axes ? &shared_axes.X.Max : NULL);
@@ -114,7 +109,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
                            this->m_share_axes ? &shared_axes.Y.Min : NULL,
                            this->m_share_axes ? &shared_axes.Y.Max : NULL);
     if (coord == Coord::Spherical) {
-      ImPlot::PlotHeatmapPolar("##",
+      ImPlot::PlotHeatmapPolar(Sim->get_field_names()[this->m_field_selected],
                                Sim->get_selected_field(this->m_field_selected),
                                sx1 + 2 * ngh,
                                sx2 + 2 * ngh,
@@ -140,74 +135,76 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
     }
     this->outlineDomain(ui_settings);
     Sim->customAnnotatePcolor2d();
-    ImPlot::EndPlot();
-  }
-  if (ImGui::BeginPopupContextItem("popup")) {
-    ImGui::PushItemWidth(8 * ImGui::GetFontSize());
-    ImGui::BeginGroup();
-    {
-      ImGui::PushItemWidth(-1);
+
+    if (ImPlot::BeginLegendPopup(Sim->get_field_names()[this->m_field_selected])) {
+      ImGui::PushItemWidth(8 * ImGui::GetFontSize());
+      ImGui::BeginGroup();
       {
-        /* ----------------------------- field selector ----------------------------- */
-        ImGui::PushID("fld");
-        ImGui::Combo("##", &this->m_field_selected, Sim->get_field_names(), Sim->fields.size());
-        ImGui::PopID();
-      }
-
-      float vmax = this->m_vmax, vmin = this->m_vmin;
-
-      {
-        /* -------------------------------- colorbar -------------------------------- */
-        ImGui::PushID("vmax");
-        ImGui::DragFloat("##", &vmax, 0.01f * std::fabs(vmax - vmin), vmin, +FLT_MAX, "%.3e");
-        ImGui::PopID();
-
-        ImPlot::ColormapScale("##", vmin, vmax, ImVec2(-1, 20.0f * ImGui::GetFontSize()));
-
-        ImGui::PushID("vmin");
-        ImGui::DragFloat("##", &vmin, 0.01f * std::fabs(vmax - vmin), -FLT_MAX, vmax, "%.3e");
-        ImGui::PopID();
-      }
-      ImGui::PopItemWidth();
-
-      /* ---------------------------- colormap selector --------------------------- */
-      {
-        ImPlotContext& gp = *GImPlot;
-        ImPlot::ColormapIcon(this->m_cmap);
-        ImGui::SameLine();
-        ImGui::Text(gp.ColormapData.GetName(this->m_cmap));
-        ImGui::SameLine();
-        if (ImGui::BeginCombo(
-                "##", gp.ColormapData.GetName(gp.Style.Colormap), ImGuiComboFlags_NoPreview)) {
-          for (int i = 0; i < gp.ColormapData.Count; ++i) {
-            const char* name = gp.ColormapData.GetName(i);
-            ImPlot::ColormapIcon(i);
-            ImGui::SameLine();
-            if (ImGui::Selectable(name, gp.Style.Colormap == i)) {
-              gp.Style.Colormap = i;
-              ImPlot::BustItemCache();
-              this->m_cmap = GImPlot->Style.Colormap;
-            }
-          }
-          ImGui::EndCombo();
+        ImGui::PushItemWidth(-1);
+        {
+          /* ----------------------------- field selector ----------------------------- */
+          ImGui::PushID("fld");
+          ImGui::Combo("##", &this->m_field_selected, Sim->get_field_names(), Sim->fields.size());
+          ImGui::PopID();
         }
+
+        float vmax = this->m_vmax, vmin = this->m_vmin;
+
+        {
+          /* -------------------------------- colorbar -------------------------------- */
+          ImGui::PushID("vmax");
+          ImGui::DragFloat("##", &vmax, 0.01f * std::fabs(vmax - vmin), vmin, +FLT_MAX, "%.3e");
+          ImGui::PopID();
+
+          ImPlot::ColormapScale("##", vmin, vmax, ImVec2(-1, 20.0f * ImGui::GetFontSize()));
+
+          ImGui::PushID("vmin");
+          ImGui::DragFloat("##", &vmin, 0.01f * std::fabs(vmax - vmin), -FLT_MAX, vmax, "%.3e");
+          ImGui::PopID();
+        }
+        ImGui::PopItemWidth();
+
+        /* ---------------------------- colormap selector --------------------------- */
+        {
+          ImPlotContext& gp = *GImPlot;
+          ImPlot::ColormapIcon(this->m_cmap);
+          ImGui::SameLine();
+          ImGui::Text(gp.ColormapData.GetName(this->m_cmap));
+          ImGui::SameLine();
+          if (ImGui::BeginCombo(
+                  "##", gp.ColormapData.GetName(gp.Style.Colormap), ImGuiComboFlags_NoPreview)) {
+            for (int i = 0; i < gp.ColormapData.Count; ++i) {
+              const char* name = gp.ColormapData.GetName(i);
+              ImPlot::ColormapIcon(i);
+              ImGui::SameLine();
+              if (ImGui::Selectable(name, gp.Style.Colormap == i)) {
+                gp.Style.Colormap = i;
+                ImPlot::BustItemCache();
+                this->m_cmap = GImPlot->Style.Colormap;
+              }
+            }
+            ImGui::EndCombo();
+          }
+        }
+
+        // save rescaled values
+        this->m_vmax = (T)vmax;
+        this->m_vmin = (T)vmin;
+
+        ImGui::Checkbox("log", &this->m_log);
+        ImGui::SameLine();
+        if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE)) { this->rescaleMinMax(); }
+        ImGui::Checkbox("link axes", &this->m_share_axes);
+        ImGui::Checkbox("autoscale", &this->m_autoscale);
+        ImGui::Separator();
+        if (this->close()) { return true; }
       }
-
-      // save rescaled values
-      this->m_vmax = (T)vmax;
-      this->m_vmin = (T)vmin;
-
-      ImGui::Checkbox("log", &this->m_log);
-      ImGui::SameLine();
-      if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE)) { this->rescaleMinMax(); }
-      ImGui::Checkbox("link axes", &this->m_share_axes);
-      ImGui::Checkbox("autoscale", &this->m_autoscale);
-      ImGui::Separator();
-      if (this->close()) { return true; }
+      ImGui::EndGroup();
+      ImGui::PopItemWidth();
+      ImPlot::EndLegendPopup();
     }
-    ImGui::EndGroup();
-    ImGui::PopItemWidth();
-    ImGui::EndPopup();
+
+    ImPlot::EndPlot();
   }
   if (this->m_autoscale && Sim->m_data_changed) { this->rescaleMinMax(); }
   ImPlot::PopColormap();
