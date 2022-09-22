@@ -32,6 +32,7 @@ class Visualization {
   plog::ColorConsoleAppender<plog::TxtFormatter> m_console_appender;
   std::vector<std::unique_ptr<Ax<T, D>>> m_plots;
   ImPlotRect SharedAxes{0, 1, 0, 1};
+  bool m_save_image {false};
 
 protected:
   SimulationAPI<T, D>* m_sim;

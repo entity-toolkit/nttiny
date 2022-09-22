@@ -13,10 +13,6 @@
 
 #include <implot.h>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
-#undef STB_IMAGE_WRITE_IMPLEMENTATION
-
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -31,6 +27,24 @@
 #include <fstream>
 #include <filesystem>
 #include <stdexcept>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+#undef STB_IMAGE_WRITE_IMPLEMENTATION
+
+void saveImage(const std::string& strFileName) {
+  ImGuiIO io = ImGui::GetIO();
+  int x = 0;
+  int y = 0;
+  int nWidth = io.DisplaySize.x * io.DisplayFramebufferScale.x;
+  int nHeight = io.DisplaySize.y * io.DisplayFramebufferScale.y;
+
+  std::vector<unsigned char> pixels(4 * nWidth * nHeight);
+  glReadPixels(x, y, nWidth, nHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+  stbi_flip_vertically_on_write(true);
+  stbi_write_png(strFileName.c_str(), nWidth, nHeight, 4, pixels.data(), 4 * nWidth);
+}
 
 namespace nttiny {
 
@@ -108,21 +122,6 @@ void Visualization<T, D>::bindSimulation(SimulationAPI<T, D>* sim) {
   }
 }
 
-void saveImage(char* filepath, GLFWwindow* w) {
-  int width, height;
-  glfwGetFramebufferSize(w, &width, &height);
-  GLsizei nrChannels = 3;
-  GLsizei stride = nrChannels * width;
-  stride += (stride % 4) ? (4 - stride % 4) : 0;
-  GLsizei bufferSize = stride * height;
-  std::vector<char> buffer(bufferSize);
-  glPixelStorei(GL_PACK_ALIGNMENT, 4);
-  glReadBuffer(GL_FRONT);
-  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
-  stbi_flip_vertically_on_write(true);
-  stbi_write_png(filepath, width, height, nrChannels, buffer.data(), stride);
-}
-
 template <class T, ushort D>
 void Visualization<T, D>::drawControls() {
   ImGui::BeginChild("simulation control");
@@ -179,7 +178,14 @@ void Visualization<T, D>::drawControls() {
     this->m_sim->set_jumpover(jmp);
   }
   ImGui::Separator();
-  if (ImGui::Button("Save Image")) { saveImage("image.png", this->m_window->get_window()); }
+  ImGui::Spacing();
+  ImGui::PushID("snapshot");
+  ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(6.0f / 7.0f, 0.6f, 0.6f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(6.0f / 7.0f, 0.7f, 0.7f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(6.0f / 7.0f, 0.8f, 0.8f));
+  if (ImGui::Button("Save snapshot")) { this->m_save_image = true; }
+  ImGui::PopStyleColor(3);
+  ImGui::PopID();
   ImGui::EndChild();
 }
 
@@ -412,6 +418,11 @@ void Visualization<T, D>::loop() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     this->m_window->unuse();
+    if (this->m_save_image) {
+      saveImage("image.png");
+      this->m_save_image = false;
+    }
+
     this->m_sim->m_data_changed = false;
   }
 }
