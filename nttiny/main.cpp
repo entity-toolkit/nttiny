@@ -98,7 +98,6 @@ struct Example1 : public nttiny::SimulationAPI<float, 2> {
       }
     }
   }
-  void customAnnotatePcolor2d() override {}
 };
 
 /* -------------------------------------------------------------------------- */
@@ -180,7 +179,6 @@ struct Example2 : public nttiny::SimulationAPI<float, 2> {
       }
     }
   }
-  void customAnnotatePcolor2d() override {}
 };
 
 /* -------------------------------------------------------------------------- */
@@ -286,8 +284,8 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
       }
     }
   }
-  void customAnnotatePcolor2d() override {
-    nttiny::tools::drawCircle({0.0f, 0.0f}, 5.0f, {0.0f, M_PI});
+  void customAnnotatePcolor2d(const nttiny::UISettings& ui_settings) override {
+    nttiny::tools::drawCircle({0.0f, 0.0f}, 5.0f, {0.0f, M_PI}, 128, ui_settings.OutlineColor);
   }
 };
 

@@ -10,7 +10,7 @@ void drawCircle(const ImVec2& center,
                 const float& radius,
                 const ImVec2& phi_range = {0.0f, 2.0f * M_PI},
                 const int& resolution = 128,
-                const ImU32& color = IM_COL32(255, 255, 255, 255));
+                const ImVec4& color = {1.0f, 1.0f, 1.0f, 1.0f});
 }
 
 #endif

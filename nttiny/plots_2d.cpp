@@ -134,7 +134,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
                               ImPlotAxisFlags_NoGridLines);
     }
     this->outlineDomain(ui_settings);
-    Sim->customAnnotatePcolor2d();
+    Sim->customAnnotatePcolor2d(ui_settings);
 
     if (ImPlot::BeginLegendPopup(Sim->get_field_names()[this->m_field_selected])) {
       ImGui::PushItemWidth(8 * ImGui::GetFontSize());
@@ -247,6 +247,7 @@ auto Scatter2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> boo
       ImPlot::PlotScatter(species.first.c_str(), x1, x2, nprtl);
     }
     this->outlineDomain(ui_settings);
+    Sim->customAnnotatePcolor2d(ui_settings);
     ImPlot::EndPlot();
   }
   if (ImGui::BeginPopupContextItem("popup")) {

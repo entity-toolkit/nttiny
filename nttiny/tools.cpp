@@ -11,8 +11,9 @@ void drawCircle(const ImVec2& center,
                 const float& radius,
                 const ImVec2& phi_range,
                 const int& resolution,
-                const ImU32& color) {
+                const ImVec4& color) {
   ImPlot::PushPlotClipRect();
+  auto col = ImGui::ColorConvertFloat4ToU32(color);
   for (int i{0}; i < resolution; ++i) {
     float phi_min = phi_range[0] + (phi_range[1] - phi_range[0]) * (float)(i) / (float)(resolution);
     float phi_max
@@ -21,7 +22,8 @@ void drawCircle(const ImVec2& center,
                                                 center[1] + radius * std::cos(phi_min)));
     auto p02 = ImPlot::PlotToPixels(ImPlotPoint(center[0] + radius * std::sin(phi_max),
                                                 center[1] + radius * std::cos(phi_max)));
-    ImPlot::GetPlotDrawList()->AddLine(p01, p02, color, 0.2);
+
+    ImPlot::GetPlotDrawList()->AddLine(p01, p02, col, 0.2);
   }
   ImPlot::PopPlotClipRect();
 }

@@ -155,7 +155,7 @@ struct SimulationAPI {
   }
 
   // additional visuals
-  virtual void customAnnotatePcolor2d() = 0;
+  virtual void customAnnotatePcolor2d(const UISettings&) = 0;
 
 protected:
   float m_time;
