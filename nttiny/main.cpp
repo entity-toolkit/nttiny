@@ -1,6 +1,7 @@
 #include "nttiny/defs.h"
 #include "nttiny/vis.h"
 #include "nttiny/api.h"
+#include "nttiny/tools.h"
 
 #include <stdlib.h>
 #include <iostream>
@@ -285,7 +286,9 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
       }
     }
   }
-  void customAnnotatePcolor2d() override {}
+  void customAnnotatePcolor2d() override {
+    nttiny::tools::drawCircle({0.0f, 0.0f}, 5.0f, {0.0f, M_PI});
+  }
 };
 
 /* -------------------------------------------------------------------------- */
@@ -386,7 +389,6 @@ struct Example4 : public nttiny::SimulationAPI<double, 2> {
       }
     }
   }
-  void customAnnotatePcolor2d() override {}
 };
 
 auto main(int argc, char** argv) -> int {
