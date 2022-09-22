@@ -16,3 +16,6 @@
 [submodule "extern/freetype"]
 	path = extern/freetype
 	url = https://gitlab.freedesktop.org/freetype/freetype.git
+[submodule "extern/stb"]
+	path = extern/stb
+	url = git@github.com:nothings/stb.git

@@ -13,6 +13,10 @@
 
 #include <implot.h>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+#undef STB_IMAGE_WRITE_IMPLEMENTATION
+
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -104,6 +108,21 @@ void Visualization<T, D>::bindSimulation(SimulationAPI<T, D>* sim) {
   }
 }
 
+void saveImage(char* filepath, GLFWwindow* w) {
+  int width, height;
+  glfwGetFramebufferSize(w, &width, &height);
+  GLsizei nrChannels = 3;
+  GLsizei stride = nrChannels * width;
+  stride += (stride % 4) ? (4 - stride % 4) : 0;
+  GLsizei bufferSize = stride * height;
+  std::vector<char> buffer(bufferSize);
+  glPixelStorei(GL_PACK_ALIGNMENT, 4);
+  glReadBuffer(GL_FRONT);
+  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
+  stbi_flip_vertically_on_write(true);
+  stbi_write_png(filepath, width, height, nrChannels, buffer.data(), stride);
+}
+
 template <class T, ushort D>
 void Visualization<T, D>::drawControls() {
   ImGui::BeginChild("simulation control");
@@ -160,6 +179,7 @@ void Visualization<T, D>::drawControls() {
     this->m_sim->set_jumpover(jmp);
   }
   ImGui::Separator();
+  if (ImGui::Button("Save Image")) { saveImage("image.png", this->m_window->get_window()); }
   ImGui::EndChild();
 }
 

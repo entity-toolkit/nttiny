@@ -88,7 +88,7 @@ endif
 NTTINY_WARNFLAGS := -Wall -Wextra
 NTTINY_CFLAGS := $(NTTINY_WARNFLAGS) $(NTTINY_CFLAGS)
 
-NTTINY_EXTERNAL_INCLUDES := glfw/include implot imgui imgui/backends plog/include KHR toml11 freetype/include
+NTTINY_EXTERNAL_INCLUDES := glfw/include implot imgui imgui/backends plog/include KHR toml11 freetype/include stb
 NTTINY_INC_DIRS := ${NTTINY_ROOT_DIR} $(filter %/, $(wildcard ${__SRC_DIR}/**/)) ${__EXTERN_DIR} $(addprefix ${__EXTERN_DIR}/,${NTTINY_EXTERNAL_INCLUDES})
 NTTINY_INCFLAGS := $(addprefix -I,$(NTTINY_INC_DIRS))
 

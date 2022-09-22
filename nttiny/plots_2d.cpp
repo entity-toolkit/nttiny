@@ -169,7 +169,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
           ImPlotContext& gp = *GImPlot;
           ImPlot::ColormapIcon(this->m_cmap);
           ImGui::SameLine();
-          ImGui::Text(gp.ColormapData.GetName(this->m_cmap));
+          ImGui::Text(gp.ColormapData.GetName(this->m_cmap), "##");
           ImGui::SameLine();
           if (ImGui::BeginCombo(
                   "##", gp.ColormapData.GetName(gp.Style.Colormap), ImGuiComboFlags_NoPreview)) {
