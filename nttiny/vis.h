@@ -41,8 +41,8 @@ protected:
 
 public:
   Visualization(float scale = 2.0f,
-                int win_width = 1280,
-                int win_height = 720,
+                int win_width = 1920,
+                int win_height = 1080,
                 bool resizable = true);
   ~Visualization();
   void bindSimulation();
