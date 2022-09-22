@@ -44,8 +44,8 @@ Visualization<T, D>::Visualization(float scale, int win_width, int win_height, b
   plog::init<VISPLOGID>(max_severity, &m_console_appender);
 
   glfwInit();
-  m_window = std::make_unique<Window>(m_win_width * (int)(scale / 2.0f),
-                                      m_win_height * (int)(scale / 2.0f),
+  m_window = std::make_unique<Window>((int)(m_win_width * scale / 2.0f),
+                                      (int)(m_win_height * scale / 2.0f),
                                       "Nttiny",
                                       1,
                                       resizable);
@@ -207,13 +207,13 @@ template <class T, ushort D>
 void Visualization<T, D>::drawMainMenuBar() {
   ImGui::BeginMainMenuBar();
 
-  if (ImGui::BeginMenu("Add plot")) {
-    if (ImGui::MenuItem("Pcolor")) { addPcolor2d(0, 1); }
-    if (ImGui::MenuItem("Scatter")) { addScatter2d(); }
-    ImGui::EndMenu();
-  }
-
-  if (ImGui::BeginMenu("State")) {
+  if (ImGui::BeginMenu("Menu")) {
+    ImGui::MenuItem("(plots)", NULL, false, false);
+    if (ImGui::MenuItem("add pcolor")) { addPcolor2d(0, 1); }
+    if (ImGui::MenuItem("add scatter")) { addScatter2d(); }
+    ImGui::Separator();
+    ImGui::MenuItem("(state)", NULL, false, false);
+    // if (ImGui::BeginMenu("State")) {
     if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " save")) {
       auto rewrite{true};
       auto cntr{0};
@@ -258,51 +258,22 @@ void Visualization<T, D>::drawMainMenuBar() {
         PLOGE_(VISPLOGID) << "Error loading state: " << err.what();
       }
     }
+    ImGui::Separator();
+    if (ImGui::BeginMenu("configure ui")) {
+      ImGui::Text("domain color");
+      ImGui::SameLine();
+      float outline_color[4]{UI_Settings.OutlineColor.x,
+                             UI_Settings.OutlineColor.y,
+                             UI_Settings.OutlineColor.z,
+                             UI_Settings.OutlineColor.w};
+      ImGui::ColorEdit4(
+          "##", outline_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+      UI_Settings.OutlineColor
+          = ImVec4(outline_color[0], outline_color[1], outline_color[2], outline_color[3]);
+      ImGui::EndMenu();
+    }
     ImGui::EndMenu();
   }
-  static bool config_window{false};
-
-  // if (ImGui::BeginMenu("Configure ui")) {
-  //   // ImGui::OpenPopup("Configure ui");
-  //   config_window = true;
-  //   ImGui::EndMenu();
-  // }
-  // ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-  // ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-  // ImGui::Begin("Configure ui", &config_window);
-  // if (ImGui::BeginPopupContextItem()) // <-- This is using IsItemHovered()
-  // {
-  //   if (ImGui::MenuItem("Close")) { config_window = false; }
-  //   ImGui::Text("outline color");
-  //   ImGui::SameLine();
-  //   float outline_color[4]{UI_Settings.OutlineColor.x,
-  //                          UI_Settings.OutlineColor.y,
-  //                          UI_Settings.OutlineColor.z,
-  //                          UI_Settings.OutlineColor.w};
-  //   ImGui::ColorEdit4("OutlineColorPicker##",
-  //                     outline_color,
-  //                     ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-  //   UI_Settings.OutlineColor
-  //       = ImVec4(outline_color[0], outline_color[1], outline_color[2], outline_color[3]);
-  //   ImGui::EndPopup();
-  // }
-  // ImGui::End();
-
-  // static bool test_window = false;
-  // ImGui::Checkbox("Hovered/Active tests after Begin() for title bar testing", &test_window);
-  // if (test_window) {
-  //   ImGui::Begin("Title bar Hovered/Active tests", &test_window);
-  //   if (ImGui::BeginPopupContextItem()) // <-- This is using IsItemHovered()
-  //   {
-  //     if (ImGui::MenuItem("Close")) { test_window = false; }
-  //     ImGui::EndPopup();
-  //   }
-  //   ImGui::Text("IsItemHovered() after begin = %d (== is title bar hovered)\n"
-  //               "IsItemActive() after begin = %d (== is window being clicked/moved)\n",
-  //               ImGui::IsItemHovered(),
-  //               ImGui::IsItemActive());
-  //   ImGui::End();
-  // }
   ImGui::EndMainMenuBar();
 }
 

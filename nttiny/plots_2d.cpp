@@ -83,6 +83,12 @@ void Pcolor2d<T>::rescaleMinMax() {
   }
 }
 
+bool ShowColormapSelector(const char* label) {
+  ImPlotContext& gp = *GImPlot;
+  bool set = false;
+  return set;
+}
+
 template <class T>
 auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool {
   auto& Sim = this->m_sim;
@@ -148,12 +154,6 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
         ImGui::PopID();
       }
 
-      /* ---------------------------- colormap selector --------------------------- */
-      if (ImPlot::ColormapButton(
-              ImPlot::GetColormapName(this->m_cmap), ImVec2(-1, 0), this->m_cmap)) {
-        this->m_cmap = (this->m_cmap + 1) % ImPlot::GetColormapCount();
-      }
-
       float vmax = this->m_vmax, vmin = this->m_vmin;
 
       {
@@ -169,6 +169,29 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
         ImGui::PopID();
       }
       ImGui::PopItemWidth();
+
+      /* ---------------------------- colormap selector --------------------------- */
+      {
+        ImPlotContext& gp = *GImPlot;
+        ImPlot::ColormapIcon(this->m_cmap);
+        ImGui::SameLine();
+        ImGui::Text(gp.ColormapData.GetName(this->m_cmap));
+        ImGui::SameLine();
+        if (ImGui::BeginCombo(
+                "##", gp.ColormapData.GetName(gp.Style.Colormap), ImGuiComboFlags_NoPreview)) {
+          for (int i = 0; i < gp.ColormapData.Count; ++i) {
+            const char* name = gp.ColormapData.GetName(i);
+            ImPlot::ColormapIcon(i);
+            ImGui::SameLine();
+            if (ImGui::Selectable(name, gp.Style.Colormap == i)) {
+              gp.Style.Colormap = i;
+              ImPlot::BustItemCache();
+              this->m_cmap = GImPlot->Style.Colormap;
+            }
+          }
+          ImGui::EndCombo();
+        }
+      }
 
       // save rescaled values
       this->m_vmax = (T)vmax;
