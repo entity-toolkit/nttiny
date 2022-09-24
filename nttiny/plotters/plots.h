@@ -4,8 +4,8 @@
 #include "defs.h"
 #include "api.h"
 
-#include <implot.h>
-#include <toml.hpp>
+#include <implot/implot.h>
+#include <toml11/toml.hpp>
 
 #include <vector>
 #include <string>
@@ -56,11 +56,13 @@ protected:
 public:
   Ax(int id) : m_ID(id) {}
   virtual ~Ax() = default;
+  auto close() const -> bool { return ImGui::Button("delete"); }
   virtual auto draw(ImPlotRect&, UISettings&) -> bool { return false; }
   virtual auto getId() -> int { return -1; }
   virtual auto exportMetadata() -> PlotMetadata { return PlotMetadata(); }
   virtual void importMetadata(const PlotMetadata&){};
   void bindSimulation(SimulationAPI<T, D>* sim) { this->m_sim = sim; }
+  auto getId() const -> int { return this->m_ID; }
 };
 
 } // namespace nttiny

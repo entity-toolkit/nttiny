@@ -1,8 +1,8 @@
 #include "defs.h"
 #include "tools.h"
 
-#include <implot.h>
-#include <imgui.h>
+#include <implot/implot.h>
+#include <imgui/imgui.h>
 
 #include <cmath>
 

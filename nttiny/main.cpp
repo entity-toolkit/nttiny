@@ -1,7 +1,7 @@
-#include "nttiny/defs.h"
-#include "nttiny/vis.h"
-#include "nttiny/api.h"
-#include "nttiny/tools.h"
+#include "defs.h"
+#include "vis.h"
+#include "api.h"
+#include "tools.h"
 
 #include <stdlib.h>
 #include <iostream>

@@ -7,23 +7,14 @@
 #include "icons.h"
 
 #include <plog/Log.h>
-#include <implot.h>
-#include <toml.hpp>
+#include <implot/implot.h>
+#include <toml11/toml.hpp>
 
 #include <cmath>
 #include <string>
 #include <type_traits>
 
 namespace nttiny {
-
-template <class T>
-auto Plot2d<T>::close(const int& w) -> bool {
-  if (ImGui::Button("delete", ImVec2(w, 0))) {
-    return true;
-  } else {
-    return false;
-  }
-}
 
 template <class T>
 void Plot2d<T>::outlineDomain(UISettings& ui_settings) {
@@ -255,7 +246,7 @@ auto Scatter2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> boo
     {
       ImGui::Checkbox("link axes", &this->m_share_axes);
       ImGui::Separator();
-      if (this->close(8 * ImGui::GetFontSize())) { return true; }
+      if (this->close()) { return true; }
     }
     ImGui::EndGroup();
     ImGui::EndPopup();

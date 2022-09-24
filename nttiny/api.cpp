@@ -1,12 +1,5 @@
 #include "api.h"
 
-#include "defs.h"
-
-#include <plog/Log.h>
-#include <implot.h>
-
-#include <cmath>
-
 template struct nttiny::Grid<float, 1>;
 template struct nttiny::Grid<float, 2>;
 template struct nttiny::Grid<float, 3>;

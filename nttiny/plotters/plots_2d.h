@@ -5,8 +5,8 @@
 #include "api.h"
 #include "plots.h"
 
-#include <implot.h>
-#include <toml.hpp>
+#include <implot/implot.h>
+#include <toml11/toml.hpp>
 
 #include <vector>
 #include <string>
@@ -19,8 +19,6 @@ template <class T>
 struct Plot2d : public Ax<T, 2> {
   Plot2d(int id) : Ax<T, 2>(id) {}
   ~Plot2d() override = default;
-  auto close(const int& w = -1) -> bool;
-  auto getId() -> int override { return this->m_ID; }
   void outlineDomain(UISettings&);
 
   bool m_share_axes{true};

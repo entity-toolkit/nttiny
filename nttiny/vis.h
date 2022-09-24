@@ -4,6 +4,7 @@
 #include "window.h"
 #include "api.h"
 #include "plots.h"
+#include "plots_1d.h"
 #include "plots_2d.h"
 
 #include <plog/Log.h>
@@ -11,11 +12,11 @@
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
-#include <implot.h>
+#include <implot/implot.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -55,7 +56,8 @@ public:
   void loop();
   void addPcolor2d(float vmin, float vmax);
   void addScatter2d();
-  
+  void addTimePlot();
+
   UISettings UI_Settings;
 };
 

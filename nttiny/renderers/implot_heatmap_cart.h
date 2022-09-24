@@ -3,8 +3,8 @@
 
 #include "implot_utils.h"
 
-#include <implot.h>
-#include <implot_internal.h>
+#include <implot/implot.h>
+#include <implot/implot_internal.h>
 
 namespace ImPlot {
 

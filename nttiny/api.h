@@ -3,7 +3,7 @@
 
 #include "defs.h"
 
-#include <imgui.h>
+#include <imgui/imgui.h>
 
 #include <map>
 #include <cmath>
@@ -18,6 +18,31 @@ enum class Coord { Cartesian, Spherical };
 
 struct UISettings {
   ImVec4 OutlineColor{1.0f, 1.0f, 1.0f, 1.0f};
+};
+
+struct ScrollingBuffer {
+  int MaxSize;
+  int Offset;
+  ImVector<ImVec2> Data;
+  ScrollingBuffer(int max_size = 2000) {
+    MaxSize = max_size;
+    Offset = 0;
+    Data.reserve(MaxSize);
+  }
+  void AddPoint(float x, float y) {
+    if (Data.size() < MaxSize)
+      Data.push_back(ImVec2(x, y));
+    else {
+      Data[Offset] = ImVec2(x, y);
+      Offset = (Offset + 1) % MaxSize;
+    }
+  }
+  void Erase() {
+    if (Data.size() > 0) {
+      Data.shrink(0);
+      Offset = 0;
+    }
+  }
 };
 
 template <class T, ushort D>
@@ -74,6 +99,7 @@ template <class T, ushort D>
 struct SimulationAPI {
   std::map<std::string, T*> fields;
   std::map<std::string, std::pair<int, std::array<T*, D>>> particles;
+  std::map<std::string, ScrollingBuffer> buffers;
   Grid<T, D> m_global_grid;
   bool m_data_changed{true};
 

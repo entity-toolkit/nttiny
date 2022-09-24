@@ -3,19 +3,21 @@
 
 #include "api.h"
 #include "style.h"
+#include "plots_1d.h"
+#include "plots_2d.h"
 
 #include <plog/Log.h>
 #include <plog/Init.h>
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 
-#include <toml.hpp>
+#include <toml11/toml.hpp>
 
-#include <implot.h>
+#include <implot/implot.h>
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -29,7 +31,7 @@
 #include <stdexcept>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
+#include <stb/stb_image_write.h>
 #undef STB_IMAGE_WRITE_IMPLEMENTATION
 
 void saveImage(const std::string& strFileName) {
@@ -101,6 +103,15 @@ template <class T, ushort D>
 void Visualization<T, D>::addScatter2d() {
   PLOGD_(VISPLOGID) << "Opening Scatter2d.";
   auto myplot{std::make_unique<Scatter2d<T>>(this->m_id)};
+  ++this->m_id;
+  this->m_plots.push_back(std::move(myplot));
+  this->bindSimulation();
+}
+
+template <class T, ushort D>
+void Visualization<T, D>::addTimePlot() {
+  PLOGD_(VISPLOGID) << "Opening TimePlot.";
+  auto myplot{std::make_unique<TimePlot<T, D>>(this->m_id)};
   ++this->m_id;
   this->m_plots.push_back(std::move(myplot));
   this->bindSimulation();

@@ -1,8 +1,8 @@
 #ifndef IMPLOT_TRANSFORMERS_H
 #define IMPLOT_TRANSFORMERS_H
 
-#include <implot.h>
-#include <implot_internal.h>
+#include <implot/implot.h>
+#include <implot/implot_internal.h>
 
 #ifndef IMPLOT_NO_FORCE_INLINE
 #  ifdef _MSC_VER
