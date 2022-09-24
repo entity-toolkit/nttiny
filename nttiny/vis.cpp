@@ -246,8 +246,9 @@ void Visualization<T, D>::drawMainMenuBar() {
 
   if (ImGui::BeginMenu("Menu")) {
     ImGui::MenuItem("(plots)", NULL, false, false);
-    if (ImGui::MenuItem("add pcolor")) { addPcolor2d(0, 1); }
+    if (ImGui::MenuItem("add pcolor")) { addPcolor2d(0, 0); }
     if (ImGui::MenuItem("add scatter")) { addScatter2d(); }
+    if (ImGui::MenuItem("add timeplot")) { addTimePlot(); }
     ImGui::Separator();
     ImGui::MenuItem("(state)", NULL, false, false);
     if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " save")) {

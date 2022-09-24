@@ -113,7 +113,7 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
                                ImPlotPoint(x1max, x1max),
                                ImPlotAxisFlags_NoGridLines);
     } else {
-      ImPlot::PlotHeatmapCart("##",
+      ImPlot::PlotHeatmapCart(Sim->get_field_names()[this->m_field_selected],
                               Sim->get_selected_field(this->m_field_selected),
                               sx2 + 2 * ngh,
                               sx1 + 2 * ngh,

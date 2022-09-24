@@ -182,7 +182,7 @@ struct Example2 : public nttiny::SimulationAPI<float, 2> {
 };
 
 /* -------------------------------------------------------------------------- */
-/*                     2D logR spherical grid + particles                     */
+/*                2D logR spherical grid + particles + buffers                */
 /* -------------------------------------------------------------------------- */
 struct Example3 : public nttiny::SimulationAPI<float, 2> {
   const float m_rmin, m_rmax;
@@ -211,6 +211,11 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
 
     this->particles.insert({"e-", {nprtl, {new float[nprtl], new float[nprtl]}}});
     this->particles.insert({"e+", {nprtl, {new float[nprtl], new float[nprtl]}}});
+
+    nttiny::ScrollingBuffer b1, b2, b3;
+    this->buffers.insert({"sum_er", std::move(b1)});
+    this->buffers.insert({"mean_bphi", std::move(b2)});
+    this->buffers.insert({"er(20, 20)", std::move(b3)});
 
     this->m_timestep = 0;
     this->m_time = 0.0;
@@ -254,7 +259,20 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
       }
     }
   }
-  void setData() override {}
+  void setData() override {
+    const auto sx1{this->m_global_grid.m_size[0]};
+    const auto sx2{this->m_global_grid.m_size[1]};
+    auto sum_er{0.0f}, mean_bphi{0.0f};
+    for (int j{0}; j < sx2; ++j) {
+      for (int i{0}; i < sx1; ++i) {
+        sum_er += (this->fields)["er"][Index(i, j)];
+        mean_bphi += (this->fields)["bphi"][Index(i, j)];
+      }
+    }
+    this->buffers["sum_er"].AddPoint(this->m_time, sum_er);
+    this->buffers["mean_bphi"].AddPoint(this->m_time, -mean_bphi / (float)(sx1 * sx2));
+    this->buffers["er(20, 20)"].AddPoint(this->m_time, (this->fields)["er"][Index(20, 20)]); 
+  }
   void restart() override {
     initData();
     this->m_time = 0.0;

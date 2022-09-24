@@ -159,6 +159,20 @@ struct SimulationAPI {
     auto field_selected = static_cast<std::string>(field_names[field_selected_int]);
     return fields[field_selected];
   }
+  auto get_buffer_names() const -> const char** {
+    auto buffer_names = new const char*[buffers.size()];
+    int i{0};
+    for (const auto& buf : buffers) {
+      buffer_names[i] = buf.first.c_str();
+      ++i;
+    }
+    return buffer_names;
+  }
+  auto get_selected_buffer(const int& buffer_selected_int) -> ScrollingBuffer* {
+    auto buffer_names = get_buffer_names();
+    auto buffer_selected = static_cast<std::string>(buffer_names[buffer_selected_int]);
+    return &buffers[buffer_selected];
+  }
   auto get_min_max(const int& field_selected_int, const bool& use_log) -> std::pair<T, T> {
     auto array = get_selected_field(field_selected_int);
     T min = (T)(1e20), max = -(T)(1e20);
