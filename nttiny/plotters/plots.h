@@ -3,6 +3,7 @@
 
 #include "defs.h"
 #include "api.h"
+#include "metadata.h"
 
 #include <implot/implot.h>
 #include <toml11/toml.hpp>
@@ -14,39 +15,9 @@
 
 namespace nttiny {
 
-struct PlotMetadata {
-  int m_ID;
-  std::string m_type;
-  bool m_log;
-  float m_vmin, m_vmax;
-  std::string m_cmap;
-  int m_field_selected;
-
-  void writeToFile(const std::string& fname, bool rewrite = false) {
-    const toml::value data{{"ID", m_ID},
-                           {"type", m_type},
-                           {"log", m_log},
-                           {"vmin", m_vmin},
-                           {"vmax", m_vmax},
-                           {"cmap", m_cmap},
-                           {"field_selected", m_field_selected}};
-    std::ofstream export_file;
-    if (rewrite) {
-      export_file.open(fname);
-    } else {
-      export_file.open(fname, std::fstream::app);
-    }
-    if (export_file.is_open()) {
-      export_file << "[Plot." << m_ID << "]\n";
-      export_file << data;
-      export_file << "\n";
-      export_file.close();
-    } else {
-      throw std::runtime_error("ERROR: Cannot open file.");
-    }
-  }
-};
-
+/**
+ * @brief Parent class for all plots.
+ */
 template <class T, ushort D>
 class Ax {
 protected:
@@ -57,12 +28,81 @@ public:
   Ax(int id) : m_ID(id) {}
   virtual ~Ax() = default;
   auto close() const -> bool { return ImGui::Button("delete"); }
-  virtual auto draw(ImPlotRect&, UISettings&) -> bool { return false; }
-  virtual auto getId() -> int { return -1; }
-  virtual auto exportMetadata() -> PlotMetadata { return PlotMetadata(); }
-  virtual void importMetadata(const PlotMetadata&){};
+  virtual auto draw(ImPlotRect&, UISettings&) -> bool = 0;
+  virtual auto exportMetadata() -> PlotMetadata* = 0;
+  virtual void importMetadata(const toml::value&) = 0;
   void bindSimulation(SimulationAPI<T, D>* sim) { this->m_sim = sim; }
   auto getId() const -> int { return this->m_ID; }
+};
+
+/**
+ * @brief Parent class for all 2D plots.
+ */
+template <class T>
+struct Plot2d : public Ax<T, 2> {
+  Plot2d(int id) : Ax<T, 2>(id) {}
+  ~Plot2d() override = default;
+  void outlineDomain(UISettings&);
+
+  bool m_share_axes{true};
+};
+
+/**
+ * @brief 2D pseudocolor plot.
+ */
+template <class T>
+class Pcolor2d : public Plot2d<T> {
+protected:
+  bool m_log{false};
+  bool m_autoscale{false};
+  T m_vmin{(T)0.0}, m_vmax{(T)0.0};
+  ImPlotColormap m_cmap{ImPlotColormap_Jet};
+  int m_field_selected{0};
+  void rescaleMinMax();
+
+public:
+  Pcolor2d(int id) : Plot2d<T>(id) {}
+  ~Pcolor2d() override = default;
+  auto draw(ImPlotRect&, UISettings&) -> bool override;
+  auto exportMetadata() -> PlotMetadata* override;
+  void importMetadata(const toml::value&) override;
+};
+
+/**
+ * @brief 2D scatter plot.
+ */
+template <class T>
+class Scatter2d : public Plot2d<T> {
+protected:
+  bool* m_prtl_enabled{nullptr};
+  const char** m_prtl_names;
+
+public:
+  Scatter2d(int id) : Plot2d<T>(id) {}
+  ~Scatter2d() override = default;
+  auto draw(ImPlotRect&, UISettings&) -> bool override;
+  auto exportMetadata() -> PlotMetadata* override;
+  void importMetadata(const toml::value&) override;
+};
+
+/**
+ * @brief Dynamically updated 1D plot.
+ */
+template <class T, ushort D>
+struct TimePlot : public Ax<T, D> {
+protected:
+  int m_buff_selected{0};
+  bool m_autoscale_y{true};
+  bool m_roll_x{true};
+  bool m_log_y{false};
+  T m_timespan{1000.0f};
+
+public:
+  TimePlot(int id) : Ax<T, D>(id) {}
+  ~TimePlot() override = default;
+  auto draw(ImPlotRect&, UISettings&) -> bool override;
+  auto exportMetadata() -> PlotMetadata* override;
+  void importMetadata(const toml::value&) override;
 };
 
 } // namespace nttiny

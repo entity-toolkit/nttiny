@@ -4,8 +4,6 @@
 #include "window.h"
 #include "api.h"
 #include "plots.h"
-#include "plots_1d.h"
-#include "plots_2d.h"
 
 #include <plog/Log.h>
 #include <plog/Init.h>
@@ -54,7 +52,7 @@ public:
   void drawControls();
   void processControllerInput();
   void loop();
-  void addPcolor2d(float vmin, float vmax);
+  void addPcolor2d();
   void addScatter2d();
   void addTimePlot();
 

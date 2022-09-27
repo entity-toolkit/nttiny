@@ -1,6 +1,7 @@
 #include "defs.h"
 #include "api.h"
-#include "plots_1d.h"
+#include "metadata.h"
+#include "plots.h"
 
 #include <implot/implot.h>
 
@@ -67,15 +68,24 @@ auto TimePlot<T, D>::draw(ImPlotRect&, UISettings&) -> bool {
 }
 
 template <class T, ushort D>
-auto TimePlot<T, D>::exportMetadata() -> PlotMetadata {
-  PlotMetadata metadata;
-  metadata.m_ID = this->m_ID;
-  metadata.m_type = "TimePlot";
+auto TimePlot<T, D>::exportMetadata() -> PlotMetadata* {
+  auto metadata = new TimeplotMetadata<T>{this->m_ID};
+  metadata->m_buff_selected = m_buff_selected;
+  metadata->m_autoscale_y = m_autoscale_y;
+  metadata->m_roll_x = m_roll_x;
+  metadata->m_log_y = m_log_y;
+  metadata->m_timespan = m_timespan;
   return metadata;
 }
 
 template <class T, ushort D>
-void TimePlot<T, D>::importMetadata(const PlotMetadata&) {}
+void TimePlot<T, D>::importMetadata(const toml::value& metadata) {
+  m_buff_selected = toml::find<int>(metadata, "buff_selected");
+  m_autoscale_y = toml::find<bool>(metadata, "autoscale_y");
+  m_roll_x = toml::find<bool>(metadata, "roll_x");
+  m_log_y = toml::find<bool>(metadata, "log_y");
+  m_timespan = toml::find<T>(metadata, "timespan");
+}
 
 } // namespace nttiny
 

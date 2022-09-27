@@ -3,8 +3,7 @@
 
 #include "api.h"
 #include "style.h"
-#include "plots_1d.h"
-#include "plots_2d.h"
+#include "plots.h"
 
 #include <plog/Log.h>
 #include <plog/Init.h>
@@ -91,9 +90,9 @@ Visualization<T, D>::~Visualization() {
 }
 
 template <class T, ushort D>
-void Visualization<T, D>::addPcolor2d(float vmin, float vmax) {
+void Visualization<T, D>::addPcolor2d() {
   PLOGD_(VISPLOGID) << "Opening Pcolor2d.";
-  auto myplot{std::make_unique<Pcolor2d<T>>(this->m_id, vmin, vmax)};
+  auto myplot{std::make_unique<Pcolor2d<T>>(this->m_id)};
   ++this->m_id;
   this->m_plots.push_back(std::move(myplot));
   this->bindSimulation();
@@ -246,7 +245,7 @@ void Visualization<T, D>::drawMainMenuBar() {
 
   if (ImGui::BeginMenu("Menu")) {
     ImGui::MenuItem("(plots)", NULL, false, false);
-    if (ImGui::MenuItem("add pcolor")) { addPcolor2d(0, 0); }
+    if (ImGui::MenuItem("add pcolor")) { addPcolor2d(); }
     if (ImGui::MenuItem("add scatter")) { addScatter2d(); }
     if (ImGui::MenuItem("add timeplot")) { addTimePlot(); }
     ImGui::Separator();
@@ -256,8 +255,8 @@ void Visualization<T, D>::drawMainMenuBar() {
       auto cntr{0};
       for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
         ++cntr;
-        auto metadata = (*plot)->exportMetadata();
-        metadata.writeToFile(STATE_FILENAME, rewrite);
+        auto* metadata = (*plot)->exportMetadata();
+        metadata->writeToFile(STATE_FILENAME, rewrite);
         rewrite = false;
       }
       std::ofstream export_file;
@@ -275,20 +274,15 @@ void Visualization<T, D>::drawMainMenuBar() {
         auto npanels = toml::find<int>(panels, "npanels");
         for (int i{0}; i < npanels; ++i) {
           const auto& plot = toml::find(panels, std::to_string(i));
-          PlotMetadata metadata;
-          metadata.m_field_selected = toml::find<int>(plot, "field_selected");
-          metadata.m_type = toml::find<std::string>(plot, "type");
-          metadata.m_cmap = toml::find<std::string>(plot, "cmap");
-          metadata.m_vmax = toml::find<float>(plot, "vmax");
-          metadata.m_vmin = toml::find<float>(plot, "vmin");
-          metadata.m_log = toml::find<bool>(plot, "log");
-          if (metadata.m_type == "Pcolor2d") {
-            addPcolor2d(metadata.m_vmin, metadata.m_vmax);
-            this->m_plots.back()->importMetadata(metadata);
-          } else if (metadata.m_type == "Scatter2d") {
+          const auto type = toml::find<std::string>(plot, "type");
+          if (type == "Pcolor2d") {
+            addPcolor2d();
+          } else if (type == "Scatter2d") {
             addScatter2d();
-            this->m_plots.back()->importMetadata(metadata);
+          } else if (type == "TimePlot") {
+            addTimePlot();
           }
+          this->m_plots.back()->importMetadata(plot);
         }
       }
       catch (std::exception& err) {
