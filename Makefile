@@ -188,7 +188,7 @@ ${__EXTERN_DIR}/freetype/build/libfreetype.a :
 	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/freetype && cmake -B build $(FREETYPE_SETTINGS) -D CMAKE_BUILD_TYPE=Release && cd build && $(MAKE) -j `ncores`
 
 nttiny_clean:
-	rm -rf ${__BUILD_DIR}/*.o ${__BUILD_DIR}/*.d $(filter-out ${__BUILD_DIR}/lib/, $(wildcard ${__BUILD_DIR}/**/))
+	rm -rf ${__BUILD_DIR}/*.o ${__BUILD_DIR}/*.d ${__BUILD_DIR}/libnttiny.a $(filter-out ${__BUILD_DIR}/lib/, $(wildcard ${__BUILD_DIR}/**/))
 	rm -rf ${__BIN_DIR}
 
 nttiny_cleanlib:
