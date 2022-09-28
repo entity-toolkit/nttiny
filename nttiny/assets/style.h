@@ -82,12 +82,12 @@ void SetupStyle(const float& scale) {
     static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
     ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(faRegular_compressed_data,
                                                          faRegular_compressed_size,
-                                                         8.0f * scale,
+                                                         10.0f * scale,
                                                          &icons_config,
                                                          icons_ranges);
     ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(faSolid_compressed_data,
                                                          faSolid_compressed_size,
-                                                         8.0f * scale,
+                                                         10.0f * scale,
                                                          &icons_config,
                                                          icons_ranges);
     ImGui::GetIO().Fonts->Build();

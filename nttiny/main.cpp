@@ -408,7 +408,7 @@ struct Example4 : public nttiny::SimulationAPI<double, 2> {
 };
 
 auto main(int argc, char** argv) -> int {
-  float scale = 2.0f;
+  float scale = 1.0f;
   if (argc == 3) {
     if (std::string(argv[1]) == "-scale" || std::string(argv[1]) == "-s") {
       scale = std::stof(argv[2]);

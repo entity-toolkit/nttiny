@@ -36,7 +36,12 @@ include extern/nttiny/Makefile
 > Alternatively you could simply compile `nttiny` as a static library (`make nttiny_static -j`) and link the generated file to your project.
 
 ## Releases
-
+* `v0.6.3` [Sep 2022]:
+  - timeplot added
+  - collapsible controls
+  - better organizing state saving/loading
+  - minor bug fixes
+  - minor UI improvements
 * `v0.6.2` [Sep 2022]:
   - better menu ui
   - better legends (cmap selector) + plot control
@@ -121,4 +126,4 @@ Your system might already have a globally preinstalled `glfw` (to test that run 
 
 ### Note on `freetype`
 
-On some of the hidpi monitors using freetype for font rasterization may improve the text quality. For that it is advised to compile the code together with the freetype library (included as a submodule). To disable this behavior set `COMPILE_FREETYPE=n` during compilation.
+On some of the hidpi monitors using freetype for font rasterization may improve the text quality. To enable/disable this behavior set `COMPILE_FREETYPE=y/n` during compilation (set to `n` by default).

@@ -134,7 +134,6 @@ void Visualization<T, D>::bindSimulation(SimulationAPI<T, D>* sim) {
 
 template <class T, ushort D>
 void Visualization<T, D>::drawControls() {
-  ImGui::BeginChild("simulation control");
   ImGui::TextWrapped("t = %.3f [%d dt]", this->m_sim->get_time(), this->m_sim->get_timestep());
   {
     /* ------------------------------ step backward ----------------------------- */
@@ -177,7 +176,7 @@ void Visualization<T, D>::drawControls() {
     int dir = this->m_sim->is_forward() ? 1 : 0;
     const char* directions[2] = {ICON_FA_BACKWARD, ICON_FA_FORWARD};
     const char* direction = directions[dir];
-    ImGui::SetNextItemWidth(4 * ImGui::GetFontSize());
+    ImGui::SetNextItemWidth(2 * ImGui::GetFontSize());
     ImGui::SliderInt("##direction", &dir, 0, 1, direction);
     if (this->m_sim->is_forward() != static_cast<bool>(dir == 1)) { this->m_sim->reverse(); }
 
@@ -193,10 +192,11 @@ void Visualization<T, D>::drawControls() {
   ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(6.0f / 7.0f, 0.6f, 0.6f));
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(6.0f / 7.0f, 0.7f, 0.7f));
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(6.0f / 7.0f, 0.8f, 0.8f));
-  if (ImGui::Button("Save snapshot")) { this->m_save_image = true; }
+  if (ImGui::Button("Save snapshot", ImVec2(-1, 2 * ImGui::GetFontSize()))) {
+    this->m_save_image = true;
+  }
   ImGui::PopStyleColor(3);
   ImGui::PopID();
-  ImGui::EndChild();
 }
 
 template <class T, ushort D>
@@ -263,6 +263,13 @@ void Visualization<T, D>::drawMainMenuBar() {
       export_file.open(STATE_FILENAME, std::fstream::app);
       if (export_file.is_open()) {
         export_file << "[Plot]\nnpanels = " << cntr << "\n";
+        export_file << std::fixed << std::setprecision(3) << "outline_color = ["
+                    << this->UI_Settings.OutlineColor.x << ", " << this->UI_Settings.OutlineColor.y
+                    << ", " << this->UI_Settings.OutlineColor.z << ", "
+                    << this->UI_Settings.OutlineColor.w << "]\n";
+        export_file << std::fixed << std::setprecision(3) << "range = [" << this->SharedAxes.X.Min
+                    << ", " << this->SharedAxes.X.Max << ", " << this->SharedAxes.Y.Min << ", "
+                    << this->SharedAxes.Y.Max << "]\n";
         export_file.close();
       }
     }
@@ -272,6 +279,14 @@ void Visualization<T, D>::drawMainMenuBar() {
         auto input = toml::parse("nttiny.toml");
         const auto& panels = toml::find(input, "Plot");
         auto npanels = toml::find<int>(panels, "npanels");
+        auto outline_color = toml::find<std::vector<float>>(panels, "outline_color");
+        this->UI_Settings.OutlineColor
+            = ImVec4(outline_color[0], outline_color[1], outline_color[2], outline_color[3]);
+        auto range = toml::find<std::vector<float>>(panels, "range");
+        this->SharedAxes.X.Min = range[0];
+        this->SharedAxes.X.Max = range[1];
+        this->SharedAxes.Y.Min = range[2];
+        this->SharedAxes.Y.Max = range[3];
         for (int i{0}; i < npanels; ++i) {
           const auto& plot = toml::find(panels, std::to_string(i));
           const auto type = toml::find<std::string>(plot, "type");
@@ -385,8 +400,16 @@ void Visualization<T, D>::loop() {
 
     if (ImGui::Begin("main dashboard", &open, flags)) {
       {
-        ImGui::BeginChild("controls", ImVec2(15 * ImGui::GetFontSize(), 0), true);
-        this->drawControls();
+        ImGui::BeginChild("controls",
+                          this->m_collapsed_controls ? ImVec2(2 * ImGui::GetFontSize(), 0)
+                                                     : ImVec2(15 * ImGui::GetFontSize(), 0),
+                          true);
+        if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE,
+                          ImVec2(-1, 2 * ImGui::GetFontSize()))) {
+          this->m_collapsed_controls = !this->m_collapsed_controls;
+        }
+        ImGui::Separator();
+        if (!this->m_collapsed_controls) { this->drawControls(); }
         ImGui::EndChild();
       }
       ImGui::SameLine();

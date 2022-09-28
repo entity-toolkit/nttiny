@@ -31,7 +31,8 @@ class Visualization {
   plog::ColorConsoleAppender<plog::TxtFormatter> m_console_appender;
   std::vector<std::unique_ptr<Ax<T, D>>> m_plots;
   ImPlotRect SharedAxes{0, 1, 0, 1};
-  bool m_save_image {false};
+  bool m_save_image{false};
+  bool m_collapsed_controls{false};
 
 protected:
   SimulationAPI<T, D>* m_sim;
@@ -40,9 +41,9 @@ protected:
   bool m_resizable;
 
 public:
-  Visualization(float scale = 2.0f,
-                int win_width = 1920,
-                int win_height = 1080,
+  Visualization(float scale = 1.0f,
+                int win_width = 2560,
+                int win_height = 1440,
                 bool resizable = true);
   ~Visualization();
   void bindSimulation();
