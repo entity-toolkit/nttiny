@@ -134,6 +134,36 @@ void Visualization<T, D>::bindSimulation(SimulationAPI<T, D>* sim) {
 
 template <class T, ushort D>
 void Visualization<T, D>::drawControls() {
+  ImGui::BeginChild("controls",
+                    this->m_collapsed_controls ? ImVec2(2 * ImGui::GetFontSize(), 0)
+                                               : ImVec2(15 * ImGui::GetFontSize(), 0),
+                    true);
+  if (!this->m_collapsed_controls) {
+    ImGui::SameLine(ImGui::GetWindowWidth() - 4 * ImGui::GetFontSize()
+                    - 2 * ImGui::GetStyle().FramePadding.x);
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered()) {
+      ImGui::BeginTooltip();
+      ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+      ImGui::TextUnformatted("Click to collapse the control sidebar.");
+      ImGui::PopTextWrapPos();
+      ImGui::EndTooltip();
+    }
+    ImGui::SameLine(ImGui::GetWindowWidth() - 2 * ImGui::GetFontSize()
+                    - 2 * ImGui::GetStyle().FramePadding.x);
+  }
+  auto size = this->m_collapsed_controls
+                ? ImVec2(-1, 2 * ImGui::GetFontSize())
+                : ImVec2(2 * ImGui::GetFontSize(), 2 * ImGui::GetFontSize());
+  if (ImGui::Button(this->m_collapsed_controls ? ICON_FA_RIGHT_LONG : ICON_FA_LEFT_LONG, size)) {
+    this->m_collapsed_controls = !this->m_collapsed_controls;
+  }
+  ImGui::Separator();
+  if (this->m_collapsed_controls) {
+    ImGui::EndChild();
+    return;
+  }
+
   ImGui::TextWrapped("t = %.3f [%d dt]", this->m_sim->get_time(), this->m_sim->get_timestep());
   {
     /* ------------------------------ step backward ----------------------------- */
@@ -197,6 +227,8 @@ void Visualization<T, D>::drawControls() {
   }
   ImGui::PopStyleColor(3);
   ImGui::PopID();
+
+  ImGui::EndChild();
 }
 
 template <class T, ushort D>
@@ -270,6 +302,8 @@ void Visualization<T, D>::drawMainMenuBar() {
         export_file << std::fixed << std::setprecision(3) << "range = [" << this->SharedAxes.X.Min
                     << ", " << this->SharedAxes.X.Max << ", " << this->SharedAxes.Y.Min << ", "
                     << this->SharedAxes.Y.Max << "]\n";
+        export_file << "collapsed_controls = " << (this->m_collapsed_controls ? "true" : "false")
+                    << "\n";
         export_file.close();
       }
     }
@@ -278,15 +312,17 @@ void Visualization<T, D>::drawMainMenuBar() {
       try {
         auto input = toml::parse("nttiny.toml");
         const auto& panels = toml::find(input, "Plot");
-        auto npanels = toml::find<int>(panels, "npanels");
-        auto outline_color = toml::find<std::vector<float>>(panels, "outline_color");
+        auto npanels = toml::find_or<int>(panels, "npanels", 0);
+        auto outline_color
+            = toml::find_or<std::vector<float>>(panels, "outline_color", {1.0f, 1.0f, 1.0f, 1.0f});
         this->UI_Settings.OutlineColor
             = ImVec4(outline_color[0], outline_color[1], outline_color[2], outline_color[3]);
-        auto range = toml::find<std::vector<float>>(panels, "range");
+        auto range = toml::find_or<std::vector<float>>(panels, "range", {0, 1, 0, 1});
         this->SharedAxes.X.Min = range[0];
         this->SharedAxes.X.Max = range[1];
         this->SharedAxes.Y.Min = range[2];
         this->SharedAxes.Y.Max = range[3];
+        this->m_collapsed_controls = toml::find_or<bool>(panels, "collapsed_controls", false);
         for (int i{0}; i < npanels; ++i) {
           const auto& plot = toml::find(panels, std::to_string(i));
           const auto type = toml::find<std::string>(plot, "type");
@@ -399,19 +435,7 @@ void Visualization<T, D>::loop() {
     bool open = true;
 
     if (ImGui::Begin("main dashboard", &open, flags)) {
-      {
-        ImGui::BeginChild("controls",
-                          this->m_collapsed_controls ? ImVec2(2 * ImGui::GetFontSize(), 0)
-                                                     : ImVec2(15 * ImGui::GetFontSize(), 0),
-                          true);
-        if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE,
-                          ImVec2(-1, 2 * ImGui::GetFontSize()))) {
-          this->m_collapsed_controls = !this->m_collapsed_controls;
-        }
-        ImGui::Separator();
-        if (!this->m_collapsed_controls) { this->drawControls(); }
-        ImGui::EndChild();
-      }
+      { this->drawControls(); }
       ImGui::SameLine();
       {
         ImGui::BeginChild("plots", ImVec2(-1, -1), false);
