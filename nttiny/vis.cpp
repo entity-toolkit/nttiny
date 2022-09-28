@@ -442,9 +442,9 @@ void Visualization<T, D>::loop() {
         auto rows = std::fmax((int)std::ceil(this->m_plots.size() / 3.0f), 1);
         auto cols = std::fmin(std::fmax(this->m_plots.size(), 1), 3);
         if (ImPlot::BeginSubplots(
-                "##subplots", rows, cols, ImVec2(-1, -1), ImPlotSubplotFlags_None)) {
+                "##subplots", rows, cols, ImVec2(-1, -1), ImPlotSubplotFlags_NoAlign)) {
           for (std::size_t i{0}; i < this->m_plots.size(); ++i) {
-            ImGui::PushID(i);
+            ImGui::PushID(this->m_plots[i]->getId());
             close_plots.push_back(this->m_plots[i]->draw(this->SharedAxes, this->UI_Settings));
             ImGui::PopID();
           }
