@@ -222,8 +222,20 @@ void Visualization<T, D>::drawControls() {
   ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(6.0f / 7.0f, 0.6f, 0.6f));
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(6.0f / 7.0f, 0.7f, 0.7f));
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(6.0f / 7.0f, 0.8f, 0.8f));
-  if (ImGui::Button("Save snapshot", ImVec2(-1, 2 * ImGui::GetFontSize()))) {
+  if (ImGui::Button(ICON_FA_IMAGE " save snapshot", ImVec2(-1, 2 * ImGui::GetFontSize()))) {
     this->m_save_image = true;
+  }
+  ImGui::PopStyleColor(3);
+  ImGui::PopID();
+
+  ImGui::PushID("record");
+  ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.575f, 1.0f, 1.0f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.575f, 0.7f, 0.7f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.575f, 0.8f, 0.8f));
+  if (ImGui::Button(this->m_save_video ? ICON_FA_VIDEO_SLASH " stop recording"
+                                       : ICON_FA_VIDEO " start recording",
+                    ImVec2(-1, 2 * ImGui::GetFontSize()))) {
+    this->m_save_video = !this->m_save_video;
   }
   ImGui::PopStyleColor(3);
   ImGui::PopID();
@@ -474,6 +486,10 @@ void Visualization<T, D>::loop() {
     if (this->m_save_image) {
       saveImage("image.png");
       this->m_save_image = false;
+    }
+
+    if ((this->m_save_video) && (this->m_sim->m_data_changed)) {
+      saveImage("frames/frame_" + std::to_string(this->m_sim->get_timestep()) + ".png");
     }
 
     this->m_sim->m_data_changed = false;

@@ -32,6 +32,7 @@ class Visualization {
   std::vector<std::unique_ptr<Ax<T, D>>> m_plots;
   ImPlotRect SharedAxes{0, 1, 0, 1};
   bool m_save_image{false};
+  bool m_save_video{false}, m_save_videoframe{false};
   bool m_collapsed_controls{false};
 
 protected:
