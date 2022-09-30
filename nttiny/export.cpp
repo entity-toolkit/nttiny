@@ -47,6 +47,6 @@ void saveImage(const std::string& fileName, const std::string& path) {
 
   stbi_flip_vertically_on_write(true);
 
-  if (!fs::exists(path)) { fs::create_directory(path); }
+  if (!fs::exists(path)) { fs::create_directories(path); }
   stbi_write_png((path + fileName).c_str(), nWidth, nHeight, 4, pixels.data(), 4 * nWidth);
 }
