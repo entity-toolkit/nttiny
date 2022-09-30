@@ -1,9 +1,12 @@
 #include "defs.h"
+#include "export.h"
 #include "vis.h"
 
 #include "api.h"
 #include "style.h"
 #include "plots.h"
+
+#include "imgui_notify.h"
 
 #include <plog/Log.h>
 #include <plog/Init.h>
@@ -28,24 +31,6 @@
 #include <fstream>
 #include <filesystem>
 #include <stdexcept>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb/stb_image_write.h>
-#undef STB_IMAGE_WRITE_IMPLEMENTATION
-
-void saveImage(const std::string& strFileName) {
-  ImGuiIO io = ImGui::GetIO();
-  int x = 0;
-  int y = 0;
-  int nWidth = io.DisplaySize.x * io.DisplayFramebufferScale.x;
-  int nHeight = io.DisplaySize.y * io.DisplayFramebufferScale.y;
-
-  std::vector<unsigned char> pixels(4 * nWidth * nHeight);
-  glReadPixels(x, y, nWidth, nHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
-
-  stbi_flip_vertically_on_write(true);
-  stbi_write_png(strFileName.c_str(), nWidth, nHeight, 4, pixels.data(), 4 * nWidth);
-}
 
 namespace nttiny {
 
@@ -236,6 +221,10 @@ void Visualization<T, D>::drawControls() {
                                        : ICON_FA_VIDEO " start recording",
                     ImVec2(-1, 2 * ImGui::GetFontSize()))) {
     this->m_save_video = !this->m_save_video;
+    if (!this->m_save_video) {
+      ImGui::InsertNotification(
+          {ImGuiToastType_Info, 3000, "Frames for video saved in `%s`", "bin/frames/"});
+    }
   }
   ImGui::PopStyleColor(3);
   ImGui::PopID();
@@ -475,6 +464,7 @@ void Visualization<T, D>::loop() {
     }
 
     ImGui::End();
+    ImGui::RenderNotifications();
     ImGui::Render();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -484,12 +474,16 @@ void Visualization<T, D>::loop() {
 
     this->m_window->unuse();
     if (this->m_save_image) {
-      saveImage("image.png");
+      const auto fname = "frame_" + std::to_string(this->m_sim->get_timestep()) + ".png";
+      const auto fdir = "bin/";
+      saveImage(fname, fdir);
       this->m_save_image = false;
+      ImGui::InsertNotification(
+          {ImGuiToastType_Info, 3000, "Snapshot saved as `%s`", (fdir + fname).c_str()});
     }
 
     if ((this->m_save_video) && (this->m_sim->m_data_changed)) {
-      saveImage("frames/frame_" + std::to_string(this->m_sim->get_timestep()) + ".png");
+      saveImage("frame_" + std::to_string(this->m_sim->get_timestep()) + ".png", "bin/frames/");
     }
 
     this->m_sim->m_data_changed = false;

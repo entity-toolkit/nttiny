@@ -88,7 +88,7 @@ endif
 NTTINY_WARNFLAGS := -Wall -Wextra
 NTTINY_CFLAGS := $(NTTINY_WARNFLAGS) $(NTTINY_CFLAGS)
 
-NTTINY_EXTERNAL_INCLUDES := glfw/include implot imgui imgui/backends plog/include KHR toml11 freetype/include stb
+NTTINY_EXTERNAL_INCLUDES := glfw/include implot imgui imgui/backends plog/include KHR toml11 freetype/include stb filesystem/include
 NTTINY_INC_DIRS := ${__SRC_DIR} $(filter %/, $(wildcard ${__SRC_DIR}/**/)) ${__EXTERN_DIR} $(addprefix ${__EXTERN_DIR}/,${NTTINY_EXTERNAL_INCLUDES})
 NTTINY_INCFLAGS := $(addprefix -I,$(NTTINY_INC_DIRS))
 
@@ -173,7 +173,7 @@ ${__BUILD_DIR}/lib/libglfw3.a : ${__EXTERN_DIR}/glfw/build/src/libglfw3.a
 
 ${__EXTERN_DIR}/glfw/build/src/libglfw3.a :
 	@echo [B]uilding GLFW
-	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/glfw && cmake -B build -D CMAKE_BUILD_TYPE=Release && cd build && $(MAKE) -j `ncores`
+	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/glfw && cmake -B build -D CMAKE_BUILD_TYPE=Release && cd build && $(MAKE) -j
 
 freetype : ${__BUILD_DIR}/lib/libfreetype.a
 
@@ -185,7 +185,7 @@ FREETYPE_SETTINGS := -D FT_DISABLE_BROTLI=TRUE -D FT_DISABLE_HARFBUZZ=TRUE -D FT
 
 ${__EXTERN_DIR}/freetype/build/libfreetype.a :
 	@echo [B]uilding freetype
-	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/freetype && cmake -B build $(FREETYPE_SETTINGS) -D CMAKE_BUILD_TYPE=Release && cd build && $(MAKE) -j `ncores`
+	$(HIDE)cd ${NTTINY_ROOT_DIR}/extern/freetype && cmake -B build $(FREETYPE_SETTINGS) -D CMAKE_BUILD_TYPE=Release && cd build && $(MAKE) -j
 
 nttiny_clean:
 	rm -rf ${__BUILD_DIR}/*.o ${__BUILD_DIR}/*.d ${__BUILD_DIR}/libnttiny.a $(filter-out ${__BUILD_DIR}/lib/, $(wildcard ${__BUILD_DIR}/**/))

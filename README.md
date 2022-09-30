@@ -36,6 +36,11 @@ include extern/nttiny/Makefile
 > Alternatively you could simply compile `nttiny` as a static library (`make nttiny_static -j`) and link the generated file to your project.
 
 ## Releases
+* `v0.6.4` [Sep 2022]:
+  - notifications
+  - movie recording (frames)
+  - more advanced file saving (directory creation)
+  - ignoring warnings for some external depends
 * `v0.6.3` [Sep 2022]:
   - timeplot added
   - collapsible controls
