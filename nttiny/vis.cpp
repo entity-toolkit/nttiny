@@ -475,7 +475,7 @@ void Visualization<T, D>::loop() {
     this->m_window->unuse();
     if (this->m_save_image) {
       const auto fname = "frame_" + std::to_string(this->m_sim->get_timestep()) + ".png";
-      const auto fdir = "bin/";
+      const auto fdir = "snapshots/";
       saveImage(fname, fdir);
       this->m_save_image = false;
       ImGui::InsertNotification(
@@ -483,7 +483,7 @@ void Visualization<T, D>::loop() {
     }
 
     if ((this->m_save_video) && (this->m_sim->m_data_changed)) {
-      saveImage("frame_" + std::to_string(this->m_sim->get_timestep()) + ".png", "bin/frames/");
+      saveImage("frame_" + std::to_string(this->m_sim->get_timestep()) + ".png", "videos/frames/");
     }
 
     this->m_sim->m_data_changed = false;
