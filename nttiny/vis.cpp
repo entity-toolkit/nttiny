@@ -5,6 +5,7 @@
 #include "api.h"
 #include "style.h"
 #include "plots.h"
+#include "tools.h"
 
 #include "imgui_notify.h"
 
@@ -224,6 +225,7 @@ void Visualization<T, D>::drawControls() {
     if (!this->m_save_video) {
       ImGui::InsertNotification(
           {ImGuiToastType_Info, 3000, "Frames for video saved in `%s`", "bin/frames/"});
+      m_save_videoframe_count = 0;
     }
   }
   ImGui::PopStyleColor(3);
@@ -421,7 +423,9 @@ void Visualization<T, D>::loop() {
     ImGui::NewFrame();
 
     ++jumpover_counter;
-    Sim->updateData(jumpover_counter < 0 || (jumpover_counter % (Sim->get_jumpover()) == 0));
+    const bool jumpover_set
+        = (jumpover_counter < 0 || (jumpover_counter % (Sim->get_jumpover()) == 0));
+    Sim->updateData(jumpover_set);
 
     this->drawMainMenuBar();
 
@@ -482,8 +486,10 @@ void Visualization<T, D>::loop() {
           {ImGuiToastType_Info, 3000, "Snapshot saved as `%s`", (fdir + fname).c_str()});
     }
 
-    if ((this->m_save_video) && (this->m_sim->m_data_changed)) {
-      saveImage("frame_" + std::to_string(this->m_sim->get_timestep()) + ".png", "videos/frames/");
+    if ((this->m_save_video) && (this->m_sim->m_data_changed) && (jumpover_set)) {
+      saveImage("frame_" + tools::zeroPadLeft(std::to_string(m_save_videoframe_count), 5) + ".png",
+                "videos/frames/");
+      ++m_save_videoframe_count;
     }
 
     this->m_sim->m_data_changed = false;

@@ -33,6 +33,7 @@ class Visualization {
   ImPlotRect SharedAxes{0, 1, 0, 1};
   bool m_save_image{false};
   bool m_save_video{false}, m_save_videoframe{false};
+  int m_save_videoframe_count{0};
   bool m_collapsed_controls{false};
 
 protected:

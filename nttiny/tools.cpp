@@ -4,6 +4,9 @@
 #include <implot/implot.h>
 #include <imgui/imgui.h>
 
+#include <iomanip>
+#include <sstream>
+#include <string>
 #include <cmath>
 
 namespace nttiny::tools {
@@ -27,4 +30,11 @@ void drawCircle(const ImVec2& center,
   }
   ImPlot::PopPlotClipRect();
 }
+
+std::string zeroPadLeft(std::string const& str, int n, char paddedChar) {
+  std::ostringstream ss;
+  ss << std::right << std::setfill(paddedChar) << std::setw(n) << str;
+  return ss.str();
+}
+
 } // namespace nttiny::tools
