@@ -6,6 +6,8 @@ build/
 bin/
 *.tmp
 lib/
+snapshots/
+videos/
 run.sh
 imgui.ini
 nttiny.toml
