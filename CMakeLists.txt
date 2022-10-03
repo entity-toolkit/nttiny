@@ -42,6 +42,7 @@ message(NOTICE "\nmake nttiny -j: build static library")
 message(NOTICE "make nttiny.example -j: build the examples.cpp")
 message(NOTICE "make install: copy the static library...\n... and the examples executable to: ...\n... ${CMAKE_INSTALL_PREFIX}\n")
 
+list(APPEND LIBS ${CMAKE_DL_LIBS})
 file(WRITE ${CMAKE_INSTALL_PREFIX}/NTTINY_INC_DIRS "${INC_DIRS}")
 file(WRITE ${CMAKE_INSTALL_PREFIX}/NTTINY_LIB_DIRS "${LIB_DIRS}")
-file(WRITE ${CMAKE_INSTALL_PREFIX}/NTTINY_LIBS ${LIBS} ${CMAKE_DL_LIBS})
+file(WRITE ${CMAKE_INSTALL_PREFIX}/NTTINY_LIBS "${LIBS}")
