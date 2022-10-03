@@ -25,8 +25,6 @@ set(INC_DIRS ${INC_DIRS} ${PROJECT_SOURCE_DIR}/src/assets)
 set(INC_DIRS ${INC_DIRS} ${PROJECT_SOURCE_DIR}/src/ui)
 set(INC_DIRS ${INC_DIRS} ${PROJECT_SOURCE_DIR}/src/renderers)
 
-message(STATUS "src files = ${SRC_FILES}")
-
 target_compile_features(${EXECUTABLE} PRIVATE cxx_std_17)
 target_sources(${EXECUTABLE} PRIVATE ${SRC_FILES})
 
