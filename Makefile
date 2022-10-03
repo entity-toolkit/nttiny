@@ -9,14 +9,14 @@ NTTINY_BIN_DIR := bin
 NTTINY_TARGET := nttiny.example
 NTTINY_STATIC := libnttiny.a
 # static libraries
-COMPILE_GLFW ?= y
+COMPILE_GLFW ?= $(shell pkg-config --exists glfw3 && echo n || echo y)
 GLFW_TARGET :=
 ifeq (${COMPILE_GLFW}, y)
 	GLFW_TARGET := glfw3
 	NTTINY_LIBRARIES := glfw3
 else
 	GLFW_TARGET :=
-	NTTINY_LIBRARIES := glfw
+	NTTINY_LIBRARIES := $(subst -l,,$(shell pkg-config --libs glfw3))
 endif
 
 COMPILE_FREETYPE ?= n
@@ -49,7 +49,7 @@ NTTINY_OS := $(shell uname -s | tr A-Z a-z)
 ifeq (${NTTINY_OS}, darwin)
 	NTTINY_FRAMEWORKS := Cocoa OpenGL IOKit
 else ifeq (${NTTINY_OS}, linux)
-	NTTINY_LIBRARIES += GL X11 pthread Xrandr Xi dl
+	NTTINY_LIBRARIES += GL X11 pthread Xrandr Xi dl rt m xcb Xau
 else
 	COMPILE_GLFW := n
 	COMPILE_FREETYPE := n
