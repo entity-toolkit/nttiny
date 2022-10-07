@@ -8,10 +8,21 @@ project(${PROJECT_NAME}
         LANGUAGES CXX
 )
 
-add_compile_options(-W -Wall -pedantic -Werror)
-add_compile_options(-Ofast -DNDEBUG -fPIE)
-option(USE_CXX17_STD "Nttiny should be built with C++17 compiler option enabled" ON)
+set(DEBUG OFF CACHE BOOL "Debug mode")
+
+if (${DEBUG} STREQUAL "OFF")
+  set(CMAKE_BUILD_TYPE Release)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -DNDEBUG")
+  message(STATUS "Release mode")
+else()
+  set(CMAKE_BUILD_TYPE Debug)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -DDEBUG")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+  message(STATUS "Debug mode")
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # set default install prefix
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
