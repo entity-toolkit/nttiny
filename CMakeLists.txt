@@ -8,7 +8,7 @@ project(${PROJECT_NAME}
         LANGUAGES CXX
 )
 
-add_compile_options(-W -Wall -pedantic -Werror)
+add_compile_options(-W -Wall)
 add_compile_options(-Ofast -DNDEBUG -fPIE)
 option(USE_CXX17_STD "Nttiny should be built with C++17 compiler option enabled" ON)
 set(CMAKE_CXX_STANDARD 17)
