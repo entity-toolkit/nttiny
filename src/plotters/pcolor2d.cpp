@@ -45,6 +45,11 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
   auto x2min = Grid.m_xi[1][0] - ngh * dx2;
   auto x2max = Grid.m_xi[1][sx2] + ngh * dx2;
 
+  if (this->m_vmin == 0.0 && this->m_vmax == 0.0) {
+    this->m_autoscale = true;
+    this->rescaleMinMax();
+  }
+
   ImPlot::PushColormap(this->m_cmap);
   if (ImPlot::BeginPlot("##", ImVec2(-1, -1), ImPlotFlags_Equal)) {
     ImPlot::SetupLegend(ImPlotLocation_North | ImPlotLocation_West);
@@ -134,14 +139,27 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
         }
 
         // save rescaled values
-        this->m_vmax = (T)vmax;
-        this->m_vmin = (T)vmin;
+        if (this->m_vmax != (T)vmax) {
+          this->m_vmax = (T)vmax;
+          if (vmin * vmax < 0.0) { this->m_vmin = -(T)vmax; }
+        } else if (this->m_vmin != (T)vmin) {
+          this->m_vmin = (T)vmin;
+          if (vmin * vmax < 0.0) { this->m_vmax = -(T)vmin; }
+        } else {
+          this->m_vmax = (T)vmax;
+          this->m_vmin = (T)vmin;
+        }
 
         ImGui::Checkbox("log", &this->m_log);
         ImGui::SameLine();
         if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE)) { this->rescaleMinMax(); }
         ImGui::Checkbox("link axes", &this->m_share_axes);
-        ImGui::Checkbox("autoscale", &this->m_autoscale);
+        bool autoscale = this->m_autoscale;
+        ImGui::Checkbox("autoscale", &autoscale);
+        if (autoscale != this->m_autoscale) {
+          this->m_autoscale = autoscale;
+          Sim->m_data_changed = true;
+        }
         ImGui::Separator();
         if (this->close()) { return true; }
       }
