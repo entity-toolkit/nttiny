@@ -22,7 +22,7 @@ void Pcolor2d<T>::rescaleMinMax() {
   auto minmax = this->m_sim->get_min_max(this->m_field_selected, this->m_log);
   this->m_vmin = minmax.first;
   this->m_vmax = minmax.second;
-  if (this->m_vmin * this->m_vmax < 0) {
+  if ((this->m_vmin * this->m_vmax < 0) && this->m_symmetric) {
     auto max = std::max(std::fabs(this->m_vmax), std::fabs(this->m_vmin));
     this->m_vmin = -max;
     this->m_vmax = max;
@@ -139,10 +139,10 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
         }
 
         // save rescaled values
-        if (this->m_vmax != (T)vmax) {
+        if ((this->m_vmax != (T)vmax) && this->m_symmetric) {
           this->m_vmax = (T)vmax;
           if (vmin * vmax < 0.0) { this->m_vmin = -(T)vmax; }
-        } else if (this->m_vmin != (T)vmin) {
+        } else if ((this->m_vmin != (T)vmin) && this->m_symmetric) {
           this->m_vmin = (T)vmin;
           if (vmin * vmax < 0.0) { this->m_vmax = -(T)vmin; }
         } else {
@@ -150,14 +150,19 @@ auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool
           this->m_vmin = (T)vmin;
         }
 
-        ImGui::Checkbox("log", &this->m_log);
+        bool symmetric = this->m_symmetric, log = this->m_log, autoscale = this->m_autoscale;
+        ImGui::Checkbox("symmetric", &symmetric);
+        ImGui::Checkbox("log", &log);
         ImGui::SameLine();
         if (ImGui::Button(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE)) { this->rescaleMinMax(); }
         ImGui::Checkbox("link axes", &this->m_share_axes);
-        bool autoscale = this->m_autoscale;
+
         ImGui::Checkbox("autoscale", &autoscale);
-        if (autoscale != this->m_autoscale) {
+        if ((autoscale != this->m_autoscale) || (symmetric != this->m_symmetric)
+            || (this->m_log != log)) {
           this->m_autoscale = autoscale;
+          this->m_symmetric = symmetric;
+          this->m_log = log;
           Sim->m_data_changed = true;
         }
         ImGui::Separator();
