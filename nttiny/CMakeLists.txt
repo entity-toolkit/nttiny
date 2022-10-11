@@ -1,3 +1,7 @@
+set(STATIC_LIB ${PROJECT_NAME})
+set(EXTERN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../extern)
+add_library(${STATIC_LIB} STATIC)
+
 # ------------------------------------------ #
 # external libraries                         #
 # ------------------------------------------ #
@@ -55,10 +59,6 @@ file(GLOB_RECURSE SRC_FILES ${SRC_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 target_compile_features(${STATIC_LIB} PRIVATE cxx_std_17)
 target_sources(${STATIC_LIB} PRIVATE ${SRC_FILES})
-target_include_directories(${STATIC_LIB} PRIVATE ${INC_DIRS})
-target_link_directories(${STATIC_LIB} PRIVATE ${LIB_DIRS})
+target_include_directories(${STATIC_LIB} PUBLIC ${INC_DIRS})
+target_link_directories(${STATIC_LIB} PUBLIC ${LIB_DIRS})
 target_link_libraries(${STATIC_LIB} PRIVATE ${LIBS} ${CMAKE_DL_LIBS})
-
-set(INC_DIRS ${INC_DIRS} PARENT_SCOPE)
-set(LIBS ${LIBS} PARENT_SCOPE)
-set(LIB_DIRS ${LIB_DIRS} PARENT_SCOPE)

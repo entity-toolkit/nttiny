@@ -10,32 +10,49 @@ git submodule update --remote
 
 ## Compilation
 
-Compile an example code as a standalone application with the `make nttiny -j [OPTIONS]` command. To see the help menu with all the options type `make`.
+Compile `nttiny` as a static library with the example code as a standalone application:
 
-To build a static library simply run `make nttiny_static [OPTIONS]`.
+```shell
+cmake -B build -D CMAKE_INSTALL_PREFIX=<install_dir> -D BUILD_EXAMPLES=ON
+cd build
+make -j
+# install to the specified directory
+make install
+```
 
 ## Usage
 
-File `src/main.cpp` contains the most comprehensive examples on how to address the `nttiny`. To compile the examples simply run `make nttiny -j`. Provided that all the dependencies are satisfied, the executable `nttiny.example` will be created in the `bin` directory.
+File `examples/examples.cpp` contains the most comprehensive examples on how to use `nttiny` for your own code.
 
-To use `nttiny` as a plotting tool for your code you would need to build and use `nttiny` as a static library. To do that simply include `nttiny/Makefile` in your project's Makefile, add a dependency of your desired target on `nttiny_static`, and use `NTTINY_LINKFLAGS` and `NTTINY_INCFLAGS` for linking/compilation. A typical Makefile would look something like this:
+To use `nttiny` as a plotting tool for your code you would need to build and use `nttiny` as a static library. To do that simply add `nttiny` as a subdirectory and link to your target; can be done by adding the following to your `CmakeLists.txt`: 
 
-```Makefile
-all: nttiny_static myapp
-
-myapp : $(OBJS)
-	${CXX} $< -o $@ $(NTTINY_LINKFLAGS)
-
-%.cpp.o : %.cpp
-	${CXX} $(NTTINY_INCFLAGS) -c $^ -o $@
-
-# assuming `nttiny` is in `extern` directory
-include extern/nttiny/Makefile
+```cmake
+add_subdirectory(${PATH_TO_NTTINY} nttiny)
+target_link_libraries(${YOUR_TARGET_NAME} PRIVATE nttiny)
+target_include_directories(${YOUR_TARGET_NAME} PRIVATE ${PATH_TO_NTTINY}/)
 ```
 
-> Alternatively you could simply compile `nttiny` as a static library (`make nttiny_static -j`) and link the generated file to your project.
+If using GNU Makefiles you can do the same by adding the following to your `Makefile`:
+
+```makefile
+NTTINY_DIR = ${PATH_TO_NTTINY}
+NTTINY_LIB = ${BUILD_DIR}/libnttiny.a
+
+${BUILD_DIR}/libnttiny.a:
+  cmake -B ${BUILD_DIR} -D CMAKE_INSTALL_PREFIX=${BUILD_DIR} -S ${NTTINY_DIR} -D BUILD_EXAMPLES=OFF && cd ${BUILD_DIR} && make -j && make install
+
+LIBS += ${NTTINY_LIB}
+INCLUDES += -I${NTTINY_DIR}
+
+# then use ${LIBS} and ${INCLUDES} when compiling/linking your target
+```
 
 ## Releases
+* `v0.7.0` [Oct 2022]:
+  - full cmake support (readme updated)
+  - option for symmetric colorbar
+  - unnnecessary freetype dependency removed
+  - minor bugs fixed
 * `v0.6.4` [Sep 2022]:
   - notifications
   - movie recording (frames)
@@ -84,33 +101,6 @@ include extern/nttiny/Makefile
 - [x] subplots & linked axes
 - [x] resizing of plots
 
-## Compile commands
-
-Type `nttiny_help` to see the list of available commands.
-
-```shell
-usage: `make nttiny [OPTIONS]`
-
-options:
-   DEBUG={y|n}             : enable/disable debug mode [default: n]
-   VERBOSE={y|n}           : enable/disable verbose compilation/run mode [default: n]
-   COMPILER={g++|clang++}  : choose the compiler [default: g++]
-   COMPILE_GLFW={y|n}      : compile glfw3 or use system default [default: y]
-   COMPILE_FREETYPE={y|n}  : use freetype for font rasterization [default: y]
-
-cleanup: `make nttiny_cleanall`
-   also: `make nttiny_clean` to clean just the `nttiny`
-         `make nttiny_cleanlib` to clean just the compiled libraries
-
-to build a static library:
-   `make nttiny_static`
-
-exported variables to use when including nttiny:
-    ${NTTINY_INCFLAGS}
-    ${NTTINY_LINKFLAGS}
-    ${NTTINY_LIBS}
-```
-
 ---
 
 ### Note on `glad`
@@ -124,11 +114,3 @@ exported variables to use when including nttiny:
 2. Download the generated `glad.zip` archive, and unzip it (`unzip glad.zip`). If you do this from the source code directory (`<NTTINY_PATH>`) the headers will be properly placed into `extern/glad` and `extern/KHR` directories (otherwise, do that manually).
 
 3. Move the `glad.c` file to a more appropriate place (and change `.c` to `.cpp`): `mv glad.c lib/glad.cpp`.
-
-### Note on `glfw`
-
-Your system might already have a globally preinstalled `glfw` (to test that run `g++ -lglfw`). In this case you can avoid compiling `glfw3` with the code: simply compile with the `COMPILE_GLFW=n` flag.
-
-### Note on `freetype`
-
-On some of the hidpi monitors using freetype for font rasterization may improve the text quality. To enable/disable this behavior set `COMPILE_FREETYPE=y/n` during compilation (set to `n` by default).

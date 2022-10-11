@@ -55,6 +55,7 @@ class Pcolor2d : public Plot2d<T> {
 protected:
   bool m_log{false};
   bool m_autoscale{false};
+  bool m_symmetric{false};
   T m_vmin{(T)0.0}, m_vmax{(T)0.0};
   ImPlotColormap m_cmap{ImPlotColormap_Jet};
   int m_field_selected{0};
