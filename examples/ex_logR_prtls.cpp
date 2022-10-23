@@ -41,6 +41,7 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
       this->m_global_grid.m_xi[1][j] = 0.0f + M_PI * (float)(j) / (float)(sx2);
     }
     this->m_global_grid.ExtendGridWithGhosts();
+    this->fields.insert({"a_const", new float[nx1 * nx2]});
     this->fields.insert({"er", new float[nx1 * nx2]});
     this->fields.insert({"bphi", new float[nx1 * nx2]});
     this->fields.insert({"r", new float[nx1 * nx2]});
@@ -75,11 +76,13 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
         if (i >= 0 && i < sx1 && j >= 0 && j < sx2) {
           (this->fields)["er"][Index(i, j)] = 0.5f * (f_i / f_sx);
           (this->fields)["bphi"][Index(i, j)] = (f_i / f_sx) * (f_j / f_sy);
+          (this->fields)["a_const"][Index(i, j)] = 5.0f;
           (this->fields)["r"][Index(i, j)] = Xi(i, 0);
           (this->fields)["theta"][Index(i, j)] = Xi(j, 1);
         } else {
           (this->fields)["er"][Index(i, j)] = -1.0f;
           (this->fields)["bphi"][Index(i, j)] = -1.0f;
+          (this->fields)["a_const"][Index(i, j)] = 5.0f;
           (this->fields)["r"][Index(i, j)] = -1.0f;
           (this->fields)["theta"][Index(i, j)] = -1.0f;
         }
@@ -110,7 +113,7 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
     }
     this->buffers["sum_er"].AddPoint(this->m_time, sum_er);
     this->buffers["mean_bphi"].AddPoint(this->m_time, -mean_bphi / (float)(sx1 * sx2));
-    this->buffers["er(20, 20)"].AddPoint(this->m_time, (this->fields)["er"][Index(20, 20)]); 
+    this->buffers["er(20, 20)"].AddPoint(this->m_time, (this->fields)["er"][Index(20, 20)]);
   }
   void restart() override {
     initData();

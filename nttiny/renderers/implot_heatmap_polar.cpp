@@ -50,7 +50,11 @@ struct GetterHeatmapPolarRowMaj {
     arc.Min.y = th1;
     arc.Max.x = rhigh;
     arc.Max.y = th2;
-    const float t = ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f);
+    const float t
+        = (val > ScaleMax)
+            ? 1.0f
+            : ((val <= ScaleMin) ? 0.0f
+                                 : ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f));
     arc.Color = GImPlot->ColormapData.LerpTable(GImPlot->Style.Colormap, t);
     return arc;
   }
@@ -93,7 +97,11 @@ struct GetterHeatmapPolarColMaj {
     arc.Min.y = th1;
     arc.Max.x = rhigh;
     arc.Max.y = th2;
-    const float t = ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f);
+    const float t
+        = (val > ScaleMax)
+            ? 1.0f
+            : ((val <= ScaleMin) ? 0.0f
+                                 : ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f));
     arc.Color = GImPlot->ColormapData.LerpTable(GImPlot->Style.Colormap, t);
     return arc;
   }

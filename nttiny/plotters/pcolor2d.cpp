@@ -14,6 +14,7 @@
 #include <cmath>
 #include <string>
 #include <type_traits>
+#include <iostream>
 
 namespace nttiny {
 

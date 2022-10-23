@@ -53,7 +53,11 @@ struct GetterHeatmapCartRowMaj {
     RectC rect;
     rect.Pos = p;
     rect.HalfSize = HalfSize;
-    const float t = ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f);
+    const float t
+        = (val > ScaleMax)
+            ? 1.0f
+            : ((val <= ScaleMin) ? 0.0f
+                                 : ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f));
     rect.Color = GImPlot->ColormapData.LerpTable(GImPlot->Style.Colormap, t);
     return rect;
   }
@@ -99,7 +103,11 @@ struct GetterHeatmapCartColMaj {
     RectC rect;
     rect.Pos = p;
     rect.HalfSize = HalfSize;
-    const float t = ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f);
+    const float t
+        = (val > ScaleMax)
+            ? 1.0f
+            : ((val <= ScaleMin) ? 0.0f
+                                 : ImClamp((float)ImRemap01(val, ScaleMin, ScaleMax), 0.0f, 1.0f));
     rect.Color = GImPlot->ColormapData.LerpTable(GImPlot->Style.Colormap, t);
     return rect;
   }
