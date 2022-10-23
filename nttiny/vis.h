@@ -59,6 +59,9 @@ public:
   void addScatter2d();
   void addTimePlot();
 
+  void loadState();
+  void saveState();
+
   UISettings UI_Settings;
 };
 

@@ -285,64 +285,8 @@ void Visualization<T, D>::drawMainMenuBar() {
     if (ImGui::MenuItem("add timeplot")) { addTimePlot(); }
     ImGui::Separator();
     ImGui::MenuItem("(state)", NULL, false, false);
-    if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " save")) {
-      auto rewrite{true};
-      auto cntr{0};
-      for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
-        ++cntr;
-        auto* metadata = (*plot)->exportMetadata();
-        metadata->writeToFile(STATE_FILENAME, rewrite);
-        rewrite = false;
-      }
-      std::ofstream export_file;
-      export_file.open(STATE_FILENAME, std::fstream::app);
-      if (export_file.is_open()) {
-        export_file << "[Plot]\nnpanels = " << cntr << "\n";
-        export_file << std::fixed << std::setprecision(3) << "outline_color = ["
-                    << this->UI_Settings.OutlineColor.x << ", " << this->UI_Settings.OutlineColor.y
-                    << ", " << this->UI_Settings.OutlineColor.z << ", "
-                    << this->UI_Settings.OutlineColor.w << "]\n";
-        export_file << std::fixed << std::setprecision(3) << "range = [" << this->SharedAxes.X.Min
-                    << ", " << this->SharedAxes.X.Max << ", " << this->SharedAxes.Y.Min << ", "
-                    << this->SharedAxes.Y.Max << "]\n";
-        export_file << "collapsed_controls = " << (this->m_collapsed_controls ? "true" : "false")
-                    << "\n";
-        export_file.close();
-      }
-    }
-    if (ImGui::MenuItem(ICON_FA_UPLOAD " load")) {
-      this->m_plots.clear();
-      try {
-        auto input = toml::parse("nttiny.toml");
-        const auto& panels = toml::find(input, "Plot");
-        auto npanels = toml::find_or<int>(panels, "npanels", 0);
-        auto outline_color
-            = toml::find_or<std::vector<float>>(panels, "outline_color", {1.0f, 1.0f, 1.0f, 1.0f});
-        this->UI_Settings.OutlineColor
-            = ImVec4(outline_color[0], outline_color[1], outline_color[2], outline_color[3]);
-        auto range = toml::find_or<std::vector<float>>(panels, "range", {0, 1, 0, 1});
-        this->SharedAxes.X.Min = range[0];
-        this->SharedAxes.X.Max = range[1];
-        this->SharedAxes.Y.Min = range[2];
-        this->SharedAxes.Y.Max = range[3];
-        this->m_collapsed_controls = toml::find_or<bool>(panels, "collapsed_controls", false);
-        for (int i{0}; i < npanels; ++i) {
-          const auto& plot = toml::find(panels, std::to_string(i));
-          const auto type = toml::find<std::string>(plot, "type");
-          if (type == "Pcolor2d") {
-            addPcolor2d();
-          } else if (type == "Scatter2d") {
-            addScatter2d();
-          } else if (type == "TimePlot") {
-            addTimePlot();
-          }
-          this->m_plots.back()->importMetadata(plot);
-        }
-      }
-      catch (std::exception& err) {
-        PLOGE_(VISPLOGID) << "Error loading state: " << err.what();
-      }
-    }
+    if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " save")) { saveState(); }
+    if (ImGui::MenuItem(ICON_FA_UPLOAD " load")) { loadState(); }
     ImGui::Separator();
     if (ImGui::BeginMenu("configure ui")) {
       ImGui::Text("domain outline");
@@ -368,6 +312,71 @@ void Visualization<T, D>::drawMainMenuBar() {
     ImGui::EndTooltip();
   }
   ImGui::EndMainMenuBar();
+}
+
+template <class T, ushort D>
+void Visualization<T, D>::loadState() {
+  this->m_plots.clear();
+  try {
+    auto input = toml::parse(STATE_FILENAME);
+    const auto& panels = toml::find(input, "Plot");
+    auto npanels = toml::find_or<int>(panels, "npanels", 0);
+    auto outline_color
+        = toml::find_or<std::vector<float>>(panels, "outline_color", {1.0f, 1.0f, 1.0f, 1.0f});
+    this->UI_Settings.OutlineColor
+        = ImVec4(outline_color[0], outline_color[1], outline_color[2], outline_color[3]);
+    auto range = toml::find_or<std::vector<float>>(panels, "range", {0, 1, 0, 1});
+    this->SharedAxes.X.Min = range[0];
+    this->SharedAxes.X.Max = range[1];
+    this->SharedAxes.Y.Min = range[2];
+    this->SharedAxes.Y.Max = range[3];
+    this->m_collapsed_controls = toml::find_or<bool>(panels, "collapsed_controls", false);
+    for (int i{0}; i < npanels; ++i) {
+      const auto& plot = toml::find(panels, std::to_string(i));
+      const auto type = toml::find<std::string>(plot, "type");
+      if (type == "Pcolor2d") {
+        addPcolor2d();
+      } else if (type == "Scatter2d") {
+        addScatter2d();
+      } else if (type == "TimePlot") {
+        addTimePlot();
+      }
+      this->m_plots.back()->importMetadata(plot);
+    }
+  }
+  catch (std::exception& err) {
+    PLOGE_(VISPLOGID) << "Error loading state: " << err.what();
+  }
+  ImGui::InsertNotification(
+      {ImGuiToastType_Success, 3000, "Loaded the state from `%s`", (STATE_FILENAME)});
+}
+template <class T, ushort D>
+void Visualization<T, D>::saveState() {
+  auto rewrite{true};
+  auto cntr{0};
+  for (auto plot{this->m_plots.begin()}; plot != this->m_plots.end(); ++plot) {
+    ++cntr;
+    auto* metadata = (*plot)->exportMetadata();
+    metadata->writeToFile(STATE_FILENAME, rewrite);
+    rewrite = false;
+  }
+  std::ofstream export_file;
+  export_file.open(STATE_FILENAME, std::fstream::app);
+  if (export_file.is_open()) {
+    export_file << "[Plot]\nnpanels = " << cntr << "\n";
+    export_file << std::fixed << std::setprecision(3) << "outline_color = ["
+                << this->UI_Settings.OutlineColor.x << ", " << this->UI_Settings.OutlineColor.y
+                << ", " << this->UI_Settings.OutlineColor.z << ", "
+                << this->UI_Settings.OutlineColor.w << "]\n";
+    export_file << std::fixed << std::setprecision(3) << "range = [" << this->SharedAxes.X.Min
+                << ", " << this->SharedAxes.X.Max << ", " << this->SharedAxes.Y.Min << ", "
+                << this->SharedAxes.Y.Max << "]\n";
+    export_file << "collapsed_controls = " << (this->m_collapsed_controls ? "true" : "false")
+                << "\n";
+    export_file.close();
+  }
+  ImGui::InsertNotification(
+      {ImGuiToastType_Success, 3000, "Saved state as `%s`", (STATE_FILENAME)});
 }
 
 template <class T, ushort D>
@@ -411,6 +420,14 @@ void Visualization<T, D>::loop() {
     this->SharedAxes.X.Max = (float)x1max;
     this->SharedAxes.Y.Min = (float)x2min;
     this->SharedAxes.Y.Max = (float)x2max;
+  }
+
+  try {
+    toml::parse(STATE_FILENAME);
+    loadState();
+  }
+  catch (std::exception& err) {
+    PLOGI_(VISPLOGID) << "No state file found\n";
   }
 
   while (!this->m_window->windowShouldClose()) {
