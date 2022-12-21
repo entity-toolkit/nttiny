@@ -103,8 +103,11 @@ struct SimulationAPI {
   Grid<T, D> m_global_grid;
   bool m_data_changed{true};
 
-  SimulationAPI(const Coord& coord, const std::array<int, D>& size, const ushort& ngh = 2)
-      : m_global_grid{coord, size, ngh} {}
+  SimulationAPI(const std::string& title,
+                const Coord& coord,
+                const std::array<int, D>& size,
+                const ushort& ngh = 2)
+      : m_title{title}, m_global_grid{coord, size, ngh} {}
   ~SimulationAPI() = default;
 
   auto Index(const int& i, const int& j) const -> int {
@@ -193,6 +196,7 @@ struct SimulationAPI {
     }
     return {min, max};
   }
+  auto get_title() const -> std::string { return m_title; }
 
   // additional visuals
   virtual void customAnnotatePcolor2d(const UISettings&) = 0;
@@ -203,6 +207,7 @@ protected:
   bool m_paused{true};
   bool m_forward{true};
   int m_jumpover{1};
+  const std::string m_title;
 };
 
 } // namespace nttiny

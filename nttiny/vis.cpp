@@ -495,7 +495,8 @@ void Visualization<T, D>::loop() {
 
     this->m_window->unuse();
     if (this->m_save_image) {
-      const auto fname = "frame_" + std::to_string(this->m_sim->get_timestep()) + ".png";
+      const auto fname
+          = this->m_sim->get_title() + "_" + std::to_string(this->m_sim->get_timestep()) + ".png";
       const auto fdir = "snapshots/";
       saveImage(fname, fdir);
       this->m_save_image = false;
