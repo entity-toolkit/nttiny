@@ -87,8 +87,8 @@ struct Grid {
         } else if (i >= ngh && i <= sx + ngh) {
           m_xi_gh[d][i] = m_xi[d][i - ngh];
         } else {
-          auto dx = m_xi[d][sx - 1] - m_xi[d][sx - 2];
-          m_xi_gh[d][i] = m_xi[d][sx - 1] + (i - sx - ngh + 1) * dx;
+          auto dx = m_xi[d][sx] - m_xi[d][sx - 1];
+          m_xi_gh[d][i] = m_xi[d][sx] + (i - sx - ngh) * dx;
         }
       }
     }
