@@ -5,4 +5,4 @@
 
 void saveImage(const std::string&, const std::string& path = "./");
 
-#endif // EXPORT_H
+#endif    // EXPORT_H

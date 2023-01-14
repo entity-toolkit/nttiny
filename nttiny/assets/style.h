@@ -2,18 +2,18 @@
 #define STYLE_H
 
 #include "cousine.h"
+#include "icons.h"
 #include "jetbrains.h"
+
+#include <imgui.h>
+#include <plog/Log.h>
+
 #include "fa-regular.h"
 #include "fa-solid.h"
-#include "icons.h"
-
-#include <plog/Log.h>
-#include <imgui.h>
-
 #include <stdexcept>
 
 void Colors_Dark() {
-  ImGuiStyle& style = ImGui::GetStyle();
+  ImGuiStyle& style  = ImGui::GetStyle();
   // style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
   // style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
   // style.Colors[ImGuiCol_WindowBg] = ImVec4(0.13f, 0.14f, 0.15f, 1.00f);
@@ -76,10 +76,10 @@ void SetupStyle(const float& scale) {
     // font_config.SizePixels = 8.0f * scale;
     // ImGui::GetIO().Fonts->AddFontDefault(&font_config);
     ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
-        JetBrains_compressed_data, JetBrains_compressed_size, 16.0f * scale);
-    icons_config.MergeMode = true;
-    icons_config.PixelSnapH = true;
-    static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+      JetBrains_compressed_data, JetBrains_compressed_size, 16.0f * scale);
+    icons_config.MergeMode              = true;
+    icons_config.PixelSnapH             = true;
+    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
     ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(faRegular_compressed_data,
                                                          faRegular_compressed_size,
                                                          10.0f * scale,
@@ -91,23 +91,22 @@ void SetupStyle(const float& scale) {
                                                          &icons_config,
                                                          icons_ranges);
     ImGui::GetIO().Fonts->Build();
-  }
-  catch (std::runtime_error& e) {
+  } catch (std::runtime_error& e) {
     PLOGW << "Warning: " << e.what();
   }
   Colors_Dark();
-  auto& style = ImGui::GetStyle();
-  style.WindowRounding = 0.0f;
-  style.ChildRounding = 0.0f;
-  style.FrameRounding = 0.0f;
-  style.GrabRounding = 0.0f;
-  style.PopupRounding = 0.0f;
-  style.ScrollbarRounding = 0.0f;
-  style.TabRounding = 0.0f;
+  auto& style                  = ImGui::GetStyle();
+  style.WindowRounding         = 0.0f;
+  style.ChildRounding          = 0.0f;
+  style.FrameRounding          = 0.0f;
+  style.GrabRounding           = 0.0f;
+  style.PopupRounding          = 0.0f;
+  style.ScrollbarRounding      = 0.0f;
+  style.TabRounding            = 0.0f;
 
   style.AntiAliasedLinesUseTex = true;
-  style.AntiAliasedLines = true;
-  style.AntiAliasedFill = true;
+  style.AntiAliasedLines       = true;
+  style.AntiAliasedFill        = true;
 
   style.ScaleAllSizes(scale / 2.0f);
 }

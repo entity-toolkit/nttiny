@@ -15,7 +15,8 @@ list(APPEND INC_DIRS ${EXTERN_DIR}/glad)
 list(APPEND INC_DIRS ${EXTERN_DIR}/KHR)
 
 # # GLFW
-find_package(PkgConfig)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GLFW glfw3)
 
 if(GLFW_FOUND)
   message(STATUS "Found installed GLFW3")

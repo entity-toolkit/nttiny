@@ -8,20 +8,20 @@
 
 namespace ImPlot {
 
-template <typename T>
-void PlotHeatmapPolar(const char*,
-                      const T*,
-                      int,
-                      int,
-                      double,
-                      double,
-                      const T*,
-                      const T*,
-                      bool,
-                      const ImPlotPoint&,
-                      const ImPlotPoint&,
-                      ImPlotHeatmapFlags);
+  template <typename T>
+  void PlotHeatmapPolar(const char*,
+                        const T*,
+                        int,
+                        int,
+                        double,
+                        double,
+                        const T*,
+                        const T*,
+                        bool,
+                        const ImPlotPoint&,
+                        const ImPlotPoint&,
+                        ImPlotHeatmapFlags);
 
-} // namespace ImPlot
+}    // namespace ImPlot
 
 #endif
