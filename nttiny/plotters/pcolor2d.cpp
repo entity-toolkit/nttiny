@@ -200,6 +200,7 @@ namespace nttiny {
     auto metadata              = new Pcolor2dMetadata { this->m_ID };
     metadata->m_log            = m_log;
     metadata->m_autoscale      = m_autoscale;
+    metadata->m_symmetric      = m_symmetric;
     metadata->m_vmin           = m_vmin;
     metadata->m_vmax           = m_vmax;
     metadata->m_cmap           = ImPlot::GetColormapName(m_cmap);
@@ -211,6 +212,7 @@ namespace nttiny {
   void Pcolor2d<T>::importMetadata(const toml::value& metadata) {
     m_log       = toml::find<bool>(metadata, "log");
     m_autoscale = toml::find<bool>(metadata, "autoscale");
+    m_symmetric = toml::find<bool>(metadata, "symmetric");
     m_vmin      = toml::find<T>(metadata, "vmin");
     m_vmax      = toml::find<T>(metadata, "vmax");
     m_cmap      = ImPlot::GetColormapIndex(toml::find<std::string>(metadata, "cmap").c_str());

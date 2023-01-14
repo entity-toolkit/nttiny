@@ -37,7 +37,7 @@ struct PlotMetadata {
 
 struct Pcolor2dMetadata : public PlotMetadata {
   const std::string m_type { "Pcolor2d" };
-  bool              m_log, m_autoscale;
+  bool              m_log, m_autoscale, m_symmetric;
   float             m_vmin, m_vmax;
   std::string       m_cmap;
   int               m_field_selected;
@@ -46,6 +46,7 @@ struct Pcolor2dMetadata : public PlotMetadata {
     (this->metadata).insert({ "type", m_type });
     (this->metadata).insert({ "log", m_log });
     (this->metadata).insert({ "autoscale", m_autoscale });
+    (this->metadata).insert({ "symmetric", m_symmetric });
     (this->metadata).insert({ "vmin", m_vmin });
     (this->metadata).insert({ "vmax", m_vmax });
     (this->metadata).insert({ "cmap", m_cmap });
