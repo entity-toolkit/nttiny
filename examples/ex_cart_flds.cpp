@@ -13,7 +13,7 @@
 /* -------------------------------------------------------------------------- */
 struct Example1 : public nttiny::SimulationAPI<float, 2> {
   Example1(int sx1, int sx2)
-      : nttiny::SimulationAPI<float, 2>{nttiny::Coord::Cartesian, {sx1, sx2}, 2} {
+      : nttiny::SimulationAPI<float, 2>{"Ex1-Cart", nttiny::Coord::Cartesian, {sx1, sx2}, 2} {
     const auto nx1{this->m_global_grid.m_size[0] + this->m_global_grid.m_ngh * 2};
     const auto nx2{this->m_global_grid.m_size[1] + this->m_global_grid.m_ngh * 2};
     for (int i{0}; i <= sx1; ++i) {

@@ -13,7 +13,7 @@
 /* -------------------------------------------------------------------------- */
 struct Example2 : public nttiny::SimulationAPI<float, 2> {
   Example2(int sx1, int sx2, const float& rmin, const float& rmax)
-      : nttiny::SimulationAPI<float, 2>{nttiny::Coord::Spherical, {sx1, sx2}, 2} {
+      : nttiny::SimulationAPI<float, 2>{"Ex2", nttiny::Coord::Spherical, {sx1, sx2}, 2} {
     const auto nx1{this->m_global_grid.m_size[0] + this->m_global_grid.m_ngh * 2};
     const auto nx2{this->m_global_grid.m_size[1] + this->m_global_grid.m_ngh * 2};
     for (int i{0}; i <= sx1; ++i) {
@@ -89,7 +89,6 @@ struct Example2 : public nttiny::SimulationAPI<float, 2> {
   }
   void customAnnotatePcolor2d(const nttiny::UISettings&) override {}
 };
-
 
 auto main(int argc, char** argv) -> int {
   float scale = 1.0f;

@@ -15,18 +15,19 @@ list(APPEND INC_DIRS ${EXTERN_DIR}/glad)
 list(APPEND INC_DIRS ${EXTERN_DIR}/KHR)
 
 # # GLFW
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GLFW REQUIRED glfw3)
-if (GLFW_FOUND)
+find_package(PkgConfig)
+
+if(GLFW_FOUND)
   message(STATUS "Found installed GLFW3")
   list(APPEND INC_DIRS ${GLFW_INCLUDEDIR})
   list(APPEND LIBS ${GLFW_LIBRARIES})
   list(APPEND LIB_DIRS ${GLFW_LIBRARY_DIRS})
 else()
   message(STATUS "GLFW3 not found, will attempt to build from source")
-  add_subdirectory(${EXTERN_DIR}/glfw glfw_build)
+  add_subdirectory(${EXTERN_DIR}/glfw glfw)
   list(APPEND INC_DIRS ${EXTERN_DIR}/glfw/include)
-  list(APPEND LIBS ${GLFW_LIBRARIES})
+  list(APPEND LIBS glfw3)
+  list(APPEND LIB_DIRS ${CMAKE_CURRENT_BINARY_DIR}/glfw/src)
 endif()
 
 # # ImGui

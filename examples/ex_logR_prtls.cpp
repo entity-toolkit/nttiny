@@ -27,7 +27,7 @@ struct Example3 : public nttiny::SimulationAPI<float, 2> {
   const float m_rmin, m_rmax;
 
   Example3(int sx1, int sx2, const float& rmin, const float& rmax)
-      : nttiny::SimulationAPI<float, 2>{nttiny::Coord::Spherical, {sx1, sx2}, 2},
+      : nttiny::SimulationAPI<float, 2>{"Ex3", nttiny::Coord::Spherical, {sx1, sx2}, 2},
         m_rmin{rmin},
         m_rmax{rmax} {
     const auto nx1{this->m_global_grid.m_size[0] + this->m_global_grid.m_ngh * 2};

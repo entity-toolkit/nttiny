@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 set(PROJECT_NAME nttiny)
 
 project(${PROJECT_NAME}
-  VERSION 0.7.0.2
+  VERSION 0.9.0
   DESCRIPTION "OpenGL-based runtime scientific visualization library"
   LANGUAGES CXX
 )
