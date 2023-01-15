@@ -519,7 +519,7 @@ namespace nttiny {
       if (this->m_save_image) {
         const auto fname = this->m_sim->get_title() + "_"
                            + std::to_string(this->m_sim->get_timestep()) + ".png";
-        const auto fdir = "snapshots/";
+        const auto fdir = this->m_sim->get_title() + "/";
         saveImage(fname, fdir);
         this->m_save_image = false;
         ImGui::InsertNotification(
@@ -529,7 +529,7 @@ namespace nttiny {
       if ((this->m_save_video) && (this->m_sim->m_data_changed) && (jumpover_set)) {
         saveImage(
           "frame_" + tools::zeroPadLeft(std::to_string(m_save_videoframe_count), 5) + ".png",
-          "videos/frames/");
+          this->m_sim->get_title() + "/frames/");
         ++m_save_videoframe_count;
       }
 
