@@ -11,7 +11,6 @@
 #include <toml11/toml.hpp>
 
 #include <cmath>
-#include <iostream>
 #include <string>
 #include <type_traits>
 
@@ -31,19 +30,20 @@ namespace nttiny {
 
   template <class T>
   auto Pcolor2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool {
-    auto&      Sim   = this->m_sim;
-    auto&      Grid  = this->m_sim->m_global_grid;
-    const auto coord = Grid.m_coord;
+    bool       shouldClose = false;
+    auto&      Sim         = this->m_sim;
+    auto&      Grid        = this->m_sim->m_global_grid;
+    const auto coord       = Grid.m_coord;
 
-    const auto ngh   = Grid.m_ngh;
-    const auto sx1   = Grid.m_size[0];
-    const auto sx2   = Grid.m_size[1];
-    auto       dx1   = Grid.m_xi[0][1] - Grid.m_xi[0][0];
-    auto       x1min = Grid.m_xi[0][0] - ngh * dx1;
-    auto       x1max = Grid.m_xi[0][sx1] + ngh * dx1;
-    auto       dx2   = Grid.m_xi[1][1] - Grid.m_xi[1][0];
-    auto       x2min = Grid.m_xi[1][0] - ngh * dx2;
-    auto       x2max = Grid.m_xi[1][sx2] + ngh * dx2;
+    const auto ngh         = Grid.m_ngh;
+    const auto sx1         = Grid.m_size[0];
+    const auto sx2         = Grid.m_size[1];
+    auto       dx1         = Grid.m_xi[0][1] - Grid.m_xi[0][0];
+    auto       x1min       = Grid.m_xi[0][0] - ngh * dx1;
+    auto       x1max       = Grid.m_xi[0][sx1] + ngh * dx1;
+    auto       dx2         = Grid.m_xi[1][1] - Grid.m_xi[1][0];
+    auto       x2min       = Grid.m_xi[1][0] - ngh * dx2;
+    auto       x2max       = Grid.m_xi[1][sx2] + ngh * dx2;
 
     if (this->m_vmin == 0.0 && this->m_vmax == 0.0) {
       this->m_autoscale = true;
@@ -176,9 +176,7 @@ namespace nttiny {
             Sim->m_data_changed = true;
           }
           ImGui::Separator();
-          if (this->close()) {
-            return true;
-          }
+          shouldClose = this->close();
         }
         ImGui::EndGroup();
         ImGui::PopItemWidth();
@@ -192,7 +190,7 @@ namespace nttiny {
     }
     ImPlot::PopColormap();
 
-    return false;
+    return shouldClose;
   }
 
   template <class T>

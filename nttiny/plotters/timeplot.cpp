@@ -9,7 +9,8 @@ namespace nttiny {
 
   template <class T, ushort D>
   auto TimePlot<T, D>::draw(ImPlotRect&, UISettings&) -> bool {
-    auto& Sim = this->m_sim;
+    bool  shouldClose = false;
+    auto& Sim         = this->m_sim;
     if (ImPlot::BeginPlot("##tplot", ImVec2(-1, -1))) {
       ImPlot::SetupLegend(ImPlotLocation_North | ImPlotLocation_West);
       ImPlot::SetupAxes("time", "", 0, (this->m_autoscale_y) ? ImPlotAxisFlags_AutoFit : 0);
@@ -57,9 +58,7 @@ namespace nttiny {
           }
           {
             ImGui::Separator();
-            if (this->close()) {
-              return true;
-            }
+            shouldClose = this->close();
           }
           ImGui::EndGroup();
           ImPlot::EndLegendPopup();
@@ -68,7 +67,7 @@ namespace nttiny {
 
       ImPlot::EndPlot();
     }
-    return false;
+    return shouldClose;
   }
 
   template <class T, ushort D>

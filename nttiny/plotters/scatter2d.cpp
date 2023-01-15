@@ -18,19 +18,20 @@ namespace nttiny {
 
   template <class T>
   auto Scatter2d<T>::draw(ImPlotRect& shared_axes, UISettings& ui_settings) -> bool {
-    auto&      Sim   = this->m_sim;
-    auto&      Grid  = this->m_sim->m_global_grid;
-    const auto coord = Grid.m_coord;
+    bool       shouldClose = false;
+    auto&      Sim         = this->m_sim;
+    auto&      Grid        = this->m_sim->m_global_grid;
+    const auto coord       = Grid.m_coord;
 
-    const auto ngh   = Grid.m_ngh;
-    const auto sx1   = Grid.m_size[0];
-    const auto sx2   = Grid.m_size[1];
-    auto       dx1   = Grid.m_xi[0][1] - Grid.m_xi[0][0];
-    auto       x1min = Grid.m_xi[0][0] - ngh * dx1;
-    auto       x1max = Grid.m_xi[0][sx1] + ngh * dx1;
-    auto       dx2   = Grid.m_xi[1][1] - Grid.m_xi[1][0];
-    auto       x2min = Grid.m_xi[1][0] - ngh * dx2;
-    auto       x2max = Grid.m_xi[1][sx2] + ngh * dx2;
+    const auto ngh         = Grid.m_ngh;
+    const auto sx1         = Grid.m_size[0];
+    const auto sx2         = Grid.m_size[1];
+    auto       dx1         = Grid.m_xi[0][1] - Grid.m_xi[0][0];
+    auto       x1min       = Grid.m_xi[0][0] - ngh * dx1;
+    auto       x1max       = Grid.m_xi[0][sx1] + ngh * dx1;
+    auto       dx2         = Grid.m_xi[1][1] - Grid.m_xi[1][0];
+    auto       x2min       = Grid.m_xi[1][0] - ngh * dx2;
+    auto       x2max       = Grid.m_xi[1][sx2] + ngh * dx2;
 
     if (coord == Coord::Spherical) {
       ImPlot::SetNextAxesLimits(0.0f, (float)x1max, -(float)x1max, (float)x1max);
@@ -59,14 +60,12 @@ namespace nttiny {
       {
         ImGui::Checkbox("link axes", &this->m_share_axes);
         ImGui::Separator();
-        if (this->close()) {
-          return true;
-        }
+        shouldClose = this->close();
       }
       ImGui::EndGroup();
       ImGui::EndPopup();
     }
-    return false;
+    return shouldClose;
   }
 
   template <class T>
