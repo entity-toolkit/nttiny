@@ -24,6 +24,8 @@ make install
 
 File `examples/examples.cpp` contains the most comprehensive examples on how to use `nttiny` for your own code.
 
+### CMake
+
 To use `nttiny` as a plotting tool for your code you would need to build and use `nttiny` as a static library. To do that simply add `nttiny` as a subdirectory and link to your target; can be done by adding the following to your `CmakeLists.txt`: 
 
 ```cmake
@@ -31,6 +33,8 @@ add_subdirectory(${PATH_TO_NTTINY} nttiny)
 target_link_libraries(${YOUR_TARGET_NAME} PRIVATE nttiny)
 target_include_directories(${YOUR_TARGET_NAME} PRIVATE ${PATH_TO_NTTINY}/)
 ```
+
+### GNU Makefiles
 
 If using GNU Makefiles you can do the same by adding the following to your `Makefile`:
 

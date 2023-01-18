@@ -1,4 +1,4 @@
-set(EXAMPLES ex_cart_flds ex_cart_prtls_dprec ex_logR_prtls ex_sph)
+set(EXAMPLES ex_cart_flds ex_cart_prtls_dprec ex_logR_prtls_buffs ex_sph)
 
 foreach(EXAMPLE ${EXAMPLES})
   add_executable(${EXAMPLE})
