@@ -207,7 +207,7 @@ namespace nttiny {
       ImGui::SameLine();
       int jmp { this->m_sim->get_jumpover() };
       ImGui::DragInt("##skip", &jmp, 1, 1, 1000, "t += %d dt");
-      this->m_sim->set_jumpover(jmp);
+      this->m_sim->set_jumpover(std::max(jmp, 1));
     }
     ImGui::Separator();
     ImGui::Spacing();
@@ -231,8 +231,10 @@ namespace nttiny {
                       ImVec2(-1, 2 * ImGui::GetFontSize()))) {
       this->m_save_video = !this->m_save_video;
       if (!this->m_save_video) {
-        ImGui::InsertNotification(
-          { ImGuiToastType_Info, 3000, "Frames for video saved in `%s`", "bin/frames/" });
+        ImGui::InsertNotification({ ImGuiToastType_Info,
+                                    3000,
+                                    "Frames for video saved in `%s`",
+                                    this->m_sim->get_title() + "/frames/" });
         m_save_videoframe_count = 0;
       }
     }
@@ -352,6 +354,7 @@ namespace nttiny {
       this->SharedAxes.Y.Min     = range[2];
       this->SharedAxes.Y.Max     = range[3];
       this->m_collapsed_controls = toml::find_or<bool>(panels, "collapsed_controls", false);
+      this->m_sim->set_jumpover(toml::find_or<int>(panels, "jumpover", 1));
       for (int i { 0 }; i < npanels; ++i) {
         const auto& plot = toml::find(panels, std::to_string(i));
         const auto  type = toml::find<std::string>(plot, "type");
@@ -394,6 +397,7 @@ namespace nttiny {
                   << this->SharedAxes.Y.Min << ", " << this->SharedAxes.Y.Max << "]\n";
       export_file << "collapsed_controls = " << (this->m_collapsed_controls ? "true" : "false")
                   << "\n";
+      export_file << "jumpover = " << this->m_sim->get_jumpover() << "\n";
       export_file.close();
     }
     ImGui::InsertNotification(

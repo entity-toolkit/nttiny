@@ -48,6 +48,12 @@ INCLUDES += -I${NTTINY_DIR}
 ```
 
 ## Releases
+* `v0.7.1` [Jan 2023]:
+  - fixed a bug which caused closing of all the legends when one of them was closed
+  - saving color-symmetry parameter now in metadata
+  - saving jumpover time
+  - fixed a bug when jumpover=0 was crashing the program
+  - minor bug fixes
 * `v0.7.0` [Oct 2022]:
   - full cmake support (readme updated)
   - option for symmetric colorbar
