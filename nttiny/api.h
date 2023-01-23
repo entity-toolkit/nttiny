@@ -51,12 +51,16 @@ namespace nttiny {
     std::array<int, D> m_size;
     ushort             m_ngh;
     std::array<T*, D>  m_xi;
+    std::array<T*, D>  m_xi_c;
     std::array<T*, D>  m_xi_gh;
 
     Grid(const Coord& coord, const std::array<int, D>& size, const ushort& ngh = 2)
       : m_coord(coord), m_size(size), m_ngh(ngh) {
       for (ushort i { 0 }; i < D; ++i) {
         m_xi[i] = new T[m_size[i] + 1];
+      }
+      for (ushort i { 0 }; i < D; ++i) {
+        m_xi_c[i] = new T[m_size[i]];
       }
       if (m_coord == Coord::Spherical) {
         for (ushort i { 0 }; i < D; ++i) {
@@ -69,9 +73,20 @@ namespace nttiny {
       for (ushort i { 0 }; i < D; ++i) {
         delete[] m_xi[i];
       }
+      for (ushort i { 0 }; i < D; ++i) {
+        delete[] m_xi_c[i];
+      }
       if (m_coord == Coord::Spherical) {
         for (ushort i { 0 }; i < D; ++i) {
           delete[] m_xi_gh[i];
+        }
+      }
+    }
+
+    void DefineCellCenters() {
+      for (ushort d { 0 }; d < D; ++d) {
+        for (int i { 0 }; i < m_size[d]; ++i) {
+          m_xi_c[d][i] = 0.5 * (m_xi[d][i] + m_xi[d][i + 1]);
         }
       }
     }
@@ -109,6 +124,12 @@ namespace nttiny {
                   const ushort&             ngh = 2)
       : m_title { title }, m_global_grid { coord, size, ngh } {}
     ~SimulationAPI() = default;
+
+    auto Index(const int& i) const -> int {
+      const auto ngh { m_global_grid.m_ngh };
+      const auto nx { m_global_grid.m_size[0] + 2 * ngh };
+      return i + ngh;
+    }
 
     auto Index(const int& i, const int& j) const -> int {
       const auto ngh { m_global_grid.m_ngh };
@@ -197,23 +218,23 @@ namespace nttiny {
       return &buffers[buffer_selected];
     }
     auto get_min_max(const int& field_selected_int, const bool& use_log) -> std::pair<T, T> {
-      auto       array = get_selected_field(field_selected_int);
-      T          min = (T)(1e20), max = -(T)(1e20);
-      const auto sx1 { m_global_grid.m_size[0] };
-      const auto sx2 { m_global_grid.m_size[1] };
-      for (int j { 0 }; j < sx2; ++j) {
-        for (int i { 0 }; i < sx1; ++i) {
-          T val = array[Index(i, j)];
-          if (use_log) {
-            val = (signum(val) * std::pow(std::fabs(val), 0.25f));
-          }
-          if (i == 0 && j == 0) {
-            min = val;
-            max = val;
-          } else {
-            min = std::min(min, val);
-            max = std::max(max, val);
-          }
+      auto      array = get_selected_field(field_selected_int);
+      T         min = (T)(1e20), max = -(T)(1e20);
+      int size = 1;
+      for (auto d { 0 }; d < D; ++d) {
+        size *= m_global_grid.m_size[d];
+      }
+      for (int i { 0 }; i < size; ++i) {
+        T val = array[i];
+        if (use_log) {
+          val = (signum(val) * std::pow(std::fabs(val), 0.25f));
+        }
+        if (i == 0) {
+          min = val;
+          max = val;
+        } else {
+          min = std::min(min, val);
+          max = std::max(max, val);
         }
       }
       return { min, max };

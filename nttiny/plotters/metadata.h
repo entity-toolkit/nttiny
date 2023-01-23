@@ -35,6 +35,28 @@ struct PlotMetadata {
   }
 };
 
+struct Lineplot1dMetadata : public PlotMetadata {
+  const std::string m_type { "Lineplot1d" };
+  bool              m_log, m_autoscale, m_symmetric;
+  float             m_xmin, m_xmax, m_ymin, m_ymax;
+  ImVec4            m_color;
+  int               m_field_selected;
+  Lineplot1dMetadata(int id) : PlotMetadata(id) {}
+  void setMetadata() override {
+    std::vector<float> color = { m_color.x, m_color.y, m_color.z, m_color.w };
+    (this->metadata).insert({ "type", m_type });
+    (this->metadata).insert({ "log", m_log });
+    (this->metadata).insert({ "autoscale", m_autoscale });
+    (this->metadata).insert({ "symmetric", m_symmetric });
+    (this->metadata).insert({ "xmin", m_xmin });
+    (this->metadata).insert({ "xmax", m_xmax });
+    (this->metadata).insert({ "ymin", m_ymin });
+    (this->metadata).insert({ "ymax", m_ymax });
+    (this->metadata).insert({ "color", color });
+    (this->metadata).insert({ "field_selected", m_field_selected });
+  }
+};
+
 struct Pcolor2dMetadata : public PlotMetadata {
   const std::string m_type { "Pcolor2d" };
   bool              m_log, m_autoscale, m_symmetric;

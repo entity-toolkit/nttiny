@@ -42,6 +42,17 @@ namespace nttiny {
   };
 
   /**
+   * @brief Parent class for all 1D plots.
+   */
+  template <class T>
+  struct Plot1D : public Ax<T, 1> {
+    Plot1D(int id) : Ax<T, 1>(id) {}
+    ~Plot1D() override = default;
+
+    bool m_share_axes { true };
+  };
+
+  /**
    * @brief Parent class for all 2D plots.
    */
   template <class T>
@@ -52,6 +63,33 @@ namespace nttiny {
 
     bool m_share_axes { true };
   };
+
+  /* -------------------------------------------------------------------------- */
+  /*                                  1D Plots                                  */
+  /* -------------------------------------------------------------------------- */
+  template <class T>
+  class LinePlot1D : public Plot1D<T> {
+  protected:
+    bool   m_log { false };
+    bool   m_autoscale { false };
+    bool   m_symmetric { false };
+    T      m_ymin { 0.0 }, m_ymax { 0.0 };
+    T      m_xmin { 0.0 }, m_xmax { 0.0 };
+    ImVec4 m_color { 1.0f, 1.0f, 1.0f, 1.0f };
+    int    m_field_selected { 0 };
+    void   rescaleMinMax();
+
+  public:
+    LinePlot1D(int id) : Plot1D<T>(id) {}
+    ~LinePlot1D() override = default;
+    auto draw(ImPlotRect&, UISettings&) -> bool override;
+    auto exportMetadata() -> PlotMetadata* override;
+    void importMetadata(const toml::value&) override;
+  };
+
+  /* -------------------------------------------------------------------------- */
+  /*                                  2D Plots                                  */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * @brief 2D pseudocolor plot.

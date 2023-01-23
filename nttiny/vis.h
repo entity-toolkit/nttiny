@@ -54,6 +54,7 @@ namespace nttiny {
     void       drawControls();
     void       processControllerInput();
     void       loop();
+    void       addLineplot1d();
     void       addPcolor2d();
     void       addScatter2d();
     void       addTimePlot();

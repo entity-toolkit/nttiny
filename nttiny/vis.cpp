@@ -74,20 +74,28 @@ namespace nttiny {
 
   template <class T, ushort D>
   void Visualization<T, D>::addPcolor2d() {
-    PLOGD_(VISPLOGID) << "Opening Pcolor2d.";
-    auto myplot { std::make_unique<Pcolor2d<T>>(this->m_id) };
-    ++this->m_id;
-    this->m_plots.push_back(std::move(myplot));
-    this->bindSimulation();
+    if constexpr (D == 2) {
+      PLOGD_(VISPLOGID) << "Opening Pcolor2d.";
+      auto myplot { std::make_unique<Pcolor2d<T>>(this->m_id) };
+      ++this->m_id;
+      this->m_plots.push_back(std::move(myplot));
+      this->bindSimulation();
+    } else {
+      PLOGE_(VISPLOGID) << "Pcolor2d can only be used for 2D simulations.";
+    }
   }
 
   template <class T, ushort D>
   void Visualization<T, D>::addScatter2d() {
-    PLOGD_(VISPLOGID) << "Opening Scatter2d.";
-    auto myplot { std::make_unique<Scatter2d<T>>(this->m_id) };
-    ++this->m_id;
-    this->m_plots.push_back(std::move(myplot));
-    this->bindSimulation();
+    if constexpr (D == 2) {
+      PLOGD_(VISPLOGID) << "Opening Scatter2d.";
+      auto myplot { std::make_unique<Scatter2d<T>>(this->m_id) };
+      ++this->m_id;
+      this->m_plots.push_back(std::move(myplot));
+      this->bindSimulation();
+    } else {
+      PLOGE_(VISPLOGID) << "Scatter2d can only be used for 2D simulations.";
+    }
   }
 
   template <class T, ushort D>
@@ -97,6 +105,19 @@ namespace nttiny {
     ++this->m_id;
     this->m_plots.push_back(std::move(myplot));
     this->bindSimulation();
+  }
+
+  template <class T, ushort D>
+  void Visualization<T, D>::addLineplot1d() {
+    if constexpr (D == 1) {
+      PLOGD_(VISPLOGID) << "Opening Lineplot1d.";
+      auto myplot { std::make_unique<LinePlot1D<T>>(this->m_id) };
+      ++this->m_id;
+      this->m_plots.push_back(std::move(myplot));
+      this->bindSimulation();
+    } else {
+      PLOGE_(VISPLOGID) << "Lineplot1d can only be used for 1D simulations.";
+    }
   }
 
   template <class T, ushort D>
@@ -293,11 +314,17 @@ namespace nttiny {
 
     if (ImGui::BeginMenu("Menu")) {
       ImGui::MenuItem("(plots)", NULL, false, false);
-      if (ImGui::MenuItem("add pcolor")) {
-        addPcolor2d();
-      }
-      if (ImGui::MenuItem("add scatter")) {
-        addScatter2d();
+      if constexpr (D == 1) {
+        if (ImGui::MenuItem("add lineplot")) {
+          addLineplot1d();
+        }
+      } else if constexpr (D == 1) {
+        if (ImGui::MenuItem("add pcolor")) {
+          addPcolor2d();
+        }
+        if (ImGui::MenuItem("add scatter")) {
+          addScatter2d();
+        }
       }
       if (ImGui::MenuItem("add timeplot")) {
         addTimePlot();
@@ -358,11 +385,18 @@ namespace nttiny {
       for (int i { 0 }; i < npanels; ++i) {
         const auto& plot = toml::find(panels, std::to_string(i));
         const auto  type = toml::find<std::string>(plot, "type");
-        if (type == "Pcolor2d") {
-          addPcolor2d();
-        } else if (type == "Scatter2d") {
-          addScatter2d();
-        } else if (type == "TimePlot") {
+        if constexpr (D == 1) {
+          if (type == "Lineplot1d") {
+            addLineplot1d();
+          }
+        } else if constexpr (D == 2) {
+          if (type == "Pcolor2d") {
+            addPcolor2d();
+          } else if (type == "Scatter2d") {
+            addScatter2d();
+          }
+        }
+        if (type == "TimePlot") {
           addTimePlot();
         }
         this->m_plots.back()->importMetadata(plot);
@@ -407,7 +441,7 @@ namespace nttiny {
   template <class T, ushort D>
   void Visualization<T, D>::loop() {
     PLOGD_(VISPLOGID) << "Starting Visualization loop.";
-    int        jumpover_counter { -1 };
+    int   jumpover_counter { -1 };
 
     // float prev_scale = 0.f;
     // float xscale, yscale;
@@ -422,29 +456,43 @@ namespace nttiny {
     //   ImGui_ImplOpenGL3_CreateFontsTexture();
     // }
 
-    auto&      Sim   = this->m_sim;
-    auto&      Grid  = this->m_sim->m_global_grid;
-    const auto coord = Grid.m_coord;
-    const auto ngh   = Grid.m_ngh;
-    const auto sx1   = Grid.m_size[0];
-    const auto sx2   = Grid.m_size[1];
-    auto       dx1   = Grid.m_xi[0][1] - Grid.m_xi[0][0];
-    auto       x1min = Grid.m_xi[0][0] - ngh * dx1;
-    auto       x1max = Grid.m_xi[0][sx1] + ngh * dx1;
-    auto       dx2   = Grid.m_xi[1][1] - Grid.m_xi[1][0];
-    auto       x2min = Grid.m_xi[1][0] - ngh * dx2;
-    auto       x2max = Grid.m_xi[1][sx2] + ngh * dx2;
+    auto& Sim = this->m_sim;
+    if constexpr (D == 1) {
+      auto&      Grid        = this->m_sim->m_global_grid;
+      const auto coord       = Grid.m_coord;
+      const auto ngh         = Grid.m_ngh;
+      const auto sx          = Grid.m_size[0];
+      auto       dx          = Grid.m_xi[0][1] - Grid.m_xi[0][0];
+      auto       xmin        = Grid.m_xi[0][0] - ngh * dx;
+      auto       xmax        = Grid.m_xi[0][sx] + ngh * dx;
 
-    if (coord == Coord::Spherical) {
-      this->SharedAxes.X.Min = 0.0f;
-      this->SharedAxes.X.Max = (float)x1max;
-      this->SharedAxes.Y.Min = -(float)x1max;
-      this->SharedAxes.Y.Max = (float)x1max;
-    } else {
-      this->SharedAxes.X.Min = (float)x1min;
-      this->SharedAxes.X.Max = (float)x1max;
-      this->SharedAxes.Y.Min = (float)x2min;
-      this->SharedAxes.Y.Max = (float)x2max;
+      this->SharedAxes.X.Min = (float)xmin;
+      this->SharedAxes.X.Max = (float)xmax;
+
+    } else if constexpr (D == 2) {
+      auto&      Grid  = this->m_sim->m_global_grid;
+      const auto coord = Grid.m_coord;
+      const auto ngh   = Grid.m_ngh;
+      const auto sx1   = Grid.m_size[0];
+      const auto sx2   = Grid.m_size[1];
+      auto       dx1   = Grid.m_xi[0][1] - Grid.m_xi[0][0];
+      auto       x1min = Grid.m_xi[0][0] - ngh * dx1;
+      auto       x1max = Grid.m_xi[0][sx1] + ngh * dx1;
+      auto       dx2   = Grid.m_xi[1][1] - Grid.m_xi[1][0];
+      auto       x2min = Grid.m_xi[1][0] - ngh * dx2;
+      auto       x2max = Grid.m_xi[1][sx2] + ngh * dx2;
+
+      if (coord == Coord::Spherical) {
+        this->SharedAxes.X.Min = 0.0f;
+        this->SharedAxes.X.Max = (float)x1max;
+        this->SharedAxes.Y.Min = -(float)x1max;
+        this->SharedAxes.Y.Max = (float)x1max;
+      } else {
+        this->SharedAxes.X.Min = (float)x1min;
+        this->SharedAxes.X.Max = (float)x1max;
+        this->SharedAxes.Y.Min = (float)x2min;
+        this->SharedAxes.Y.Max = (float)x2max;
+      }
     }
 
     try {
@@ -541,6 +589,9 @@ namespace nttiny {
     }
   }
 }    // namespace nttiny
+
+template class nttiny::Visualization<float, 1>;
+template class nttiny::Visualization<double, 1>;
 
 template class nttiny::Visualization<float, 2>;
 template class nttiny::Visualization<double, 2>;

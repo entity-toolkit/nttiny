@@ -1,7 +1,8 @@
-set(EXAMPLES ex_cart_flds ex_cart_prtls_dprec ex_logR_prtls_buffs ex_sph)
+file(GLOB EXAMPLES *.cpp)
 
 foreach(EXAMPLE ${EXAMPLES})
-  add_executable(${EXAMPLE})
-  target_sources(${EXAMPLE} PRIVATE ${EXAMPLE}.cpp)
-  target_link_libraries(${EXAMPLE} PRIVATE ${PROJECT_NAME})
+  get_filename_component(EXAMPLE_NAME ${EXAMPLE} NAME_WE)
+  add_executable(${EXAMPLE_NAME})
+  target_sources(${EXAMPLE_NAME} PRIVATE ${EXAMPLE})
+  target_link_libraries(${EXAMPLE_NAME} PRIVATE ${PROJECT_NAME})
 endforeach()
