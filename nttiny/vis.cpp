@@ -231,10 +231,9 @@ namespace nttiny {
                       ImVec2(-1, 2 * ImGui::GetFontSize()))) {
       this->m_save_video = !this->m_save_video;
       if (!this->m_save_video) {
-        ImGui::InsertNotification({ ImGuiToastType_Info,
-                                    3000,
-                                    "Frames for video saved in `%s`",
-                                    this->m_sim->get_title() + "/frames/" });
+        auto frames_path = this->m_sim->get_title() + "/frames/";
+        ImGui::InsertNotification(
+          { ImGuiToastType_Info, 3000, "Frames for video saved in `%s`", frames_path.c_str() });
         m_save_videoframe_count = 0;
       }
     }
@@ -482,7 +481,9 @@ namespace nttiny {
       bool open = true;
 
       if (ImGui::Begin("main dashboard", &open, flags)) {
-        { this->drawControls(); }
+        {
+          this->drawControls();
+        }
         ImGui::SameLine();
         {
           ImGui::BeginChild("plots", ImVec2(-1, -1), false);
